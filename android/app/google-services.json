@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "969381919875",
+    "project_id": "affinity-dev-local",
+    "storage_bucket": "affinity-dev-local.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:969381919875:android:4e77c055c9e20a26a52fb6",
+        "android_client_info": {
+          "package_name": "com.affinitysocialclub.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsF2BJljP4nKJHg2AlNYvoo-GkrUhvt9M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

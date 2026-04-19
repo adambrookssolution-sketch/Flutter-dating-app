@@ -1,0 +1,16 @@
+{
+  "name": "affinity-firestore-rules-tests",
+  "private": true,
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project=demo-affinity \"jest --runInBand\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "@types/jest": "^29.5.13",
+    "@types/node": "^22.5.0",
+    "firebase": "^11.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.5.4"
+  }
+}

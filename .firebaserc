@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "affinity-dev-local",
+    "dev": "affinity-dev-local",
+    "production": "affinity-dating-app-cf807"
+  },
+  "targets": {},
+  "etags": {}
+}

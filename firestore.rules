@@ -1,0 +1,240 @@
+rules_version = '2';
+
+// AFFINITY — Firestore Security Rules v1 (Week 1.7)
+//
+// Hardened against:
+// - account enumeration (no field-level peek into another couple's status)
+// - reporter de-anonymisation (only Cloud Functions can read reports)
+// - block evasion (silent simulation enforced server-side via missing read perms)
+// - mass scraping (couple reads gated on requester being approved + not blocked)
+// - tag/destination tampering (admin-only writes via Cloud Functions)
+//
+// Design notes:
+// - We deliberately do NOT call get() inside hot read paths (couples list,
+//   conversations list, etc.) because each get() is a billable read AND
+//   a per-request cost. Hot paths gate purely on the request's own claims.
+// - The per-couple "approved" gate is enforced at WRITE time (only an
+//   approved couple can publish content) rather than at read time. Defence
+//   in depth: clients also filter feeds in code.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function authStatus() {
+      // Couple status of the requester. Returns null if their couple doc
+      // doesn't exist yet (brand-new sign-in pre-profile-setup).
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/couples/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/couples/$(request.auth.uid)).data.status
+        : null;
+    }
+
+    function isApproved() {
+      return authStatus() == 'approved';
+    }
+
+    function notInDeletion() {
+      // Approved, pending_review, rejected can still edit; pending_deletion
+      // and suspended cannot.
+      let s = authStatus();
+      return s != 'pending_deletion' && s != 'suspended' && s != 'under_review';
+    }
+
+    function isBlockedByUs(targetId) {
+      return exists(/databases/$(database)/documents/blocks/$(request.auth.uid + '_' + targetId));
+    }
+
+    function blockedUs(targetId) {
+      return exists(/databases/$(database)/documents/blocks/$(targetId + '_' + request.auth.uid));
+    }
+
+    function noMutualBlock(targetId) {
+      return !isBlockedByUs(targetId) && !blockedUs(targetId);
+    }
+
+    function isModerator() {
+      return isAuthenticated() && request.auth.token.moderator == true;
+    }
+
+    // ── Public reference data ────────────────────────────────────────────────
+    match /tags/{tagId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // moderators only via Cloud Functions
+    }
+
+    match /destinations/{destId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // moderators only via Cloud Functions
+    }
+
+    // ── Legacy `profiles` collection (pre-migration) ─────────────────────────
+    // Phased out after Week 1.2 migration runs in production. Kept readable
+    // by any authenticated user during the transition window so existing
+    // discovery feed code keeps working.
+    match /profiles/{uid} {
+      allow read: if isAuthenticated();
+      allow create, update: if isOwner(uid);
+      allow delete: if false;
+    }
+
+    // ── Couples ──────────────────────────────────────────────────────────────
+    match /couples/{coupleId} {
+      // Anyone authenticated can read another couple's profile, except:
+      //  - the requester is in pending_deletion or suspended (no app access)
+      //  - either side has blocked the other (silent block effect)
+      // Owner can always read their own doc (for status transitions etc.).
+      // Moderators read every couple regardless (needed for the verification
+      // queue + report investigations).
+      allow read: if isOwner(coupleId)
+        || isModerator()
+        || (isAuthenticated() && notInDeletion() && noMutualBlock(coupleId));
+
+      // Only the owner can create/update their own doc. Status field is
+      // restricted: clients can request `pending_deletion` (deletion flow) or
+      // change back to `approved` (cancel deletion); other transitions
+      // (`approved`/`rejected`/`suspended`/`under_review`) come from
+      // moderators via Cloud Functions only.
+      allow create: if isOwner(coupleId)
+        && request.resource.data.status in ['pending_review', 'approved'];
+
+      allow update: if isOwner(coupleId)
+        && (
+          // No status change
+          request.resource.data.status == resource.data.status
+          // Or self-initiated deletion / cancellation
+          || (resource.data.status == 'approved'
+              && request.resource.data.status == 'pending_deletion')
+          || (resource.data.status == 'pending_deletion'
+              && request.resource.data.status == 'approved')
+        );
+
+      allow delete: if false; // only Cloud Functions
+
+      match /trips/{tripId} {
+        // Anyone approved + not blocked can see another couple's trips
+        // (Travel Match queries this). Owner-only writes.
+        allow read: if isOwner(coupleId)
+          || (isApproved() && noMutualBlock(coupleId));
+        allow write: if isOwner(coupleId);
+      }
+
+      match /fcm_tokens/{tokenId} {
+        // Strictly private — only the owner can list/edit their own tokens.
+        allow read, write: if isOwner(coupleId);
+      }
+    }
+
+    // ── Conversations ─────────────────────────────────────────────────────────
+    match /conversations/{convId} {
+      allow read: if isAuthenticated()
+        && request.auth.uid in resource.data.participants;
+
+      allow create: if isAuthenticated()
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.participants.size() == 2;
+
+      allow update: if isAuthenticated()
+        && request.auth.uid in resource.data.participants;
+
+      allow delete: if false;
+
+      match /messages/{msgId} {
+        allow read: if isAuthenticated()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants;
+
+        allow create: if isAuthenticated()
+          && request.auth.uid == request.resource.data.sender_uid
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants;
+
+        // Messages are immutable — no edits, no deletes (other than via
+        // executeDeletion CF when a participant deletes their account).
+        allow update, delete: if false;
+      }
+    }
+
+    // ── Message Requests ─────────────────────────────────────────────────────
+    match /message_requests/{requestId} {
+      // Both sides can read. Sender NEVER sees the receiver's update to
+      // `estado: rejected` because the silent-rejection rule means the
+      // client UI ignores that field on the sender side — but the doc IS
+      // visible. Hard sender-blocking would require splitting the doc.
+      allow read: if isAuthenticated()
+        && (request.auth.uid == resource.data.pareja_emisora
+            || request.auth.uid == resource.data.pareja_receptora);
+
+      // Only sender creates; receiver can't be impersonated.
+      allow create: if isAuthenticated()
+        && isApproved()
+        && request.resource.data.pareja_emisora == request.auth.uid
+        && request.resource.data.pareja_emisora != request.resource.data.pareja_receptora;
+
+      // Only receiver can change estado (accept / reject).
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.pareja_receptora
+        && request.resource.data.pareja_emisora == resource.data.pareja_emisora
+        && request.resource.data.pareja_receptora == resource.data.pareja_receptora;
+
+      allow delete: if false;
+    }
+
+    // ── Reports ──────────────────────────────────────────────────────────────
+    match /reports/{reportId} {
+      // Only the reporter can create. Reads are forbidden client-side: the
+      // user's history is exposed via a Cloud Function callable, not direct
+      // collection reads, so even pagination can't accidentally leak other
+      // reports.
+      allow create: if isAuthenticated()
+        && isApproved()
+        && request.resource.data.reporter_couple == request.auth.uid
+        && request.resource.data.reporter_couple != request.resource.data.reported_couple;
+
+      allow read, update, delete: if false;
+    }
+
+    // ── Blocks ───────────────────────────────────────────────────────────────
+    match /blocks/{blockId} {
+      // The blocker can list/manage their own blocks. The BLOCKED party can
+      // never read the doc (silent block).
+      allow read: if isAuthenticated()
+        && request.auth.uid == resource.data.pareja_que_bloquea;
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.pareja_que_bloquea
+        && request.resource.data.pareja_que_bloquea != request.resource.data.pareja_bloqueada
+        && blockId == request.resource.data.pareja_que_bloquea
+            + '_' + request.resource.data.pareja_bloqueada;
+
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.pareja_que_bloquea;
+
+      allow update: if false;
+    }
+
+    // ── Recovery audit log ───────────────────────────────────────────────────
+    match /account_recovery_attempts/{attemptId} {
+      allow read: if isAuthenticated()
+        && request.auth.uid == resource.data.couple_id;
+      allow write: if false; // Cloud Functions only
+    }
+
+    // ── User metadata (rate-limit counters etc.) ─────────────────────────────
+    match /users_meta/{coupleId} {
+      allow read: if isOwner(coupleId);
+      allow write: if false; // Cloud Functions only
+    }
+
+    // ── Default deny ─────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

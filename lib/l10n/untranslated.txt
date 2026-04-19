@@ -1,0 +1,25 @@
+{
+  "es": [
+    "her",
+    "his",
+    "dateOfBirth",
+    "dateOfBirthFormat",
+    "selectCity",
+    "description",
+    "tellUsAboutYourself",
+    "confirmPassword",
+    "confirmPasswordHint",
+    "welcomeBack",
+    "welcomeBackDescription",
+    "verify",
+    "youAreIn",
+    "recoveryPasswordSuccess",
+    "goToLogin",
+    "startConversation",
+    "chatMessageQuickStarters",
+    "alreadyAMember",
+    "height",
+    "herHeight",
+    "hisHeight"
+  ]
+}

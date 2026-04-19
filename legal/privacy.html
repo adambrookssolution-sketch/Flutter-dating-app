@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Affinity — Privacy Policy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Privacy Policy</h1>
+      <p class="subtitle">Effective date: <em>to be confirmed at launch</em></p>
+    </header>
+
+    <p class="muted">
+      <strong>Disclaimer:</strong> this document is a developer-authored template and
+      must be reviewed by a licensed attorney before the app ships. It is not
+      legal advice.
+    </p>
+
+    <h2>1. Who we are</h2>
+    <p>
+      Affinity is a social platform exclusively for couples who have reached
+      the age of 21. The service is operated by the Affinity team
+      (<a href="mailto:affinitysocialclub@gmail.com">affinitysocialclub@gmail.com</a>).
+    </p>
+
+    <h2>2. What we collect</h2>
+    <ul>
+      <li><strong>Account info:</strong> email address, password hash, OAuth identifiers (Google / Apple).</li>
+      <li><strong>Couple profile:</strong> names, dates of birth, heights, city/country,
+        description, photos, interest tags, and an identity-verification video.</li>
+      <li><strong>Location:</strong> the city/country you enter (geocoded to a coarse
+        latitude/longitude/geohash for proximity matching). We do not use
+        continuous background GPS.</li>
+      <li><strong>User content:</strong> messages you send, message requests, trip entries.</li>
+      <li><strong>Moderation data:</strong> reports filed by or against you, blocks you create.</li>
+      <li><strong>Diagnostics:</strong> crash reports and anonymised performance metrics via Firebase.</li>
+    </ul>
+
+    <h2>3. Verification video retention</h2>
+    <p>
+      When you submit an identity-verification video, a moderator reviews it
+      manually. Approved videos are <strong>automatically deleted 7 days after
+      approval</strong>. After deletion we keep only a cryptographic hash (SHA-256)
+      of the video, the verification date, the moderator ID, and 2–3 very
+      low-resolution static frames as an audit record.
+    </p>
+
+    <h2>4. Screenshot protection</h2>
+    <p>
+      Inside the app we enable platform-level screenshot and recording
+      protection (Android <code>FLAG_SECURE</code>; iOS secure-canvas overlay)
+      on sensitive screens. We also embed an invisible watermark in rendered
+      photos so a leaked image can be traced back to the viewer couple.
+    </p>
+
+    <h2>5. Reporter confidentiality</h2>
+    <p>
+      When you report another couple, your identity is <strong>never</strong>
+      disclosed to the reported couple, directly or indirectly. Only internal
+      moderators can see who filed a report.
+    </p>
+
+    <h2>6. Account deletion</h2>
+    <p>
+      You can delete your account from <em>Profile → Account settings → Delete
+      account</em>. Deletion uses a 30-day grace period: your profile is hidden
+      immediately, and you can cancel the deletion by signing in again within
+      the window. On day 30, a Cloud Function permanently erases your
+      couples document, photos, verification video, conversations, message
+      requests, blocks, and Firebase Auth user.
+    </p>
+
+    <h2>7. Sharing</h2>
+    <p>
+      We do not sell personal data. We share data only with infrastructure
+      providers (Google Firebase, Google Cloud Platform) strictly to operate
+      the service, and with law-enforcement authorities when legally compelled.
+    </p>
+
+    <h2>8. Your rights</h2>
+    <p>
+      You may request access to, correction of, or deletion of your data by
+      emailing <a href="mailto:affinitysocialclub@gmail.com">affinitysocialclub@gmail.com</a>.
+      Most deletion and data-export operations are self-serve inside the app.
+    </p>
+
+    <h2>9. Contact</h2>
+    <p>
+      For any privacy question: <a href="mailto:affinitysocialclub@gmail.com">affinitysocialclub@gmail.com</a>
+    </p>
+
+    <nav class="links" style="margin-top: 48px;">
+      <a href="/">Back to Legal</a>
+    </nav>
+  </main>
+</body>
+</html>
