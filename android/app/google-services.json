@@ -1,26 +1,51 @@
 {
   "project_info": {
-    "project_number": "969381919875",
-    "project_id": "affinity-dev-local",
-    "storage_bucket": "affinity-dev-local.firebasestorage.app"
+    "project_number": "156489398688",
+    "project_id": "affinity-dating-app-cf807",
+    "storage_bucket": "affinity-dating-app-cf807.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:969381919875:android:4e77c055c9e20a26a52fb6",
+        "mobilesdk_app_id": "1:156489398688:android:77e8ecdd2961c6ae984cc5",
         "android_client_info": {
-          "package_name": "com.affinitysocialclub.app"
+          "package_name": "com.example.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "156489398688-6bpjar1vgustns9u8ssjvv9jtbnnck9u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.app",
+            "certificate_hash": "aff64fdd5f9a0921c508988c699630d8fcd2936d"
+          }
+        },
+        {
+          "client_id": "156489398688-j1bfpsm23bsnc1mij1upluuf2oacn30t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyCsF2BJljP4nKJHg2AlNYvoo-GkrUhvt9M"
+          "current_key": "AIzaSyAZ21D3vILE78y4gT8dmsz6SexHd_wcuZw"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "156489398688-j1bfpsm23bsnc1mij1upluuf2oacn30t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "156489398688-tcovs4su9j5374b83arfh3caapbeui8a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.app"
+              }
+            }
+          ]
         }
       }
     }

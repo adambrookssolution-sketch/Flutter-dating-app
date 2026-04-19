@@ -2,9 +2,7 @@
 // Run: flutterfire configure
 // Or copy values manually from the Firebase Console.
 //
-// Current values point at `affinity-dev-local` (Jenith's dev project).
-// Swap to production values at integration time — see
-// docs/STORE_SUBMISSION.md "Secrets handed off to the store runtime".
+// Points at `affinity-dating-app-cf807` — the client's official project.
 //
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
@@ -37,33 +35,33 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // ─── affinity-dev-local (Jenith dev) ─────────────────────────────────────
+  // ─── affinity-dating-app-cf807 (client production) ──────────────────────
   // Source: google-services.json (Android) + Firebase Console values.
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCsF2BJljP4nKJHg2AlNYvoo-GkrUhvt9M',
-    appId: '1:969381919875:android:4e77c055c9e20a26a52fb6',
-    messagingSenderId: '969381919875',
-    projectId: 'affinity-dev-local',
-    storageBucket: 'affinity-dev-local.firebasestorage.app',
+    apiKey: 'AIzaSyAZ21D3vILE78y4gT8dmsz6SexHd_wcuZw',
+    appId: '1:156489398688:android:77e8ecdd2961c6ae984cc5',
+    messagingSenderId: '156489398688',
+    projectId: 'affinity-dating-app-cf807',
+    storageBucket: 'affinity-dating-app-cf807.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCsF2BJljP4nKJHg2AlNYvoo-GkrUhvt9M',
-    appId: '1:969381919875:ios:PLACEHOLDER_REGISTER_IOS_IN_FIREBASE',
-    messagingSenderId: '969381919875',
-    projectId: 'affinity-dev-local',
-    storageBucket: 'affinity-dev-local.firebasestorage.app',
-    iosBundleId: 'com.affinitysocialclub.app',
+    apiKey: 'AIzaSyAZ21D3vILE78y4gT8dmsz6SexHd_wcuZw',
+    appId: '1:156489398688:ios:PLACEHOLDER_REGISTER_IOS_IN_FIREBASE',
+    messagingSenderId: '156489398688',
+    projectId: 'affinity-dating-app-cf807',
+    storageBucket: 'affinity-dating-app-cf807.firebasestorage.app',
+    iosBundleId: 'com.example.app',
   );
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCsF2BJljP4nKJHg2AlNYvoo-GkrUhvt9M',
-    appId: '1:969381919875:web:PLACEHOLDER_REGISTER_WEB_IN_FIREBASE',
-    messagingSenderId: '969381919875',
-    projectId: 'affinity-dev-local',
-    authDomain: 'affinity-dev-local.firebaseapp.com',
-    storageBucket: 'affinity-dev-local.firebasestorage.app',
+    apiKey: 'AIzaSyAZ21D3vILE78y4gT8dmsz6SexHd_wcuZw',
+    appId: '1:156489398688:web:PLACEHOLDER_REGISTER_WEB_IN_FIREBASE',
+    messagingSenderId: '156489398688',
+    projectId: 'affinity-dating-app-cf807',
+    authDomain: 'affinity-dating-app-cf807.firebaseapp.com',
+    storageBucket: 'affinity-dating-app-cf807.firebasestorage.app',
   );
 
   static const FirebaseOptions macos = ios;
