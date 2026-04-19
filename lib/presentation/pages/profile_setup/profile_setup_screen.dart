@@ -668,10 +668,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           (route) => false,
         );
       }
-    } catch (_) {
+    } catch (e, st) {
+      // Surface the real failure in the snackbar (and logcat) so we can
+      // diagnose Firestore/Storage/permission errors during dev.
+      // ignore: avoid_print
+      print('PROFILE_SAVE_ERROR: $e\n$st');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.errorSaveProfile)),
+        SnackBar(content: Text('${l10n.errorSaveProfile}\n$e')),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
