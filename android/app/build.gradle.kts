@@ -21,9 +21,10 @@ android {
     }
 
     defaultConfig {
-        // Production application id — must match the Firebase Android app
-        // registration in `affinity-dev-local` (and later production project).
-        applicationId = "com.affinitysocialclub.app"
+        // Matches the Android app registered in the client's Firebase project
+        // (`affinity-dating-app-cf807`). Final production id will be set by
+        // the client at release handoff.
+        applicationId = "com.example.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
