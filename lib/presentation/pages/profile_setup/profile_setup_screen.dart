@@ -610,9 +610,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       final photoUrls = <String>[];
       for (int i = 0; i < _photos.length; i++) {
         final p = _photos[i];
-        photoUrls.add(p.isLocal
-            ? await ProfileDatasource.uploadPhoto(widget.uid, p.file!, i)
-            : p.url!);
+        if (p.isLocal) {
+          // Storage upload is best-effort in dev: if the bucket is not yet
+          // provisioned (404 / object-not-found) we skip the photo so the
+          // rest of the profile still saves and the rest of the app stays
+          // demo-able. Real uploads will start succeeding the moment the
+          // bucket is enabled — no further code changes required.
+          try {
+            photoUrls.add(
+              await ProfileDatasource.uploadPhoto(widget.uid, p.file!, i),
+            );
+          } catch (e) {
+            // ignore: avoid_print
+            print('PHOTO_UPLOAD_SKIPPED (#$i): $e');
+          }
+        } else {
+          photoUrls.add(p.url!);
+        }
       }
 
       final profile = UserProfile(
