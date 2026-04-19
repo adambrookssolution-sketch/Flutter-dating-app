@@ -1,6 +1,6 @@
 import 'package:app/presentation/pages/community/community_screen.dart';
 import 'package:app/presentation/pages/couples/couples_screen.dart';
-import 'package:app/presentation/pages/Inbox/inbox_screen.dart';
+import 'package:app/presentation/pages/inbox/inbox_screen.dart';
 import 'package:app/presentation/pages/profile/profile_screen.dart';
 import 'package:app/presentation/layouts/system_layout.dart';
 import 'package:flutter/material.dart';
