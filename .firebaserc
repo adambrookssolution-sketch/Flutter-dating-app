@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "affinity-dev-local",
+    "default": "affinity-dating-app-cf807",
     "dev": "affinity-dev-local",
     "production": "affinity-dating-app-cf807"
   },

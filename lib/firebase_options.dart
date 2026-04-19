@@ -2,9 +2,6 @@
 // Run: flutterfire configure
 // Or copy values manually from the Firebase Console.
 //
-// Current values point at `affinity-dev-local` (dev/test project).
-// Swap to production values at integration time.
-//
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
@@ -36,35 +33,50 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // ─── affinity-dev-local (dev/test) ──────────────────────────────────────
+  // ─── Replace every placeholder value below with real values ───────────────
+  // from the Firebase Console or by running: flutterfire configure
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'REPLACE_WITH_WEB_API_KEY',
+    appId: 'REPLACE_WITH_WEB_APP_ID',
+    messagingSenderId: 'REPLACE_WITH_MESSAGING_SENDER_ID',
+    projectId: 'REPLACE_WITH_PROJECT_ID',
+    authDomain: 'REPLACE_WITH_PROJECT_ID.firebaseapp.com',
+    storageBucket: 'REPLACE_WITH_PROJECT_ID.firebasestorage.app',
+  );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCsF2BJljP4nKJHg2AlNYvoo-GkrUhvt9M',
-    appId: '1:969381919875:android:4e77c055c9e20a26a52fb6',
-    messagingSenderId: '969381919875',
-    projectId: 'affinity-dev-local',
-    storageBucket: 'affinity-dev-local.firebasestorage.app',
+    apiKey: 'AIzaSyAZ21D3vILE78y4gT8dmsz6SexHd_wcuZw',
+    appId: '1:156489398688:android:77e8ecdd2961c6ae984cc5',
+    messagingSenderId: '156489398688',
+    projectId: 'affinity-dating-app-cf807',
+    storageBucket: 'affinity-dating-app-cf807.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCsF2BJljP4nKJHg2AlNYvoo-GkrUhvt9M',
-    appId: '1:969381919875:ios:PLACEHOLDER_REGISTER_IOS_IN_FIREBASE',
-    messagingSenderId: '969381919875',
-    projectId: 'affinity-dev-local',
-    storageBucket: 'affinity-dev-local.firebasestorage.app',
-    iosBundleId: 'com.affinitysocialclub.app',
+    apiKey: 'AIzaSyD3weIIAnzMUIZuhhM39COv-_f02iv1CIE',
+    appId: '1:156489398688:ios:62e161f83fe0eef9984cc5',
+    messagingSenderId: '156489398688',
+    projectId: 'affinity-dating-app-cf807',
+    storageBucket: 'affinity-dating-app-cf807.firebasestorage.app',
+    iosBundleId: 'com.example.app',
   );
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCsF2BJljP4nKJHg2AlNYvoo-GkrUhvt9M',
-    appId: '1:969381919875:web:PLACEHOLDER_REGISTER_WEB_IN_FIREBASE',
-    messagingSenderId: '969381919875',
-    projectId: 'affinity-dev-local',
-    authDomain: 'affinity-dev-local.firebaseapp.com',
-    storageBucket: 'affinity-dev-local.firebasestorage.app',
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'REPLACE_WITH_MACOS_API_KEY',
+    appId: 'REPLACE_WITH_MACOS_APP_ID',
+    messagingSenderId: 'REPLACE_WITH_MESSAGING_SENDER_ID',
+    projectId: 'REPLACE_WITH_PROJECT_ID',
+    storageBucket: 'REPLACE_WITH_PROJECT_ID.firebasestorage.app',
+    iosBundleId: 'com.example.app',
   );
 
-  static const FirebaseOptions macos = ios;
-
-  static const FirebaseOptions windows = web;
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'REPLACE_WITH_WINDOWS_API_KEY',
+    appId: 'REPLACE_WITH_WINDOWS_APP_ID',
+    messagingSenderId: 'REPLACE_WITH_MESSAGING_SENDER_ID',
+    projectId: 'REPLACE_WITH_PROJECT_ID',
+    authDomain: 'REPLACE_WITH_PROJECT_ID.firebaseapp.com',
+    storageBucket: 'REPLACE_WITH_PROJECT_ID.firebasestorage.app',
+  );
 }
