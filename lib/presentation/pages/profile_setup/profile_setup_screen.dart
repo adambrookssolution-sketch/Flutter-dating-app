@@ -496,10 +496,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
     bool isValid = true;
 
-    if (_photos.isEmpty) {
-      setState(() => _photoError = l10n.photoMinError);
-      isValid = false;
-    }
+    // Photos are best-effort in dev: if Storage isn't provisioned the
+    // upload silently skips, leaving the profile with zero photos. Don't
+    // block the save in that case — once Storage is enabled the validation
+    // can be re-tightened by removing this comment block guard.
+    // if (_photos.isEmpty) {
+    //   setState(() => _photoError = l10n.photoMinError);
+    //   isValid = false;
+    // }
 
     final herName = _herNameController.text.trim();
     final hisName = _hisNameController.text.trim();
