@@ -1,0 +1,14 @@
+﻿2026-04-19T17:30:20.3831025Z Post job cleanup.
+2026-04-19T17:30:20.9239634Z [command]/usr/bin/git version
+2026-04-19T17:30:20.9242210Z git version 2.53.0
+2026-04-19T17:30:20.9246134Z Temporarily overriding HOME='/home/runner/work/_temp/aa47c37b-a70b-4200-9168-95e138d63cce' before making global git config changes
+2026-04-19T17:30:20.9247608Z Adding repository directory to the temporary git global config as a safe directory
+2026-04-19T17:30:20.9249279Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Flutter-dating-app/Flutter-dating-app
+2026-04-19T17:30:20.9251456Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-04-19T17:30:20.9253985Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-04-19T17:30:20.9256677Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-04-19T17:30:20.9257781Z http.https://github.com/.extraheader
+2026-04-19T17:30:20.9259836Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-04-19T17:30:20.9262629Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-04-19T17:30:20.9265474Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-04-19T17:30:20.9267706Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url

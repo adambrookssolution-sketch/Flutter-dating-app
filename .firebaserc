@@ -1,7 +1,7 @@
 {
   "projects": {
-    "default": "affinity-dating-app-cf807",
-    "dev": "affinity-dev-local",
+    "default": "affinity-test-f4c84",
+    "dev": "affinity-test-f4c84",
     "production": "affinity-dating-app-cf807"
   },
   "targets": {},

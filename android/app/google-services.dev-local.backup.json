@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "729691413850",
-    "project_id": "affinity-test-f4c84",
-    "storage_bucket": "affinity-test-f4c84.firebasestorage.app"
+    "project_number": "969381919875",
+    "project_id": "affinity-dev-local",
+    "storage_bucket": "affinity-dev-local.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:729691413850:android:91ac06f1269e43734fe763",
+        "mobilesdk_app_id": "1:969381919875:android:4e77c055c9e20a26a52fb6",
         "android_client_info": {
-          "package_name": "com.example.app"
+          "package_name": "com.affinitysocialclub.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBzolOsk58pg-H1BPxEqh1ojp4qN_yEJBY"
+          "current_key": "AIzaSyCsF2BJljP4nKJHg2AlNYvoo-GkrUhvt9M"
         }
       ],
       "services": {

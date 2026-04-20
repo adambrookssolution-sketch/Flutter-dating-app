@@ -46,11 +46,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAZ21D3vILE78y4gT8dmsz6SexHd_wcuZw',
-    appId: '1:156489398688:android:77e8ecdd2961c6ae984cc5',
-    messagingSenderId: '156489398688',
-    projectId: 'affinity-dating-app-cf807',
-    storageBucket: 'affinity-dating-app-cf807.firebasestorage.app',
+    apiKey: 'AIzaSyBzolOsk58pg-H1BPxEqh1ojp4qN_yEJBY',
+    appId: '1:729691413850:android:91ac06f1269e43734fe763',
+    messagingSenderId: '729691413850',
+    projectId: 'affinity-test-f4c84',
+    storageBucket: 'affinity-test-f4c84.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

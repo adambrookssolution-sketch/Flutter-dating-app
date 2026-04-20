@@ -1,0 +1,73 @@
+﻿2026-04-19T17:24:50.8659958Z ##[group]Run flutter pub get
+2026-04-19T17:24:50.8660300Z [36;1mflutter pub get[0m
+2026-04-19T17:24:50.8681872Z shell: /usr/bin/bash -e {0}
+2026-04-19T17:24:50.8682143Z env:
+2026-04-19T17:24:50.8682450Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.18-8/x64
+2026-04-19T17:24:50.8682977Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.18-8/x64
+2026-04-19T17:24:50.8683476Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.41.7-x64/flutter
+2026-04-19T17:24:50.8683849Z   PUB_CACHE: /home/runner/.pub-cache
+2026-04-19T17:24:50.8684103Z ##[endgroup]
+2026-04-19T17:24:51.1014968Z Resolving dependencies...
+2026-04-19T17:24:51.4156048Z Downloading packages...
+2026-04-19T17:24:51.4709746Z   _flutterfire_internals 1.3.66 (1.3.69 available)
+2026-04-19T17:24:51.4714475Z   async 2.13.0 (2.13.1 available)
+2026-04-19T17:24:51.4721727Z   camera 0.11.4 (0.12.0+1 available)
+2026-04-19T17:24:51.4722701Z   camera_android_camerax 0.6.30 (0.7.1+2 available)
+2026-04-19T17:24:51.4723678Z   camera_avfoundation 0.9.23+2 (0.10.1 available)
+2026-04-19T17:24:51.4724592Z > characters 1.4.1 (was 1.4.0)
+2026-04-19T17:24:51.4725306Z   cloud_firestore 6.1.2 (6.3.0 available)
+2026-04-19T17:24:51.4726182Z   cloud_firestore_platform_interface 7.0.6 (7.2.0 available)
+2026-04-19T17:24:51.4727091Z   cloud_firestore_web 5.1.2 (5.3.0 available)
+2026-04-19T17:24:51.4727864Z   cloud_functions 6.0.6 (6.2.0 available)
+2026-04-19T17:24:51.4728649Z   cloud_functions_platform_interface 5.8.9 (5.8.12 available)
+2026-04-19T17:24:51.4729818Z   cloud_functions_web 5.1.2 (5.1.5 available)
+2026-04-19T17:24:51.4730553Z   cupertino_icons 1.0.8 (1.0.9 available)
+2026-04-19T17:24:51.4731305Z   file_selector_macos 0.9.4+4 (0.9.5 available)
+2026-04-19T17:24:51.4732057Z   firebase_auth 6.1.4 (6.4.0 available)
+2026-04-19T17:24:51.4732896Z   firebase_auth_platform_interface 8.1.6 (8.1.9 available)
+2026-04-19T17:24:51.4733728Z   firebase_auth_web 6.1.2 (6.1.5 available)
+2026-04-19T17:24:51.4734434Z   firebase_core 4.4.0 (4.7.0 available)
+2026-04-19T17:24:51.4735232Z   firebase_core_platform_interface 6.0.2 (6.0.3 available)
+2026-04-19T17:24:51.4736339Z   firebase_core_web 3.4.0 (3.6.0 available)
+2026-04-19T17:24:51.4745521Z   firebase_messaging 16.1.1 (16.2.0 available)
+2026-04-19T17:24:51.4763748Z   firebase_messaging_platform_interface 4.7.6 (4.7.9 available)
+2026-04-19T17:24:51.4764710Z   firebase_messaging_web 4.1.2 (4.1.5 available)
+2026-04-19T17:24:51.4765515Z   firebase_storage 13.0.6 (13.3.0 available)
+2026-04-19T17:24:51.4766547Z   firebase_storage_platform_interface 5.2.17 (5.2.20 available)
+2026-04-19T17:24:51.4767440Z   firebase_storage_web 3.11.2 (3.11.5 available)
+2026-04-19T17:24:51.4768186Z   flutter_lints 5.0.0 (6.0.0 available)
+2026-04-19T17:24:51.4769650Z   flutter_plugin_android_lifecycle 2.0.31 (2.0.34 available)
+2026-04-19T17:24:51.4770519Z   flutter_riverpod 2.6.1 (3.3.1 available)
+2026-04-19T17:24:51.4771298Z   flutter_secure_storage 9.2.4 (10.0.0 available)
+2026-04-19T17:24:51.4809556Z   flutter_secure_storage_linux 1.2.3 (3.0.0 available)
+2026-04-19T17:24:51.4829375Z   flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+2026-04-19T17:24:51.4830237Z   flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+2026-04-19T17:24:51.4831254Z   flutter_secure_storage_web 1.2.1 (2.1.0 available)
+2026-04-19T17:24:51.4831854Z   flutter_secure_storage_windows 3.1.2 (4.1.0 available)
+2026-04-19T17:24:51.4832394Z   flutter_svg 2.2.3 (2.2.4 available)
+2026-04-19T17:24:51.4832840Z   google_sign_in 6.3.0 (7.2.0 available)
+2026-04-19T17:24:51.4833376Z   google_sign_in_android 6.2.1 (7.2.10 available)
+2026-04-19T17:24:51.4849844Z   google_sign_in_ios 5.9.0 (6.3.0 available)
+2026-04-19T17:24:51.4869516Z   google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+2026-04-19T17:24:51.4889611Z   google_sign_in_web 0.12.4+4 (1.1.3 available)
+2026-04-19T17:24:51.4890468Z   image_picker_android 0.8.13+1 (0.8.13+16 available)
+2026-04-19T17:24:51.4891446Z   image_picker_ios 0.8.13 (0.8.13+6 available)
+2026-04-19T17:24:51.4892308Z   image_picker_macos 0.2.2 (0.2.2+1 available)
+2026-04-19T17:24:51.4893420Z   js 0.6.7 (0.7.2 available)
+2026-04-19T17:24:51.4894066Z   lints 5.1.1 (6.1.0 available)
+2026-04-19T17:24:51.4894721Z > matcher 0.12.19 (was 0.12.17)
+2026-04-19T17:24:51.4895609Z > material_color_utilities 0.13.0 (was 0.11.1)
+2026-04-19T17:24:51.4904618Z   meta 1.17.0 (1.18.2 available)
+2026-04-19T17:24:51.4905376Z   permission_handler 11.4.0 (12.0.1 available)
+2026-04-19T17:24:51.4906246Z   permission_handler_android 12.1.0 (13.0.1 available)
+2026-04-19T17:24:51.4907037Z   riverpod 2.6.1 (3.2.1 available)
+2026-04-19T17:24:51.4907759Z   source_span 1.10.1 (1.10.2 available)
+2026-04-19T17:24:51.4908474Z > test_api 0.7.10 (was 0.7.7) (0.7.11 available)
+2026-04-19T17:24:51.4909702Z   vector_graphics 1.1.19 (1.1.21 available)
+2026-04-19T17:24:51.4910461Z   vector_graphics_compiler 1.1.19 (1.2.0 available)
+2026-04-19T17:24:51.4911231Z   vector_math 2.2.0 (2.3.0 available)
+2026-04-19T17:24:51.4911921Z   vm_service 15.0.0 (15.1.0 available)
+2026-04-19T17:24:51.4912575Z   win32 5.15.0 (6.0.1 available)
+2026-04-19T17:24:51.4913300Z Changed 4 dependencies!
+2026-04-19T17:24:51.4914230Z 56 packages have newer versions incompatible with dependency constraints.
+2026-04-19T17:24:51.4915248Z Try `flutter pub outdated` for more information.

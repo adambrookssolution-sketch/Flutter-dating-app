@@ -1,0 +1,27 @@
+﻿2026-04-19T17:24:52.4488942Z ##[group]Run flutter build apk --debug
+2026-04-19T17:24:52.4489577Z [36;1mflutter build apk --debug[0m
+2026-04-19T17:24:52.4521049Z shell: /usr/bin/bash -e {0}
+2026-04-19T17:24:52.4521466Z env:
+2026-04-19T17:24:52.4521989Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.18-8/x64
+2026-04-19T17:24:52.4522842Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.18-8/x64
+2026-04-19T17:24:52.4523729Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.41.7-x64/flutter
+2026-04-19T17:24:52.4524463Z   PUB_CACHE: /home/runner/.pub-cache
+2026-04-19T17:24:52.4524904Z ##[endgroup]
+2026-04-19T17:30:19.3629743Z Running Gradle task 'assembleDebug'...                          
+2026-04-19T17:30:19.3669029Z 
+2026-04-19T17:30:19.3694005Z FAILURE: Build failed with an exception.
+2026-04-19T17:30:19.3709052Z 
+2026-04-19T17:30:19.3759669Z * What went wrong:
+2026-04-19T17:30:19.3760720Z Execution failed for task ':app:processDebugGoogleServices'.
+2026-04-19T17:30:19.3762222Z > No matching client found for package name 'com.affinitysocialclub.app' in /home/runner/work/Flutter-dating-app/Flutter-dating-app/android/app/google-services.json
+2026-04-19T17:30:19.3779045Z 
+2026-04-19T17:30:19.3789559Z * Try:
+2026-04-19T17:30:19.3829556Z > Run with --stacktrace option to get the stack trace.
+2026-04-19T17:30:19.3859453Z > Run with --info or --debug option to get more log output.
+2026-04-19T17:30:19.3879310Z > Run with --scan to get full insights.
+2026-04-19T17:30:19.3880984Z > Get more help at https://help.gradle.org.
+2026-04-19T17:30:19.3900820Z 
+2026-04-19T17:30:19.3919850Z BUILD FAILED in 5m 25s
+2026-04-19T17:30:19.9487429Z Running Gradle task 'assembleDebug'...                            326.5s
+2026-04-19T17:30:19.9627431Z Gradle task assembleDebug failed with exit code 1
+2026-04-19T17:30:19.9717433Z ##[error]Process completed with exit code 1.
