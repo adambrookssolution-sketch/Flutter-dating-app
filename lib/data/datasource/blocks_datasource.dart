@@ -73,18 +73,25 @@ class BlocksDatasource {
   /// every keystroke the feed would re-render unnecessarily. Clients
   /// refresh this once per session (or on explicit unblock action).
   static Future<Set<String>> getMutualBlockIds(String myCoupleId) async {
-    final outgoing = await _db
-        .collection('blocks')
-        .where('pareja_que_bloquea', isEqualTo: myCoupleId)
-        .get();
+    try {
+      final outgoing = await _db
+          .collection('blocks')
+          .where('pareja_que_bloquea', isEqualTo: myCoupleId)
+          .get();
 
-    // Note: reading "blocks against me" is NOT permitted by Security Rules
-    // for the blocked side — that's intentional silent simulation. Server
-    // simulates this via a Cloud Function or via a lookup at request-send
-    // time; here we only know what WE have blocked.
-    return outgoing.docs
-        .map((d) => (d.data()['pareja_bloqueada'] as String?) ?? '')
-        .where((s) => s.isNotEmpty)
-        .toSet();
+      // Note: reading "blocks against me" is NOT permitted by Security Rules
+      // for the blocked side — that's intentional silent simulation. Server
+      // simulates this via a Cloud Function or via a lookup at request-send
+      // time; here we only know what WE have blocked.
+      return outgoing.docs
+          .map((d) => (d.data()['pareja_bloqueada'] as String?) ?? '')
+          .where((s) => s.isNotEmpty)
+          .toSet();
+    } on FirebaseException catch (e) {
+      // Security rules in some environments don't yet expose the blocks
+      // collection; treat as "no blocks" so discovery feed still works.
+      if (e.code == 'permission-denied') return <String>{};
+      rethrow;
+    }
   }
 }

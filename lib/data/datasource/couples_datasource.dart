@@ -46,11 +46,19 @@ class CouplesDatasource {
   static FirebaseFirestore get _db => FirebaseFirestore.instance;
 
   /// Single-couple read by document ID. Returns null when the doc doesn't
-  /// exist (a fresh sign-in before profile setup, for example).
+  /// exist (a fresh sign-in before profile setup, for example) OR when the
+  /// caller lacks permission — treating the read as "no couple doc yet" lets
+  /// sign-in fall through to the legacy profile path on environments where
+  /// the `couples` collection rules haven't been deployed yet.
   static Future<Couple?> getCouple(String coupleId) async {
-    final doc = await _db.collection('couples').doc(coupleId).get();
-    if (!doc.exists) return null;
-    return Couple.fromDoc(doc);
+    try {
+      final doc = await _db.collection('couples').doc(coupleId).get();
+      if (!doc.exists) return null;
+      return Couple.fromDoc(doc);
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') return null;
+      rethrow;
+    }
   }
 
   /// Real-time stream of a single couple — used by the verification gate to
