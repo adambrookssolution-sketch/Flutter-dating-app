@@ -66,4 +66,6 @@ functions/.eslintcache
 .firebase/
 firebase-debug.log*
 firestore-debug.log*
-ui-debug.log*
+ui-debug.log*sa-key.json
+*.key.json
+sa-key-*.json
