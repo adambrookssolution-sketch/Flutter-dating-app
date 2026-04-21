@@ -21,13 +21,19 @@ class _ModerationReviewScreenState extends State<ModerationReviewScreen> {
   VideoPlayerController? _player;
   bool _submitting = false;
 
+  // Rejection reasons — closed list, agreed with the client on 2026-04-21.
+  // The values here are the canonical Spanish strings the user will see
+  // in their rejection notification. If copy needs to change, update ONLY
+  // this map — the Cloud Function stores whatever string is submitted.
   static const _reasons = {
-    'inappropriate': 'Inappropriate content',
-    'fake': 'Appears fake / scripted',
-    'single_person': 'Only one partner visible',
-    'minor_suspected': 'Minor suspected',
-    'quality_low': 'Video quality too low',
-    'other': 'Other (see guidelines)',
+    'fotos_no_coinciden': 'Las fotos no coinciden entre sí',
+    'video_poco_claro': 'El video es poco claro',
+    'perfil_sospechoso': 'Perfil sospechoso',
+    'fotos_inapropiadas': 'Fotos con contenido inapropiado',
+    'solo_una_persona': 'Solo aparece una persona en las fotos/video',
+    'menor_de_edad': 'Se sospecha que una de las personas es menor de edad',
+    'calidad_baja': 'Calidad del video demasiado baja',
+    'otro': 'Otro (ver guía de moderación)',
   };
 
   @override

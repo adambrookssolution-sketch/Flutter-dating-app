@@ -6,6 +6,7 @@ import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/filters/filters_screen.dart';
 import 'package:app/presentation/widgets/couple_card.dart';
+import 'package:app/presentation/widgets/pineapple_filter_button.dart';
 import 'package:app/presentation/widgets/send_request_dialog.dart';
 import 'package:app/providers/filters_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -349,10 +350,13 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
       },
         ),
       ),
+      // Pineapple filter button — pinned to the top-right of the feed per
+      // the client's 2026-04-20 reference mock. Stays put when the list
+      // scrolls because it lives in the outer Stack above the scroll view.
       Positioned(
         top: 8,
         right: 16,
-        child: _FilterButton(
+        child: PineappleFilterButton(
           activeCount: activeFilterCount,
           onTap: _openFilters,
         ),
@@ -392,54 +396,3 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
   }
 }
 
-class _FilterButton extends StatelessWidget {
-  final int activeCount;
-  final VoidCallback onTap;
-
-  const _FilterButton({required this.activeCount, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      elevation: 3,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: Container(
-          width: 44,
-          height: 44,
-          alignment: Alignment.center,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Icon(Icons.tune, color: Color(0xFFB31637)),
-              if (activeCount > 0)
-                Positioned(
-                  top: -6,
-                  right: -8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB31637),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Text(
-                      '$activeCount',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

@@ -134,6 +134,7 @@ flutter:
     - assets/images/icon_settings.png
     - assets/images/logo.svg
     - assets/images/logo_white.svg
+    - assets/images/pineapple_filter_button.jpeg
     - assets/branding/README.md
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -34,8 +34,21 @@ class VideoRecordScreen extends StatefulWidget {
 }
 
 class _VideoRecordScreenState extends State<VideoRecordScreen> {
-  static const int _minSeconds = 10;
-  static const int _maxSeconds = 30;
+  // Client spec (2026-04-21): short 3–5 second verification clip. Users
+  // look forward, then turn head to the right, then to the left — enough
+  // to prove they're a real person, short enough that uploads stay tiny
+  // and the flow stays friction-free.
+  static const int _minSeconds = 3;
+  static const int _maxSeconds = 5;
+
+  /// Cue text shown over the live camera view based on how far into the
+  /// 5-second recording the user is. Split into three roughly equal beats
+  /// so the head-turn gesture stays in sync with the prompt.
+  String _headTurnPrompt(int elapsed) {
+    if (elapsed < 2) return 'Look at the camera';
+    if (elapsed < 4) return 'Turn your head to the right';
+    return 'Turn your head to the left';
+  }
 
   CameraController? _camera;
   VideoPlayerController? _player;
@@ -279,6 +292,33 @@ class _VideoRecordScreenState extends State<VideoRecordScreen> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                ),
+              ),
+            // Head-turn prompt overlay, timed against _elapsed while
+            // recording. Drives the "front → right → left" proof-of-life
+            // gesture required by the moderation flow.
+            if (_isRecording)
+              Positioned(
+                top: 72,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Text(
+                      _headTurnPrompt(_elapsed),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

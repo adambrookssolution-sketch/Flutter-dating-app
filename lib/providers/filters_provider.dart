@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:app/data/datasource/couples_datasource.dart';
@@ -24,6 +27,16 @@ class FiltersState {
   final Set<String> interests;
   final double interestThreshold;
 
+  // Travel Match constraints — picked from inside the filters panel per the
+  // 2026-04-21 brief ("Travel Match dentro de los filtros").
+  //
+  // [travelDestinationId] matches a document ID in the `destinations`
+  // collection; a couple's trip qualifies when its destination matches AND
+  // the date ranges overlap (even by a single day).
+  final String? travelDestinationId;
+  final DateTime? travelFrom;
+  final DateTime? travelTo;
+
   const FiltersState({
     this.centerLat,
     this.centerLng,
@@ -36,6 +49,9 @@ class FiltersState {
     this.experiencePreferences = const {},
     this.interests = const {},
     this.interestThreshold = 0.5,
+    this.travelDestinationId,
+    this.travelFrom,
+    this.travelTo,
   });
 
   FiltersState copyWith({
@@ -50,9 +66,13 @@ class FiltersState {
     Set<String>? experiencePreferences,
     Set<String>? interests,
     double? interestThreshold,
+    String? travelDestinationId,
+    DateTime? travelFrom,
+    DateTime? travelTo,
     bool clearAgeRange = false,
     bool clearCity = false,
     bool clearCountry = false,
+    bool clearTravel = false,
   }) {
     return FiltersState(
       centerLat: centerLat ?? this.centerLat,
@@ -67,6 +87,11 @@ class FiltersState {
           experiencePreferences ?? this.experiencePreferences,
       interests: interests ?? this.interests,
       interestThreshold: interestThreshold ?? this.interestThreshold,
+      travelDestinationId: clearTravel
+          ? null
+          : (travelDestinationId ?? this.travelDestinationId),
+      travelFrom: clearTravel ? null : (travelFrom ?? this.travelFrom),
+      travelTo: clearTravel ? null : (travelTo ?? this.travelTo),
     );
   }
 
@@ -80,7 +105,8 @@ class FiltersState {
       dynamics.isEmpty &&
       experiencePreferences.isEmpty &&
       interests.isEmpty &&
-      centerLat == null;
+      centerLat == null &&
+      travelDestinationId == null;
 
   CoupleFilters toDatasourceFilters() => CoupleFilters(
         centerLat: centerLat,
@@ -98,7 +124,24 @@ class FiltersState {
 }
 
 class FiltersNotifier extends StateNotifier<FiltersState> {
-  FiltersNotifier() : super(const FiltersState());
+  FiltersNotifier() : super(const FiltersState()) {
+    // Client spec (2026-04-21): each user must have their own filter
+    // session. Listening on Firebase auth state changes so the moment a
+    // user signs out (or a different account signs in) we wipe the
+    // current filters — otherwise the next login on the same device
+    // would inherit the previous couple's selections.
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user == null) state = const FiltersState();
+    });
+  }
+
+  StreamSubscription<User?>? _authSub;
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
+  }
 
   void setLocation({
     required double lat,
@@ -126,6 +169,20 @@ class FiltersNotifier extends StateNotifier<FiltersState> {
       state = state.copyWith(minAge: min, maxAge: max);
     }
   }
+
+  void setTravelMatch({
+    String? destinationId,
+    DateTime? from,
+    DateTime? to,
+  }) {
+    state = state.copyWith(
+      travelDestinationId: destinationId,
+      travelFrom: from,
+      travelTo: to,
+    );
+  }
+
+  void clearTravelMatch() => state = state.copyWith(clearTravel: true);
 
   void toggleDynamic(String tag) => _toggle(tag, 'dynamics');
   void toggleExperience(String tag) => _toggle(tag, 'experience');

@@ -7,20 +7,31 @@ import 'package:app/presentation/pages/verification/verification_intro_screen.da
 
 /// Shown when the moderator rejected the verification video.
 ///
-/// Two branches (DECISIONS_LOG Point 1):
-/// - attempts == 1 → "try again" CTA → loops back to [VerificationIntroScreen].
-/// - attempts >= 2 → permanent block; only "Contact support" + sign-out are
-///   available (no retry button, no path back to the feed).
+/// Client spec (2026-04-21): after the first rejection the couple gets two
+/// more attempts. On the third rejection the account is permanently locked
+/// — the Cloud Function flips status to `suspended` and sets
+/// `verification.final_rejection = true`, and we render a dead-end screen
+/// with no retry button.
+///
+/// Branches:
+/// - attempts 1–2 AND not flagged final → "try again" CTA loops to
+///   [VerificationIntroScreen].
+/// - attempts >= 3 OR `final_rejection` flag true → permanent block;
+///   only "Contact support" + sign-out are offered.
 ///
 /// The reject reason from the moderation panel is displayed verbatim so the
-/// user knows what went wrong (e.g. "video too dark", "only one person visible").
+/// user knows what went wrong (e.g. "El video es poco claro").
 class VerificationRejectedScreen extends StatelessWidget {
   final Couple couple;
 
   const VerificationRejectedScreen({super.key, required this.couple});
 
-  bool get _exhausted =>
-      (couple.verification?.attempts ?? 0) >= 2;
+  bool get _exhausted {
+    final v = couple.verification;
+    if (v == null) return false;
+    if (v.finalRejection == true) return true;
+    return v.attempts >= 3;
+  }
 
   String get _displayReason {
     final r = couple.verification?.rejectReason;

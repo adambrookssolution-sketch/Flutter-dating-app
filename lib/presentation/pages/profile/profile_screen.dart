@@ -5,6 +5,7 @@ import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/constants/app_colors.dart';
 import 'package:app/presentation/layouts/system_layout.dart';
 import 'package:app/presentation/pages/auth/auth_screen.dart';
+import 'package:app/presentation/pages/notifications/notifications_screen.dart';
 import 'package:app/presentation/pages/profile_setup/profile_setup_screen.dart';
 import 'package:app/presentation/pages/security/security_screen.dart';
 import 'package:app/presentation/pages/settings/account_settings_screen.dart';
@@ -51,6 +52,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
     _loadProfile();
+  }
+
+  Future<void> _openNotifications() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+    );
   }
 
   Future<void> _signOut() async {
@@ -137,13 +145,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
-                Text(
-                  l10n.navProfile,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                // Row hosts the screen title on the left and the new
+                // notification bell on the right, per the client's
+                // 2026-04-21 profile mock.
+                Row(
+                  children: [
+                    Text(
+                      l10n.navProfile,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    _NotificationBellButton(onTap: _openNotifications),
+                  ],
                 ),
                 Expanded(
                   child: Center(
@@ -485,6 +502,71 @@ class _SettingItem extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Bell icon that sits in the top-right of the Profile header.
+///
+/// Added per the client reference mock on 2026-04-21. It deliberately stays
+/// a small pill-shaped button (white icon on translucent backdrop) so it
+/// reads against the burgundy gradient header without stealing attention
+/// from the couple avatar in the centre.
+///
+/// The optional [unreadCount] shows a red dot when the user has pending
+/// notifications. Once the notifications Firestore collection is wired up,
+/// subscribe the parent to it and pass the count here.
+class _NotificationBellButton extends StatelessWidget {
+  const _NotificationBellButton({
+    required this.onTap,
+    // ignore: unused_element_parameter
+    this.unreadCount = 0,
+  });
+
+  final VoidCallback onTap;
+  final int unreadCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Material(
+            color: Colors.white.withValues(alpha: 0.18),
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: onTap,
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Icons.notifications_none_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+          if (unreadCount > 0)
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF3B30),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

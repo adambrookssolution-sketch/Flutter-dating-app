@@ -407,13 +407,13 @@ abstract class AppLocalizations {
   /// No description provided for @herHeight.
   ///
   /// In en, this message translates to:
-  /// **'Her height'**
+  /// **'Her height (optional)'**
   String get herHeight;
 
   /// No description provided for @hisHeight.
   ///
   /// In en, this message translates to:
-  /// **'His height'**
+  /// **'His height (optional)'**
   String get hisHeight;
 
   /// No description provided for @interests.
@@ -470,6 +470,12 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get saveProfile;
 
+  /// No description provided for @goToVerificationVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Video'**
+  String get goToVerificationVideo;
+
   /// No description provided for @photos.
   ///
   /// In en, this message translates to:
@@ -479,8 +485,14 @@ abstract class AppLocalizations {
   /// No description provided for @photoMinError.
   ///
   /// In en, this message translates to:
-  /// **'Add at least 1 photo'**
+  /// **'Add at least 3 photos'**
   String get photoMinError;
+
+  /// No description provided for @photosCoupleTogetherHint.
+  ///
+  /// In en, this message translates to:
+  /// **'All photos must show the couple together'**
+  String get photosCoupleTogetherHint;
 
   /// No description provided for @errorSaveProfile.
   ///

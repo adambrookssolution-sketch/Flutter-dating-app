@@ -4,11 +4,15 @@ import 'package:app/data/datasource/auth_datasource.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
 import 'package:app/data/datasource/tags_datasource.dart';
+import 'package:app/data/models/age_range.dart';
+import 'package:app/data/models/couple.dart';
+import 'package:app/data/models/couple_status.dart';
+import 'package:app/data/models/partner.dart';
 import 'package:app/data/models/place_result.dart';
 import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/auth/auth_screen.dart';
-import 'package:app/presentation/pages/couples/couples_screen.dart';
+import 'package:app/presentation/pages/verification/verification_intro_screen.dart';
 import 'package:app/presentation/widgets/custom_button.dart';
 import 'package:app/presentation/widgets/custom_input.dart';
 import 'package:app/presentation/widgets/places_autocomplete_field.dart';
@@ -430,6 +434,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFFA4A4AA))),
+        if (!_isEditing) ...[
+          const SizedBox(height: 4),
+          Text(
+            l10n.photosCoupleTogetherHint,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF7A7A80),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         GridView.builder(
           shrinkWrap: true,
@@ -461,8 +476,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     required TextEditingController feetCtrl,
     required TextEditingController inchesCtrl,
   }) {
-    if (isCm) return '${cmCtrl.text.trim()} cm';
-    return "${feetCtrl.text.trim()}'${inchesCtrl.text.trim()}\"";
+    // Height is optional — return an empty string when nothing was entered
+    // so downstream consumers can render "—" or hide the field instead of
+    // showing a stray unit suffix.
+    if (isCm) {
+      final cm = cmCtrl.text.trim();
+      return cm.isEmpty ? '' : '$cm cm';
+    }
+    final feet = feetCtrl.text.trim();
+    final inches = inchesCtrl.text.trim();
+    if (feet.isEmpty && inches.isEmpty) return '';
+    return "$feet'$inches\"";
   }
 
   // ── Save ─────────────────────────────────────────────────────────────────────
@@ -496,14 +520,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
     bool isValid = true;
 
-    // Photos are best-effort in dev: if Storage isn't provisioned the
-    // upload silently skips, leaving the profile with zero photos. Don't
-    // block the save in that case — once Storage is enabled the validation
-    // can be re-tightened by removing this comment block guard.
-    // if (_photos.isEmpty) {
-    //   setState(() => _photoError = l10n.photoMinError);
-    //   isValid = false;
-    // }
+    // Client spec (2026-04-21): registration requires a minimum of 3 photos,
+    // all showing the couple together. Applies only on initial profile
+    // setup — after that the user can freely edit/add/remove photos. The
+    // "couple together" part is communicated via on-screen guidance since
+    // we cannot validate image content client-side.
+    if (!_isEditing && _photos.length < 3) {
+      setState(() => _photoError = l10n.photoMinError);
+      isValid = false;
+    }
 
     final herName = _herNameController.text.trim();
     final hisName = _hisNameController.text.trim();
@@ -570,32 +595,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       isValid = false;
     }
 
-    // Height validation
-    if (_herHeightIsCm) {
-      if (_herHeightCmController.text.trim().isEmpty) {
-        _errors['herHeight'] = '';
-        isValid = false;
-      }
-    } else {
-      if (_herFeetController.text.trim().isEmpty ||
-          _herInchesController.text.trim().isEmpty) {
-        _errors['herHeight'] = '';
-        isValid = false;
-      }
-    }
-
-    if (_hisHeightIsCm) {
-      if (_hisHeightCmController.text.trim().isEmpty) {
-        _errors['hisHeight'] = '';
-        isValid = false;
-      }
-    } else {
-      if (_hisFeetController.text.trim().isEmpty ||
-          _hisInchesController.text.trim().isEmpty) {
-        _errors['hisHeight'] = '';
-        isValid = false;
-      }
-    }
+    // Height is optional per client spec (2026-04-21). If the user leaves
+    // it blank the profile still saves; _formatHeight() returns an empty
+    // string in that case, which the model treats as "not provided".
 
     if (!isValid) {
       final hasSpecificError = _errors.values.any((v) => v != null && v.isNotEmpty);
@@ -659,20 +661,52 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
       await ProfileDatasource.createProfile(profile);
 
-      // Dual-write: when the user picked a real Places result we have
-      // country / lat / lng / geohash that the legacy `profiles` schema
-      // can't represent. Mirror those fields into the new `couples`
-      // collection so geo queries work for any couple updated after the
-      // Places integration shipped, even before the bulk migration runs.
-      if (_selectedPlace != null && _selectedPlace!.lat != 0) {
+      // Client spec (2026-04-21): on initial registration the couple doc
+      // must exist with status=pending_review so the user lands on the
+      // Verification Pending gate until a moderator approves the video.
+      // When editing an existing profile we never touch status here; the
+      // `updateCouple` patch below only carries geo fields.
+      if (!_isEditing) {
+        try {
+          await CouplesDatasource.createCouple(
+            Couple(
+              id: widget.uid,
+              partnerA: Partner(
+                name: profile.herName,
+                birth: profile.herBirth,
+                height: profile.herHeight,
+              ),
+              partnerB: Partner(
+                name: profile.hisName,
+                birth: profile.hisBirth,
+                height: profile.hisHeight,
+              ),
+              city: _selectedPlace?.city ?? profile.city,
+              country: _selectedPlace?.country ?? '',
+              countryCode: _selectedPlace?.countryCode ?? '',
+              lat: _selectedPlace?.lat,
+              lng: _selectedPlace?.lng,
+              geohash: _selectedPlace?.geohash,
+              description: profile.description,
+              photos: profile.photos,
+              interests: _selectedTags.toList(),
+              status: CoupleStatus.pendingReview,
+              ageRange: AgeRange.fromBirths(profile.herBirth, profile.hisBirth),
+            ),
+          );
+        } catch (e) {
+          // ignore: avoid_print
+          print('COUPLE_CREATE_SKIPPED: $e');
+        }
+      } else if (_selectedPlace != null && _selectedPlace!.lat != 0) {
+        // Edit mode dual-write: only geo fields into the existing couple doc.
         try {
           await CouplesDatasource.updateCouple(
             widget.uid,
             _selectedPlace!.toCoupleFields(),
           );
         } catch (_) {
-          // Non-fatal — the legacy write already succeeded; this is best-effort
-          // until Week 1.2 migration script runs in production.
+          // Non-fatal — the legacy write already succeeded.
         }
       }
       if (!mounted) return;
@@ -680,9 +714,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       if (_isEditing) {
         Navigator.pop(context, true);
       } else {
+        // New account → head to verification video capture, not the feed.
+        // The couple doc is pending_review, so the feed would be blocked
+        // anyway; routing straight to VerificationIntroScreen makes the
+        // single-register-then-verify flow feel continuous.
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const CouplesScreen()),
+          MaterialPageRoute(builder: (_) => const VerificationIntroScreen()),
           (route) => false,
         );
       }
@@ -837,7 +875,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               ),
             ),
             CustomButton(
-              buttonText: _isLoading ? '...' : l10n.saveProfile,
+              buttonText: _isLoading
+                  ? '...'
+                  : (_isEditing
+                      ? l10n.saveProfile
+                      : l10n.goToVerificationVideo),
               type: ButtonType.mainSystem,
               onTap: _isLoading ? null : () => _save(l10n),
             ),

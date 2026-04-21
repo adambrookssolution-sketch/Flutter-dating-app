@@ -19,6 +19,11 @@ class Verification {
   final String? videoHash;
   final List<String> videoFrames;
 
+  /// Set by the `moderateVerification` Cloud Function on the third failed
+  /// attempt. When true the UI must render the permanent-block screen —
+  /// no retry button, only "Contact support" + sign-out.
+  final bool finalRejection;
+
   const Verification({
     this.videoUrl,
     this.sentAt,
@@ -28,6 +33,7 @@ class Verification {
     this.attempts = 0,
     this.videoHash,
     this.videoFrames = const [],
+    this.finalRejection = false,
   });
 
   Map<String, dynamic> toMap() => {
@@ -40,6 +46,7 @@ class Verification {
         'attempts': attempts,
         'video_hash': videoHash,
         'video_frames': videoFrames,
+        'final_rejection': finalRejection,
       };
 
   factory Verification.fromMap(Map<String, dynamic>? m) => Verification(
@@ -51,6 +58,7 @@ class Verification {
         attempts: (m?['attempts'] as num?)?.toInt() ?? 0,
         videoHash: m?['video_hash'] as String?,
         videoFrames: List<String>.from(m?['video_frames'] as List? ?? []),
+        finalRejection: (m?['final_rejection'] as bool?) ?? false,
       );
 
   Verification copyWith({
@@ -63,6 +71,7 @@ class Verification {
     int? attempts,
     String? videoHash,
     List<String>? videoFrames,
+    bool? finalRejection,
   }) =>
       Verification(
         videoUrl: clearVideoUrl ? null : (videoUrl ?? this.videoUrl),
@@ -73,5 +82,6 @@ class Verification {
         attempts: attempts ?? this.attempts,
         videoHash: videoHash ?? this.videoHash,
         videoFrames: videoFrames ?? this.videoFrames,
+        finalRejection: finalRejection ?? this.finalRejection,
       );
 }

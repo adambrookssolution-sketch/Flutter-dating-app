@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:app/data/datasource/destinations_datasource.dart';
 import 'package:app/data/datasource/tags_datasource.dart';
+import 'package:app/data/models/destination.dart';
 import 'package:app/data/models/place_result.dart';
 import 'package:app/data/models/tag.dart';
 import 'package:app/presentation/widgets/places_autocomplete_field.dart';
@@ -34,11 +36,13 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
   List<Tag>? _dynamicTags;
   List<Tag>? _experienceTags;
   List<Tag>? _interestTags;
+  List<Destination>? _destinations;
 
   @override
   void initState() {
     super.initState();
     _loadTags();
+    _loadDestinations();
   }
 
   Future<void> _loadTags() async {
@@ -53,6 +57,12 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
       _experienceTags = results[1];
       _interestTags = results[2];
     });
+  }
+
+  Future<void> _loadDestinations() async {
+    final list = await DestinationsDatasource.getAll();
+    if (!mounted) return;
+    setState(() => _destinations = list);
   }
 
   @override
@@ -94,24 +104,46 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         children: [
-          PlacesAutocompleteField(
-            label: 'Location',
-            hintText: 'City, country',
-            initialValue: filters.city == null
-                ? null
-                : PlaceResult(
-                    city: filters.city ?? '',
-                    country: filters.country ?? '',
-                    countryCode: '',
-                    lat: filters.centerLat ?? 0,
-                    lng: filters.centerLng ?? 0,
+          // Country + City fields side-by-side (matches 2026-04-20 mock).
+          // Country pulls values from the destinations collection so the
+          // menu stays consistent with the Travel Match list below.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _CountryDropdown(
+                  destinations: _destinations,
+                  selected: filters.country,
+                  onChanged: (country) {
+                    // Country-only filter; clears geo radius so country-wide
+                    // results aren't accidentally narrowed.
+                    notifier.setCountry(country);
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: PlacesAutocompleteField(
+                  label: 'City',
+                  hintText: 'Select city',
+                  initialValue: filters.city == null
+                      ? null
+                      : PlaceResult(
+                          city: filters.city ?? '',
+                          country: filters.country ?? '',
+                          countryCode: '',
+                          lat: filters.centerLat ?? 0,
+                          lng: filters.centerLng ?? 0,
+                        ),
+                  onSelected: (p) => notifier.setLocation(
+                    lat: p.lat,
+                    lng: p.lng,
+                    city: p.city,
+                    country: p.country,
                   ),
-            onSelected: (p) => notifier.setLocation(
-              lat: p.lat,
-              lng: p.lng,
-              city: p.city,
-              country: p.country,
-            ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           _sectionTitle('Age range'),
@@ -161,6 +193,18 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
             tags: _interestTags,
             selected: filters.interests,
             onToggle: notifier.toggleInterest,
+          ),
+          const SizedBox(height: 16),
+          // Travel Match block (client 2026-04-20 mock): lives inside the
+          // filters panel so users can constrain the feed to couples who
+          // have an overlapping trip in the same resort or cruise.
+          _TravelMatchSection(
+            destinations: _destinations,
+            selectedDestinationId: filters.travelDestinationId,
+            from: filters.travelFrom,
+            to: filters.travelTo,
+            onChanged: notifier.setTravelMatch,
+            onClear: notifier.clearTravelMatch,
           ),
           const SizedBox(height: 24),
           SizedBox(
@@ -242,6 +286,241 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
           backgroundColor: Colors.white,
         );
       }).toList(),
+    );
+  }
+}
+
+// ── Country dropdown ─────────────────────────────────────────────────────────
+
+/// Country filter distilled from the destinations collection (fallback
+/// static when empty) so the options always match the Travel Match list.
+class _CountryDropdown extends StatelessWidget {
+  const _CountryDropdown({
+    required this.destinations,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final List<Destination>? destinations;
+  final String? selected;
+  final void Function(String?) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    // Deduplicate country names from the destinations list — avoids the
+    // menu showing "Mexico" three times just because several resorts live
+    // there. Sorted alphabetically for predictability.
+    final countries = <String>{
+      if (destinations != null)
+        ...destinations!
+            .map((d) => d.country)
+            .where((c) => c.trim().isNotEmpty),
+    }.toList()
+      ..sort();
+
+    return DropdownButtonFormField<String>(
+      initialValue: selected,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: 'Country',
+        labelStyle: const TextStyle(color: Color(0xFFB31637)),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFB31637)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFB31637)),
+        ),
+      ),
+      hint: const Text('Select country',
+          style: TextStyle(color: Color(0xFFA4A4AA))),
+      items: [
+        const DropdownMenuItem<String>(
+          value: null,
+          child: Text('Any country'),
+        ),
+        ...countries.map(
+          (c) => DropdownMenuItem<String>(value: c, child: Text(c)),
+        ),
+      ],
+      onChanged: onChanged,
+    );
+  }
+}
+
+// ── Travel Match section ─────────────────────────────────────────────────────
+
+/// Resort / cruise picker + date range pickers, rendered inside the
+/// filters screen per the client's 2026-04-20 mock. When all three fields
+/// (destination + from + to) are set the discovery feed narrows to
+/// couples whose trips overlap the selected window.
+class _TravelMatchSection extends StatelessWidget {
+  const _TravelMatchSection({
+    required this.destinations,
+    required this.selectedDestinationId,
+    required this.from,
+    required this.to,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  final List<Destination>? destinations;
+  final String? selectedDestinationId;
+  final DateTime? from;
+  final DateTime? to;
+  final void Function({
+    String? destinationId,
+    DateTime? from,
+    DateTime? to,
+  }) onChanged;
+  final VoidCallback onClear;
+
+  static const _burgundy = Color(0xFFB31637);
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = selectedDestinationId != null || from != null || to != null;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: _burgundy, width: 1.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.flight_takeoff_rounded,
+                  color: _burgundy, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Travel Match',
+                style: TextStyle(
+                  color: _burgundy,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              if (isActive)
+                InkWell(
+                  onTap: onClear,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child:
+                        Icon(Icons.close_rounded, color: _burgundy, size: 18),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _destinationDropdown(),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _datePickerField(
+                  context: context,
+                  label: 'From',
+                  value: from,
+                  onPick: (picked) => onChanged(
+                    destinationId: selectedDestinationId,
+                    from: picked,
+                    to: to,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _datePickerField(
+                  context: context,
+                  label: 'To',
+                  value: to,
+                  onPick: (picked) => onChanged(
+                    destinationId: selectedDestinationId,
+                    from: from,
+                    to: picked,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _destinationDropdown() {
+    final items = destinations ?? const <Destination>[];
+    return DropdownButtonFormField<String>(
+      initialValue: selectedDestinationId,
+      isExpanded: true,
+      decoration: InputDecoration(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      hint: const Text('Select Resort or Cruise'),
+      items: [
+        const DropdownMenuItem<String>(
+          value: null,
+          child: Text('Any destination'),
+        ),
+        ...items.map(
+          (d) => DropdownMenuItem<String>(value: d.id, child: Text(d.name)),
+        ),
+      ],
+      onChanged: (id) => onChanged(
+        destinationId: id,
+        from: from,
+        to: to,
+      ),
+    );
+  }
+
+  Widget _datePickerField({
+    required BuildContext context,
+    required String label,
+    required DateTime? value,
+    required void Function(DateTime?) onPick,
+  }) {
+    return InkWell(
+      onTap: () async {
+        final now = DateTime.now();
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: value ?? now,
+          firstDate: DateTime(now.year - 1),
+          lastDate: DateTime(now.year + 5),
+        );
+        if (picked != null) onPick(picked);
+      },
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: Text(
+          value == null
+              ? ''
+              : '${value.day.toString().padLeft(2, '0')}/'
+                  '${value.month.toString().padLeft(2, '0')}/'
+                  '${value.year}',
+          style: TextStyle(
+            color: value == null ? const Color(0xFFA4A4AA) : Colors.black,
+          ),
+        ),
+      ),
     );
   }
 }

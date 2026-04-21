@@ -172,10 +172,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get height => 'Height';
 
   @override
-  String get herHeight => 'Her height';
+  String get herHeight => 'Altura de ella (opcional)';
 
   @override
-  String get hisHeight => 'His height';
+  String get hisHeight => 'Altura de él (opcional)';
 
   @override
   String get interests => 'Intereses';
@@ -207,10 +207,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get saveProfile => 'Guardar';
 
   @override
+  String get goToVerificationVideo => 'Video de Verificación';
+
+  @override
   String get photos => 'Fotos';
 
   @override
-  String get photoMinError => 'Agrega al menos 1 foto';
+  String get photoMinError => 'Agrega al menos 3 fotos';
+
+  @override
+  String get photosCoupleTogetherHint =>
+      'Todas las fotos deben mostrar a la pareja junta';
 
   @override
   String get errorSaveProfile =>

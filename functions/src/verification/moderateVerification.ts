@@ -30,14 +30,22 @@ interface Payload {
   reason?: string;
 }
 
+// Kept in lockstep with `_reasons` in lib/admin/pages/moderation_review_screen.dart.
+// Client agreed on a closed list (2026-04-21) so notifications stay consistent.
 const ALLOWED_REASONS = new Set([
-  "inappropriate",
-  "fake",
-  "single_person",
-  "minor_suspected",
-  "quality_low",
-  "other",
+  "fotos_no_coinciden",
+  "video_poco_claro",
+  "perfil_sospechoso",
+  "fotos_inapropiadas",
+  "solo_una_persona",
+  "menor_de_edad",
+  "calidad_baja",
+  "otro",
 ]);
+
+/// Client spec (2026-04-21): after the first rejection a couple has two
+/// more attempts. The THIRD rejection locks the account permanently.
+const MAX_VERIFICATION_ATTEMPTS = 3;
 
 export const moderateVerification = onCall<Payload>(
   { region: "us-central1", maxInstances: 10 },
@@ -69,22 +77,36 @@ export const moderateVerification = onCall<Payload>(
     }
 
     const now = admin.firestore.FieldValue.serverTimestamp();
-    const update: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData> =
-      decision === "approve"
-        ? {
-            status: "approved",
-            "verification.reviewed_at": now,
-            "verification.moderator_id": req.auth.uid,
-            "verification.reject_reason": null,
-            updated_at: now,
-          }
-        : {
-            status: "rejected",
-            "verification.reviewed_at": now,
-            "verification.moderator_id": req.auth.uid,
-            "verification.reject_reason": reason!,
-            updated_at: now,
-          };
+
+    let update: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData>;
+    if (decision === "approve") {
+      update = {
+        status: "approved",
+        "verification.reviewed_at": now,
+        "verification.moderator_id": req.auth.uid,
+        "verification.reject_reason": null,
+        updated_at: now,
+      };
+    } else {
+      // Read the current attempt count to decide whether this rejection
+      // should transition to "rejected" (user may retry) or "suspended"
+      // (permanent block after the 3rd failed attempt).
+      const data = snap.data() ?? {};
+      const verification = (data.verification ?? {}) as Record<string, unknown>;
+      const attempts = typeof verification.attempts === "number"
+        ? (verification.attempts as number)
+        : 0;
+      const isFinalRejection = attempts >= MAX_VERIFICATION_ATTEMPTS;
+
+      update = {
+        status: isFinalRejection ? "suspended" : "rejected",
+        "verification.reviewed_at": now,
+        "verification.moderator_id": req.auth.uid,
+        "verification.reject_reason": reason!,
+        "verification.final_rejection": isFinalRejection,
+        updated_at: now,
+      };
+    }
 
     await ref.update(update);
     return { ok: true };

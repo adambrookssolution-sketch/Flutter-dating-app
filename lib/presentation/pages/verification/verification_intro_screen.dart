@@ -121,11 +121,15 @@ class VerificationIntroScreen extends StatelessWidget {
     );
   }
 
+  // Client spec (2026-04-21): keep the prompt minimal so couples actually
+  // complete it. Ideal is both partners in frame, but one is allowed.
+  // The head turn (front → right → left) is the proof-of-life signal the
+  // moderation team uses to confirm it's a real person, not a still photo.
   static const _steps = [
-    'Both partners visible together in the same shot',
-    'Good lighting on your faces',
-    'Say out loud: "Today is [today\'s date], we are joining Affinity"',
-    'Recording lasts 10 to 30 seconds',
+    'Ideally both partners appear — one is also allowed',
+    'Good lighting on your face',
+    'Look at the camera, then turn your head to the right, then to the left',
+    'Recording lasts between 3 and 5 seconds',
     'No filters, no edits — straight from the camera',
   ];
 }
