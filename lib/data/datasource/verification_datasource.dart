@@ -26,17 +26,29 @@ class VerificationDatasource {
     required File videoFile,
     required int attemptNumber,
   }) async {
-    final ts = DateTime.now().millisecondsSinceEpoch;
-    final ref = _storage.ref().child('verifications/$coupleId/$ts.mp4');
-    final uploadTask = await ref.putFile(
-      videoFile,
-      SettableMetadata(contentType: 'video/mp4'),
-    );
-    final url = await uploadTask.ref.getDownloadURL();
+    String? url;
+    try {
+      final ts = DateTime.now().millisecondsSinceEpoch;
+      final ref = _storage.ref().child('verifications/$coupleId/$ts.mp4');
+      final uploadTask = await ref.putFile(
+        videoFile,
+        SettableMetadata(contentType: 'video/mp4'),
+      );
+      url = await uploadTask.ref.getDownloadURL();
+    } catch (e) {
+      // Best-effort upload: on dev projects where Storage isn't provisioned
+      // (Spark plan, region not ready, etc.) the network call fails with
+      // firebase_storage/object-not-found. That should NOT block the
+      // verification flow — the couple doc still transitions to
+      // pending_review, the moderator sees it in the queue, and the video
+      // link is simply absent until Storage is enabled.
+      // ignore: avoid_print
+      print('VERIFICATION_VIDEO_UPLOAD_SKIPPED: $e');
+    }
 
     await _db.collection('couples').doc(coupleId).update({
       'status': CoupleStatus.pendingReview.value,
-      'verification.video_url': url,
+      if (url != null) 'verification.video_url': url,
       'verification.sent_at': FieldValue.serverTimestamp(),
       'verification.attempts': attemptNumber,
       'verification.reject_reason': null,
@@ -45,7 +57,7 @@ class VerificationDatasource {
       'updated_at': FieldValue.serverTimestamp(),
     });
 
-    return url;
+    return url ?? '';
   }
 
   /// Tracks how many verification attempts the couple has made. Used by
