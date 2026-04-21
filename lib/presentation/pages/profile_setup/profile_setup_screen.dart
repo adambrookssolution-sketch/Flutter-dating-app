@@ -600,8 +600,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     // string in that case, which the model treats as "not provided".
 
     if (!isValid) {
-      final hasSpecificError = _errors.values.any((v) => v != null && v.isNotEmpty);
-      _showError(hasSpecificError ? l10n.errorSignIn : l10n.errorAllFieldsRequired);
+      // Legacy code surfaced `errorSignIn` ("Sign-in failed") whenever any
+      // specific field had a red border, which confused users because the
+      // screen is profile setup, not sign-in. Showing the generic
+      // "All fields are required" text is closer to the user's actual
+      // situation; individual red borders already pinpoint what's wrong.
+      _showError(l10n.errorAllFieldsRequired);
     }
 
     setState(() {}); // Refresh UI to show red borders

@@ -22,9 +22,13 @@ class VerificationIntroScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
+        // Scrolling wrapper so the checklist + private-video notice + the
+        // "Start recording" CTA all fit cleanly on short screens (e.g.
+        // LDPlayer emulator). The original layout overflowed by ~31 px on
+        // smaller viewports.
+        child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
@@ -70,7 +74,7 @@ class VerificationIntroScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
