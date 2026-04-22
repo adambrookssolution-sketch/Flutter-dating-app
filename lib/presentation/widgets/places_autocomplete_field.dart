@@ -25,6 +25,12 @@ class PlacesAutocompleteField extends StatefulWidget {
   final String? errorText;
   final double marginBottom;
 
+  /// Optional border tint — defaults to the muted grey used everywhere
+  /// else in the app. Filters screen passes the burgundy brand colour to
+  /// match the 2026-04-20 mock.
+  final Color? borderColor;
+  final Color? labelColor;
+
   /// Cities used by the dev-mode fallback when API keys are placeholders.
   /// These are the same 16 cities the legacy dropdown shipped with — kept
   /// so existing screens behave identically until real keys arrive.
@@ -42,6 +48,8 @@ class PlacesAutocompleteField extends StatefulWidget {
     required this.onSelected,
     this.errorText,
     this.marginBottom = 13.0,
+    this.borderColor,
+    this.labelColor,
   });
 
   @override
@@ -234,10 +242,10 @@ class _PlacesAutocompleteFieldState extends State<PlacesAutocompleteField> {
         children: [
           Text(
             widget.label ?? 'City',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFFA4A4AA),
+              color: widget.labelColor ?? const Color(0xFFA4A4AA),
             ),
           ),
           Container(
@@ -248,7 +256,9 @@ class _PlacesAutocompleteFieldState extends State<PlacesAutocompleteField> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
-                color: hasError ? Colors.red : const Color(0xFFA4A4AA),
+                color: hasError
+                    ? Colors.red
+                    : (widget.borderColor ?? const Color(0xFFA4A4AA)),
               ),
             ),
             child: TextField(

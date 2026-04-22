@@ -6,8 +6,8 @@ import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/filters/filters_screen.dart';
 import 'package:app/presentation/widgets/couple_card.dart';
-import 'package:app/presentation/widgets/pineapple_filter_button.dart';
 import 'package:app/presentation/widgets/send_request_dialog.dart';
+import 'package:app/presentation/widgets/sticky_feed_actions.dart';
 import 'package:app/providers/filters_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -34,6 +34,8 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
   String? _error;
 
   final ScrollController _scrollController = ScrollController();
+  final PageController _pageController = PageController();
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -47,6 +49,7 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     _scrollController
       ..removeListener(_onScroll)
       ..dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -205,11 +208,27 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
   }
 
   Future<void> _openFilters() async {
-    final changed = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(builder: (_) => const FiltersScreen()),
+    // Opens the filters UI as a bottom sheet, matching the client's
+    // 2026-04-20 mock where filters slide up over the feed instead of
+    // navigating to a full page.
+    final changed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.92,
+        minChildSize: 0.5,
+        maxChildSize: 0.96,
+        expand: false,
+        builder: (_, scrollController) => Material(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          clipBehavior: Clip.antiAlias,
+          child: FiltersScreen(scrollController: scrollController),
+        ),
+      ),
     );
-    if (changed == true) setState(() {}); // re-applies the now-updated filters
+    if (changed == true) setState(() {});
   }
 
   @override
@@ -266,112 +285,65 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
       );
     }
 
-    final activeFilterCount = _countActive(filters);
-    return Stack(
+    // Client mock (2026-04-20): a single couple card is visible at a
+    // time; the user swipes up/down to see the next couple, and the
+    // "Start Conversation" + "Filters" buttons are pinned to the bottom
+    // of the viewport so they always operate on the *current* couple.
+    return Column(
       children: [
-        RefreshIndicator(
-          onRefresh: _loadProfiles,
-          color: const Color(0xFFB31637),
-          child: ListView.separated(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.only(top: 8, bottom: 24),
-            itemCount: profiles.length + (_loadingMore ? 1 : 0),
-            separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemBuilder: (context, i) {
-        if (i >= profiles.length) {
-          // Footer loader row while the next page is in flight.
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFFB31637),
-                ),
-              ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadProfiles,
+            color: const Color(0xFFB31637),
+            child: PageView.builder(
+              controller: _pageController,
+              scrollDirection: Axis.vertical,
+              physics: const AlwaysScrollableScrollPhysics(),
+              onPageChanged: (i) => setState(() => _currentIndex = i),
+              itemCount: profiles.length,
+              itemBuilder: (context, i) {
+                final profile = profiles[i];
+                final coupleProfile = CoupleProfile(
+                  uid: profile.uid,
+                  name1: profile.herName,
+                  age1: _ageFromBirth(profile.herBirth),
+                  name2: profile.hisName,
+                  age2: _ageFromBirth(profile.hisBirth),
+                  location: profile.city,
+                  description: profile.description,
+                  tags: profile.interests.isNotEmpty
+                      ? profile.interests
+                          .split(',')
+                          .map((t) => t.trim())
+                          .where((t) => t.isNotEmpty)
+                          .toList()
+                      : [],
+                  photos: profile.photos,
+                );
+                return Padding(
+                  padding:
+                      const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: CoupleCard(
+                    profile: coupleProfile,
+                    onStartConversation: () => _startConversation(profile),
+                  ),
+                );
+              },
             ),
-          );
-        }
-        final profile = profiles[i];
-        final coupleProfile = CoupleProfile(
-          uid: profile.uid,
-          name1: profile.herName,
-          age1: _ageFromBirth(profile.herBirth),
-          name2: profile.hisName,
-          age2: _ageFromBirth(profile.hisBirth),
-          location: profile.city,
-          description: profile.description,
-          tags: profile.interests.isNotEmpty
-              ? profile.interests
-                  .split(',')
-                  .map((t) => t.trim())
-                  .where((t) => t.isNotEmpty)
-                  .toList()
-              : [],
-          photos: profile.photos,
-        );
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(
-              height: 520,
-              child: CoupleCard(
-                profile: coupleProfile,
-                onStartConversation: () => _startConversation(profile),
-              ),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () => _startConversation(profile),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFB31637),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                elevation: 4,
-                shadowColor: Colors.black.withValues(alpha: 0.25),
-              ),
-              child: Text(
-                l10n.startConversation,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
         ),
-      ),
-      // Pineapple filter button — pinned to the top-right of the feed per
-      // the client's 2026-04-20 reference mock. Stays put when the list
-      // scrolls because it lives in the outer Stack above the scroll view.
-      Positioned(
-        top: 8,
-        right: 16,
-        child: PineappleFilterButton(
-          activeCount: activeFilterCount,
-          onTap: _openFilters,
+        StickyFeedActions(
+          startConversationLabel: l10n.startConversation,
+          filtersLabel: 'Filters',
+          onStartConversation: () {
+            final idx = _currentIndex.clamp(0, profiles.length - 1);
+            _startConversation(profiles[idx]);
+          },
+          onFilters: _openFilters,
         ),
-      ),
-    ],
-  );
+      ],
+    );
   }
-
-  int _countActive(FiltersState f) =>
-      (f.city != null ? 1 : 0) +
-      (f.country != null ? 1 : 0) +
-      (f.minAge != null || f.maxAge != null ? 1 : 0) +
-      f.dynamics.length +
-      f.experiencePreferences.length +
-      f.interests.length;
 
   /// Parses "DD/MM/YYYY" birth date and returns current age.
   int _ageFromBirth(String birth) {

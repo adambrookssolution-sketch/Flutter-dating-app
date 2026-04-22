@@ -20,7 +20,12 @@ import 'package:app/providers/filters_provider.dart';
 /// Written on Riverpod — first screen to use the new state container. See
 /// PROJECT_OVERVIEW §5 for the progressive-adoption policy.
 class FiltersScreen extends ConsumerStatefulWidget {
-  const FiltersScreen({super.key});
+  /// When hosted inside a DraggableScrollableSheet the parent passes its
+  /// controller so the inner [ListView] shares the drag-to-expand gesture.
+  /// When opened as a full page (legacy), leave null.
+  final ScrollController? scrollController;
+
+  const FiltersScreen({super.key, this.scrollController});
 
   @override
   ConsumerState<FiltersScreen> createState() => _FiltersScreenState();
@@ -80,30 +85,90 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
       _ageRangeInitialised = true;
     }
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Filters'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        actions: [
-          TextButton(
-            onPressed: () {
-              notifier.reset();
-              setState(() {
-                _ageRange = const RangeValues(_minAge, 65);
-                _ageRangeInitialised = false;
-              });
-            },
-            child: const Text('Reset',
-                style: TextStyle(color: Color(0xFFB31637))),
+    final isSheet = widget.scrollController != null;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Decorative top: matches the reference mock — a small burgundy
+        // handle on the left side of the sheet header plus a centred
+        // "Filters" title. Only rendered in bottom-sheet mode so the
+        // legacy full-page flow keeps its AppBar.
+        if (isSheet)
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFEDEDED)),
+              ),
+            ),
+            child: Column(
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFB31637).withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    const SizedBox(width: 48), // balance Reset button width
+                    const Expanded(
+                      child: Center(
+                        child: Text(
+                          'Filters',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        notifier.reset();
+                        setState(() {
+                          _ageRange = const RangeValues(_minAge, 65);
+                          _ageRangeInitialised = false;
+                        });
+                      },
+                      child: const Text('Reset',
+                          style: TextStyle(color: Color(0xFFB31637))),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          )
+        else
+          AppBar(
+            title: const Text('Filters'),
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  notifier.reset();
+                  setState(() {
+                    _ageRange = const RangeValues(_minAge, 65);
+                    _ageRangeInitialised = false;
+                  });
+                },
+                child: const Text('Reset',
+                    style: TextStyle(color: Color(0xFFB31637))),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        children: [
+        Expanded(
+          child: ListView(
+            controller: widget.scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            children: [
           // Country + City fields side-by-side (matches 2026-04-20 mock).
           // Country pulls values from the destinations collection so the
           // menu stays consistent with the Travel Match list below.
@@ -126,6 +191,8 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                 child: PlacesAutocompleteField(
                   label: 'City',
                   hintText: 'Select city',
+                  borderColor: const Color(0xFFB31637),
+                  labelColor: const Color(0xFFB31637),
                   initialValue: filters.city == null
                       ? null
                       : PlaceResult(
@@ -146,31 +213,27 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          _sectionTitle('Age range'),
-          RangeSlider(
-            values: _ageRange,
+          _sectionTitle('Age'),
+          // Red→purple gradient track (2026-04-20 mock). The gradient is
+          // rendered as a solid background, then the RangeSlider is laid
+          // on top with a transparent active colour so only the thumbs
+          // and value labels from the material widget show through.
+          _GradientAgeSlider(
+            range: _ageRange,
             min: _minAge,
             max: _maxAge,
-            divisions: (_maxAge - _minAge).toInt(),
-            activeColor: const Color(0xFFB31637),
-            labels: RangeLabels(
-              _ageRange.start.round().toString(),
-              _ageRange.end.round().toString(),
-            ),
             onChanged: (v) => setState(() => _ageRange = v),
             onChangeEnd: (v) {
-              notifier.setAgeRange(
-                v.start.round(),
-                v.end.round(),
-              );
+              notifier.setAgeRange(v.start.round(), v.end.round());
             },
           ),
+          const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('${_ageRange.start.round()}',
+              Text('Min ${_ageRange.start.round()}',
                   style: const TextStyle(color: Color(0xFFA4A4AA))),
-              Text('${_ageRange.end.round()}',
+              Text('Max ${_ageRange.end.round()}',
                   style: const TextStyle(color: Color(0xFFA4A4AA))),
             ],
           ),
@@ -206,27 +269,47 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
             onChanged: notifier.setTravelMatch,
             onClear: notifier.clearTravelMatch,
           ),
-          const SizedBox(height: 24),
-          SizedBox(
+          const SizedBox(height: 100), // room for sticky Apply button
+            ],
+          ),
+        ),
+        // Apply Filters — red-to-purple gradient pill, pinned at the very
+        // bottom of the sheet so it stays visible while the list scrolls.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          child: SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFB31637),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(250),
+            height: 56,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(32),
+                onTap: () => Navigator.pop(context, true),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFB31637), Color(0xFF5B1280)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Apply Filters',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text(
-                'Apply filters',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -286,6 +369,85 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
           backgroundColor: Colors.white,
         );
       }).toList(),
+    );
+  }
+}
+
+// ── Gradient age slider ──────────────────────────────────────────────────────
+
+/// Range slider rendered over a red-to-purple gradient track, matching
+/// the 2026-04-20 filters mock. The slider itself uses the standard
+/// Material RangeSlider with a custom SliderTheme — thumbs, divisions,
+/// and haptics all come for free.
+class _GradientAgeSlider extends StatelessWidget {
+  const _GradientAgeSlider({
+    required this.range,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    required this.onChangeEnd,
+  });
+
+  final RangeValues range;
+  final double min;
+  final double max;
+  final ValueChanged<RangeValues> onChanged;
+  final ValueChanged<RangeValues> onChangeEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Gradient track background — inset by 16 px on each side to
+          // approximately line up with the slider's own track padding.
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              height: 10,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFB31637), Color(0xFF5B1280)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+          ),
+          // Transparent slider — visually contributes only the thumbs.
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: Colors.transparent,
+              inactiveTrackColor: Colors.transparent,
+              trackHeight: 10,
+              rangeThumbShape: const RoundRangeSliderThumbShape(
+                enabledThumbRadius: 12,
+                elevation: 2,
+              ),
+              overlayShape: SliderComponentShape.noOverlay,
+              rangeValueIndicatorShape:
+                  const PaddleRangeSliderValueIndicatorShape(),
+              valueIndicatorColor: const Color(0xFFB31637),
+              valueIndicatorTextStyle: const TextStyle(color: Colors.white),
+            ),
+            child: RangeSlider(
+              values: range,
+              min: min,
+              max: max,
+              divisions: (max - min).toInt(),
+              labels: RangeLabels(
+                range.start.round().toString(),
+                range.end.round().toString(),
+              ),
+              onChanged: onChanged,
+              onChangeEnd: onChangeEnd,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

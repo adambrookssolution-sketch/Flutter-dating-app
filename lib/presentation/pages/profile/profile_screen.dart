@@ -145,20 +145,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 4),
-                // Row hosts the screen title on the left and the new
-                // notification bell on the right, per the client's
-                // 2026-04-21 profile mock.
+                // 3-column header: back button (only when the screen is
+                // pushed, not when Profile is the root tab) / centred
+                // "Profile" title / notification bell.
+                // Matches the 2026-04-21 mock.
                 Row(
                   children: [
-                    Text(
-                      l10n.navProfile,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: Navigator.of(context).canPop()
+                          ? IconButton(
+                              icon: const Icon(Icons.arrow_back,
+                                  color: Colors.white),
+                              onPressed: () => Navigator.pop(context),
+                              padding: EdgeInsets.zero,
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          l10n.navProfile,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                    const Spacer(),
                     _NotificationBellButton(onTap: _openNotifications),
                   ],
                 ),
@@ -249,10 +265,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ],
                                   ),
                                   child: const Center(
+                                    // Purple pencil per the 2026-04-21 mock.
                                     child: Icon(
                                       Icons.edit,
                                       size: 15,
-                                      color: _headerTop,
+                                      color: Color(0xFF7C3AED),
                                     ),
                                   ),
                                 ),
@@ -536,7 +553,9 @@ class _NotificationBellButton extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Material(
-            color: Colors.white.withValues(alpha: 0.18),
+            // Transparent — the mock has a bare bell outline on the
+            // burgundy gradient, no background bubble.
+            color: Colors.transparent,
             shape: const CircleBorder(),
             child: InkWell(
               customBorder: const CircleBorder(),
@@ -547,7 +566,7 @@ class _NotificationBellButton extends StatelessWidget {
                 child: Icon(
                   Icons.notifications_none_rounded,
                   color: Colors.white,
-                  size: 22,
+                  size: 26,
                 ),
               ),
             ),
