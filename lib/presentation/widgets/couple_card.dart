@@ -53,10 +53,20 @@ class CoupleCard extends StatefulWidget {
   /// [StickyFeedActions] instead, but some callers still pass it.
   final VoidCallback? onStartConversation;
 
+  /// Invoked when the user confirms "Block this couple" from the overflow
+  /// menu. Null hides the menu item.
+  final VoidCallback? onBlock;
+
+  /// Invoked when the user picks "Report" from the overflow menu. Null
+  /// hides the menu item.
+  final VoidCallback? onReport;
+
   const CoupleCard({
     super.key,
     required this.profile,
     this.onStartConversation,
+    this.onBlock,
+    this.onReport,
   });
 
   @override
@@ -101,6 +111,16 @@ class _CoupleCardState extends State<CoupleCard> {
             right: 0,
             child: Center(child: _favouriteBubble()),
           ),
+          // Overflow menu (block / report) — pinned to the top-right so
+          // the 2026-04-20 mock's heart bubble stays front and centre
+          // while still surfacing the safety actions the client asked
+          // for ("no encontramos dónde se realiza el bloqueo de usuarios").
+          if (widget.onBlock != null || widget.onReport != null)
+            Positioned(
+              top: 12,
+              right: 12,
+              child: _overflowMenu(context),
+            ),
           // Bottom text block — names, location, trip dates, description,
           // tags. Sits on the gradient so white text always reads.
           Positioned(
@@ -183,6 +203,77 @@ class _CoupleCardState extends State<CoupleCard> {
         ),
       ),
     );
+  }
+
+  /// Safety-actions menu (block + report). Rendered as a small dark
+  /// pill so it reads against either black card backgrounds or photo
+  /// backgrounds without needing a separate scrim.
+  Widget _overflowMenu(BuildContext context) {
+    return PopupMenuButton<String>(
+      icon: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.55),
+          shape: BoxShape.circle,
+        ),
+        alignment: Alignment.center,
+        child: const Icon(Icons.more_horiz, color: Colors.white, size: 22),
+      ),
+      onSelected: (choice) {
+        switch (choice) {
+          case 'block':
+            _confirmAndBlock(context);
+          case 'report':
+            widget.onReport?.call();
+        }
+      },
+      itemBuilder: (_) => [
+        if (widget.onBlock != null)
+          const PopupMenuItem<String>(
+            value: 'block',
+            child: Row(children: [
+              Icon(Icons.block, color: Color(0xFFB31637), size: 18),
+              SizedBox(width: 10),
+              Text('Block this couple'),
+            ]),
+          ),
+        if (widget.onReport != null)
+          const PopupMenuItem<String>(
+            value: 'report',
+            child: Row(children: [
+              Icon(Icons.flag_outlined, color: Color(0xFFB31637), size: 18),
+              SizedBox(width: 10),
+              Text('Report'),
+            ]),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _confirmAndBlock(BuildContext context) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Block this couple?'),
+        content: const Text(
+          'They will no longer appear in your feed, Travel Match, or '
+          'conversations. You can undo this later from Profile → Security.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Block',
+                style: TextStyle(color: Color(0xFFB31637))),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) widget.onBlock?.call();
   }
 
   Widget _buildInfoBlock(CoupleProfile p) {

@@ -15,6 +15,11 @@ import 'package:app/data/datasource/couples_datasource.dart';
 /// notifier exposes granular mutation methods so widgets don't have to
 /// rebuild the whole filter object for each toggle.
 class FiltersState {
+  /// Hard floor for the geolocation radius — client spec 2026-04-20
+  /// requires the feed to never return a window tighter than 5 km so
+  /// users in rural areas always see at least something.
+  static const double minRadiusKm = 5.0;
+
   final double? centerLat;
   final double? centerLng;
   final double radiusKm;
@@ -40,7 +45,7 @@ class FiltersState {
   const FiltersState({
     this.centerLat,
     this.centerLng,
-    this.radiusKm = 200,
+    double radiusKm = 200,
     this.country,
     this.city,
     this.minAge,
@@ -52,7 +57,7 @@ class FiltersState {
     this.travelDestinationId,
     this.travelFrom,
     this.travelTo,
-  });
+  }) : radiusKm = radiusKm < minRadiusKm ? minRadiusKm : radiusKm;
 
   FiltersState copyWith({
     double? centerLat,

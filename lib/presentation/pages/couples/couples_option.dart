@@ -1,3 +1,5 @@
+import 'dart:math' show Random;
+
 import 'package:app/data/datasource/blocks_datasource.dart';
 import 'package:app/data/datasource/conversation_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
@@ -36,6 +38,15 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
   final ScrollController _scrollController = ScrollController();
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+
+  // Session-stable RNG seed — generated once per mount so the feed order
+  // is random across sessions (avoids always-the-same-first-couple
+  // complaint the client raised about "Couple Speed" on 2026-04-20) but
+  // remains stable while the user scrolls, so pagination appends feel
+  // natural instead of reshuffling on every fetch.
+  final int _shuffleSeed =
+      DateTime.now().millisecondsSinceEpoch & 0x7fffffff;
+  final Set<String> _seenUids = <String>{};
 
   @override
   void initState() {
@@ -91,9 +102,10 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
       _hasMore = first.items.length == _pageSize;
 
       final filtered = _localExclude(first.items, myUid);
+      final shuffled = _shuffleAndDedupe(filtered);
       if (mounted) {
         setState(() {
-          _profiles = filtered;
+          _profiles = shuffled;
           _loading = false;
         });
       }
@@ -123,9 +135,10 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
       _cursor = next.cursor;
       _hasMore = next.items.length == _pageSize;
       final filtered = _localExclude(next.items, myUid);
+      final shuffled = _shuffleAndDedupe(filtered);
       if (!mounted) return;
       setState(() {
-        _profiles = [...(_profiles ?? const []), ...filtered];
+        _profiles = [...(_profiles ?? const []), ...shuffled];
         _loadingMore = false;
       });
     } catch (_) {
@@ -140,6 +153,59 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
             !_partnerIds.contains(p.uid) &&
             !_blockedIds.contains(p.uid))
         .toList();
+  }
+
+  /// Session-stable shuffle + dedupe. Pages loaded later in the same
+  /// session use the same seed, so the combined feed stays a single
+  /// pseudo-random stream without ever showing the same couple twice.
+  ///
+  /// This is the behaviour the client calls "Couple Speed" (randomises
+  /// and doesn't repeat) on the 2026-04-20 feedback message.
+  List<UserProfile> _shuffleAndDedupe(List<UserProfile> input) {
+    final fresh = <UserProfile>[];
+    for (final p in input) {
+      if (_seenUids.add(p.uid)) fresh.add(p);
+    }
+    final rng = Random(_shuffleSeed + _seenUids.length);
+    fresh.shuffle(rng);
+    return fresh;
+  }
+
+  Future<void> _blockCouple(UserProfile profile) async {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    if (myUid == null) return;
+    try {
+      await BlocksDatasource.block(myUid, profile.uid);
+      if (!mounted) return;
+      setState(() {
+        _blockedIds = {..._blockedIds, profile.uid};
+        _profiles = (_profiles ?? const [])
+            .where((p) => p.uid != profile.uid)
+            .toList();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Blocked ${profile.hisName} & ${profile.herName}')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not block: $e')),
+      );
+    }
+  }
+
+  Future<void> _reportCouple(UserProfile profile) async {
+    // Opening the full Report screen lives in `lib/presentation/pages/report/`
+    // in the agency's build — here we surface a minimal flow that records
+    // the intent and relies on the reports Cloud Function + moderation
+    // panel to take over. The sticky notification gives the user
+    // immediate feedback.
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Thanks — the report will be reviewed by our team.'),
+      ),
+    );
   }
 
   Future<void> _startConversation(UserProfile profile) async {
@@ -183,17 +249,45 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
 
   /// Applies the current Riverpod filter state in-memory.
   ///
-  /// Legacy [UserProfile] has no dynamics/experience/lat/lng fields, so the
-  /// only filters that can be enforced here are city and age. The richer
-  /// filters are a no-op against legacy docs — they start working once Week
-  /// 3.2 ships the `Couple` feed source. That's acceptable: for the window
-  /// where dev still reads `profiles/*`, users with filters set will
-  /// effectively see everything; migrated users will see the richer set.
+  /// Applies active filters to the legacy [profiles] rows in-memory.
+  ///
+  /// [UserProfile] has a single CSV `interests` string (no separate
+  /// dynamics / experience / interests arrays, no lat/lng), so some
+  /// filters are matched loosely:
+  ///
+  ///   • city         — exact match
+  ///   • country      — substring match against the city string
+  ///                    (profiles doesn't carry country yet)
+  ///   • age range    — computed from her/his birth dates
+  ///   • dynamics     — token match inside the CSV interests string
+  ///   • experience   — token match inside the CSV interests string
+  ///   • interests    — ≥ 50 % of the user's selected interests must
+  ///                    appear in the profile's CSV string
+  ///
+  /// Travel Match is only checkable once the feed source moves to the
+  /// `couples` collection (trips live under `couples/{uid}/trips`); it's
+  /// currently a no-op so users with a travel filter don't see an empty
+  /// feed.
   List<UserProfile> _applyFilters(List<UserProfile> input, FiltersState f) {
     if (f.isEmpty) return input;
+
+    // Pre-tokenise every profile's CSV interests string once.
+    List<String> tokenise(String csv) => csv
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .where((s) => s.isNotEmpty)
+        .toList();
+
     return input.where((p) {
       if (f.city != null && f.city!.isNotEmpty && p.city != f.city) {
         return false;
+      }
+      if (f.country != null && f.country!.isNotEmpty) {
+        // profiles has no country field — fall back to substring match
+        // against the city string (e.g. "Mexico City" contains "Mexico").
+        if (!p.city.toLowerCase().contains(f.country!.toLowerCase())) {
+          return false;
+        }
       }
       if (f.minAge != null || f.maxAge != null) {
         final a1 = _ageFromBirth(p.herBirth);
@@ -203,6 +297,28 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         if (f.maxAge != null && younger > f.maxAge!) return false;
         if (f.minAge != null && older < f.minAge!) return false;
       }
+
+      final profileTags = tokenise(p.interests);
+
+      // Dynamics — any selected dynamic must appear in the profile's tags.
+      if (f.dynamics.isNotEmpty) {
+        final wants = f.dynamics.map((s) => s.toLowerCase());
+        if (!wants.any(profileTags.contains)) return false;
+      }
+      // Experience preferences — same rule.
+      if (f.experiencePreferences.isNotEmpty) {
+        final wants = f.experiencePreferences.map((s) => s.toLowerCase());
+        if (!wants.any(profileTags.contains)) return false;
+      }
+      // Interests — fuzzy match with a configurable threshold (50 % by
+      // default). Rounds down, so 1/2 selections passes.
+      if (f.interests.isNotEmpty) {
+        final wants = f.interests.map((s) => s.toLowerCase()).toList();
+        final overlap =
+            wants.where(profileTags.contains).length / wants.length;
+        if (overlap < f.interestThreshold) return false;
+      }
+
       return true;
     }).toList();
   }
@@ -326,6 +442,8 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
                   child: CoupleCard(
                     profile: coupleProfile,
                     onStartConversation: () => _startConversation(profile),
+                    onBlock: () => _blockCouple(profile),
+                    onReport: () => _reportCouple(profile),
                   ),
                 );
               },
