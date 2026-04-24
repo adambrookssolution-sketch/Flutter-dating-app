@@ -14,6 +14,13 @@ import 'package:app/presentation/pages/trips/travel_match_screen.dart';
 /// Past trips are hidden — the `start_date` filter in the datasource scopes
 /// the stream to today-onward. To see historical trips we'd need an archive
 /// view; out of scope for MVP.
+///
+/// Layout note (2026-04-23 client feedback): the "Add trip" action and the
+/// "Explore More Trips" partner-travel CTA sit side-by-side in a fixed
+/// bottom bar. Previously Add trip lived in a FloatingActionButton in the
+/// bottom-right corner, which overlapped the new partner CTA and cut off
+/// its label. Merging both into a single row keeps each action fully
+/// visible regardless of list length.
 class ManageTripsScreen extends StatelessWidget {
   const ManageTripsScreen({super.key});
 
@@ -37,16 +44,6 @@ class ManageTripsScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFFB31637),
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Add trip'),
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AddTripScreen()),
-        ),
       ),
       body: StreamBuilder<List<Trip>>(
         stream: TripsDatasource.streamTrips(uid),
@@ -113,8 +110,14 @@ class ManageTripsScreen extends StatelessWidget {
           return Column(
             children: [
               Expanded(child: listChild),
-              _ExploreMoreTripsButton(
-                onTap: () => _openExploreMore(context),
+              _TripsBottomBar(
+                onAddTrip: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AddTripScreen(),
+                  ),
+                ),
+                onExploreMore: () => _openExploreMore(context),
               ),
             ],
           );
@@ -192,45 +195,87 @@ class _EmptyTripsState extends StatelessWidget {
   }
 }
 
-/// Sticky bottom CTA that redirects to the partner travel-agency site.
+/// Bottom action bar that stacks "Explore More Trips" and "Add trip" so
+/// neither clips the other.
 ///
-/// Added on 2026-04-23 per client brief: the screen always needs a
-/// visible path to "Explore More Trips" regardless of whether the user
-/// already has trips scheduled. The concrete redirect URL is placeholder
-/// until the partner confirms the final link.
-class _ExploreMoreTripsButton extends StatelessWidget {
-  const _ExploreMoreTripsButton({required this.onTap});
+/// Explore More Trips gets the wider slot because its label is longer; Add
+/// trip is a compact filled pill on the right so the primary/secondary
+/// visual hierarchy is clear (filled = primary action).
+class _TripsBottomBar extends StatelessWidget {
+  const _TripsBottomBar({
+    required this.onAddTrip,
+    required this.onExploreMore,
+  });
 
-  final VoidCallback onTap;
+  final VoidCallback onAddTrip;
+  final VoidCallback onExploreMore;
+
+  static const Color _burgundy = Color(0xFFB31637);
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-        child: SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: OutlinedButton.icon(
-            onPressed: onTap,
-            icon: const Icon(Icons.travel_explore,
-                color: Color(0xFFB31637)),
-            label: const Text(
-              'Explore More Trips',
-              style: TextStyle(
-                color: Color(0xFFB31637),
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFFB31637), width: 1.5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(32),
-              ),
-            ),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Color(0xFFEDEDED), width: 1),
           ),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 52,
+                child: OutlinedButton.icon(
+                  onPressed: onExploreMore,
+                  icon: const Icon(Icons.travel_explore,
+                      color: _burgundy, size: 20),
+                  label: const Text(
+                    'Explore More Trips',
+                    style: TextStyle(
+                      color: _burgundy,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: _burgundy, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            SizedBox(
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: onAddTrip,
+                icon: const Icon(Icons.add, size: 20),
+                label: const Text(
+                  'Add trip',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _burgundy,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  elevation: 0,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
