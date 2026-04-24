@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:app/data/datasource/trips_datasource.dart';
 import 'package:app/data/models/trip.dart';
@@ -15,6 +16,13 @@ import 'package:app/presentation/pages/trips/travel_match_screen.dart';
 /// view; out of scope for MVP.
 class ManageTripsScreen extends StatelessWidget {
   const ManageTripsScreen({super.key});
+
+  /// Partner travel-agency link surfaced via the "Explore More Trips"
+  /// sticky CTA. Per client decision 2026-04-23 the concrete URL is
+  /// defined later; until then the button opens this placeholder and
+  /// falls back to a snackbar if `url_launcher` can't handle it.
+  static const String _exploreMoreUrl =
+      'https://affinitysocialclub.com/trips';
 
   @override
   Widget build(BuildContext context) {
@@ -52,68 +60,63 @@ class ManageTripsScreen extends StatelessWidget {
           final all = snap.data!;
           final today = DateTime.now();
           final upcoming = all.where((t) => t.endDate.isAfter(today)).toList();
-          if (upcoming.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.flight_takeoff,
-                        size: 48, color: Color(0xFFA4A4AA)),
-                    SizedBox(height: 12),
-                    Text(
-                      'No trips yet.\nTap "Add trip" to get your first match.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Color(0xFFA4A4AA)),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-          return ListView.separated(
-            itemCount: upcoming.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, i) {
-              final t = upcoming[i];
-              return ListTile(
-                leading: const Icon(Icons.place, color: Color(0xFFB31637)),
-                title: Text(t.destination,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(
-                  '${_fmt(t.startDate)} → ${_fmt(t.endDate)}',
-                  style: const TextStyle(
-                      fontSize: 13, color: Color(0xFFA4A4AA)),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.group, color: Color(0xFFB31637)),
-                      tooltip: 'See matches',
-                      onPressed: () => Navigator.push(
+
+          final listChild = upcoming.isEmpty
+              ? const _EmptyTripsState()
+              : ListView.separated(
+                  itemCount: upcoming.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, i) {
+                    final t = upcoming[i];
+                    return ListTile(
+                      leading:
+                          const Icon(Icons.place, color: Color(0xFFB31637)),
+                      title: Text(t.destination,
+                          style:
+                              const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(
+                        '${_fmt(t.startDate)} → ${_fmt(t.endDate)}',
+                        style: const TextStyle(
+                            fontSize: 13, color: Color(0xFFA4A4AA)),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.group,
+                                color: Color(0xFFB31637)),
+                            tooltip: 'See matches',
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => TravelMatchScreen(trip: t),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: Color(0xFFA4A4AA)),
+                            onPressed: () => _confirmDelete(context, uid, t),
+                          ),
+                        ],
+                      ),
+                      onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => TravelMatchScreen(trip: t),
                         ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline,
-                          color: Color(0xFFA4A4AA)),
-                      onPressed: () => _confirmDelete(context, uid, t),
-                    ),
-                  ],
-                ),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => TravelMatchScreen(trip: t),
-                  ),
-                ),
-              );
-            },
+                    );
+                  },
+                );
+
+          return Column(
+            children: [
+              Expanded(child: listChild),
+              _ExploreMoreTripsButton(
+                onTap: () => _openExploreMore(context),
+              ),
+            ],
           );
         },
       ),
@@ -121,6 +124,19 @@ class ManageTripsScreen extends StatelessWidget {
   }
 
   String _fmt(DateTime d) => DateFormat('d MMM y').format(d);
+
+  Future<void> _openExploreMore(BuildContext context) async {
+    final uri = Uri.tryParse(_exploreMoreUrl);
+    if (uri == null) return;
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Couldn't open partner travel site."),
+        ),
+      );
+    }
+  }
 
   Future<void> _confirmDelete(
       BuildContext context, String uid, Trip trip) async {
@@ -147,5 +163,76 @@ class ManageTripsScreen extends StatelessWidget {
     if (ok == true) {
       await TripsDatasource.deleteTrip(uid, trip.id);
     }
+  }
+}
+
+class _EmptyTripsState extends StatelessWidget {
+  const _EmptyTripsState();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.flight_takeoff,
+                size: 48, color: Color(0xFFA4A4AA)),
+            SizedBox(height: 12),
+            Text(
+              'No trips yet.\nTap "Add trip" to get your first match.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFFA4A4AA)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Sticky bottom CTA that redirects to the partner travel-agency site.
+///
+/// Added on 2026-04-23 per client brief: the screen always needs a
+/// visible path to "Explore More Trips" regardless of whether the user
+/// already has trips scheduled. The concrete redirect URL is placeholder
+/// until the partner confirms the final link.
+class _ExploreMoreTripsButton extends StatelessWidget {
+  const _ExploreMoreTripsButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+        child: SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: OutlinedButton.icon(
+            onPressed: onTap,
+            icon: const Icon(Icons.travel_explore,
+                color: Color(0xFFB31637)),
+            label: const Text(
+              'Explore More Trips',
+              style: TextStyle(
+                color: Color(0xFFB31637),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFB31637), width: 1.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

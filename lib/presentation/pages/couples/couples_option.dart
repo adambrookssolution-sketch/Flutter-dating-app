@@ -6,7 +6,6 @@ import 'package:app/data/datasource/profile_datasource.dart';
 import 'package:app/data/models/message_request.dart';
 import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
-import 'package:app/presentation/pages/filters/filters_screen.dart';
 import 'package:app/presentation/widgets/couple_card.dart';
 import 'package:app/presentation/widgets/send_request_dialog.dart';
 import 'package:app/presentation/widgets/sticky_feed_actions.dart';
@@ -249,15 +248,13 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
 
   /// Applies the current Riverpod filter state in-memory.
   ///
-  /// Applies active filters to the legacy [profiles] rows in-memory.
+  /// Per client decision on 2026-04-23 location filtering is no longer by
+  /// country/city — it's by geolocation radius (km) only. Legacy
+  /// [UserProfile] rows still have a single CSV `interests` string and no
+  /// lat/lng, so geo filtering is a no-op for them; the radius kicks in
+  /// once the feed source moves to the `couples` collection. Age and tag
+  /// filters keep working against the CSV fields:
   ///
-  /// [UserProfile] has a single CSV `interests` string (no separate
-  /// dynamics / experience / interests arrays, no lat/lng), so some
-  /// filters are matched loosely:
-  ///
-  ///   • city         — exact match
-  ///   • country      — substring match against the city string
-  ///                    (profiles doesn't carry country yet)
   ///   • age range    — computed from her/his birth dates
   ///   • dynamics     — token match inside the CSV interests string
   ///   • experience   — token match inside the CSV interests string
@@ -279,16 +276,6 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         .toList();
 
     return input.where((p) {
-      if (f.city != null && f.city!.isNotEmpty && p.city != f.city) {
-        return false;
-      }
-      if (f.country != null && f.country!.isNotEmpty) {
-        // profiles has no country field — fall back to substring match
-        // against the city string (e.g. "Mexico City" contains "Mexico").
-        if (!p.city.toLowerCase().contains(f.country!.toLowerCase())) {
-          return false;
-        }
-      }
       if (f.minAge != null || f.maxAge != null) {
         final a1 = _ageFromBirth(p.herBirth);
         final a2 = _ageFromBirth(p.hisBirth);
@@ -321,30 +308,6 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
 
       return true;
     }).toList();
-  }
-
-  Future<void> _openFilters() async {
-    // Opens the filters UI as a bottom sheet, matching the client's
-    // 2026-04-20 mock where filters slide up over the feed instead of
-    // navigating to a full page.
-    final changed = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.92,
-        minChildSize: 0.5,
-        maxChildSize: 0.96,
-        expand: false,
-        builder: (_, scrollController) => Material(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          clipBehavior: Clip.antiAlias,
-          child: FiltersScreen(scrollController: scrollController),
-        ),
-      ),
-    );
-    if (changed == true) setState(() {});
   }
 
   @override
@@ -452,12 +415,10 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         ),
         StickyFeedActions(
           startConversationLabel: l10n.startConversation,
-          filtersLabel: 'Filters',
           onStartConversation: () {
             final idx = _currentIndex.clamp(0, profiles.length - 1);
             _startConversation(profiles[idx]);
           },
-          onFilters: _openFilters,
         ),
       ],
     );

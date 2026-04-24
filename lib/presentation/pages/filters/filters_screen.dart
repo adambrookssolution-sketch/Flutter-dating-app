@@ -4,17 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app/data/datasource/destinations_datasource.dart';
 import 'package:app/data/datasource/tags_datasource.dart';
 import 'package:app/data/models/destination.dart';
-import 'package:app/data/models/place_result.dart';
 import 'package:app/data/models/tag.dart';
-import 'package:app/presentation/widgets/places_autocomplete_field.dart';
 import 'package:app/providers/filters_provider.dart';
 
-/// Filters panel — matches the client's design mockup:
-///   • Country / City fields (Places autocomplete)
+/// Filters panel — matches the client's design mockup with the
+/// 2026-04-23 updates applied:
+///   • Distance slider (km) — geolocation-based, no country/city
 ///   • Age range slider (21–99; 21 hard floor because app is 21+)
 ///   • Dynamics chips           — strict match (any overlap passes)
 ///   • Experience Preferences   — strict match
 ///   • Interests                — 50% threshold (configurable)
+///   • Travel Match section     — inline in the panel
 ///   • "Apply filters" returns user to the feed
 ///
 /// Written on Riverpod — first screen to use the new state container. See
@@ -169,50 +169,28 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
             controller: widget.scrollController,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             children: [
-          // Country + City fields side-by-side (matches 2026-04-20 mock).
-          // Country pulls values from the destinations collection so the
-          // menu stays consistent with the Travel Match list below.
+          // Distance slider (2026-04-23 update) — country/city fields were
+          // removed in favour of pure geolocation by radius. The centre is
+          // the user's current device location (resolved by the feed
+          // screen before opening the filters sheet); here we only expose
+          // the radius knob.
+          _sectionTitle('Distance'),
+          _DistanceSlider(
+            valueKm: filters.radiusKm,
+            onChanged: (v) => notifier.setRadiusKm(v),
+          ),
+          const SizedBox(height: 4),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: _CountryDropdown(
-                  destinations: _destinations,
-                  selected: filters.country,
-                  onChanged: (country) {
-                    // Country-only filter; clears geo radius so country-wide
-                    // results aren't accidentally narrowed.
-                    notifier.setCountry(country);
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: PlacesAutocompleteField(
-                  label: 'City',
-                  hintText: 'Select city',
-                  borderColor: const Color(0xFFB31637),
-                  labelColor: const Color(0xFFB31637),
-                  initialValue: filters.city == null
-                      ? null
-                      : PlaceResult(
-                          city: filters.city ?? '',
-                          country: filters.country ?? '',
-                          countryCode: '',
-                          lat: filters.centerLat ?? 0,
-                          lng: filters.centerLng ?? 0,
-                        ),
-                  onSelected: (p) => notifier.setLocation(
-                    lat: p.lat,
-                    lng: p.lng,
-                    city: p.city,
-                    country: p.country,
-                  ),
-                ),
-              ),
+              const Text('Min 5 km',
+                  style: TextStyle(color: Color(0xFFA4A4AA))),
+              Text('${filters.radiusKm.round()} km',
+                  style: const TextStyle(
+                      color: Color(0xFFB31637),
+                      fontWeight: FontWeight.w600)),
             ],
           ),
-          const SizedBox(height: 8),
           _sectionTitle('Age'),
           // Red→purple gradient track (2026-04-20 mock). The gradient is
           // rendered as a solid background, then the RangeSlider is laid
@@ -452,63 +430,46 @@ class _GradientAgeSlider extends StatelessWidget {
   }
 }
 
-// ── Country dropdown ─────────────────────────────────────────────────────────
+// ── Distance slider ──────────────────────────────────────────────────────────
 
-/// Country filter distilled from the destinations collection (fallback
-/// static when empty) so the options always match the Travel Match list.
-class _CountryDropdown extends StatelessWidget {
-  const _CountryDropdown({
-    required this.destinations,
-    required this.selected,
+/// Single-value slider for the geolocation radius.
+///
+/// Client decision on 2026-04-23: location filtering is by kilometres
+/// using the device's current location — no country/city dropdowns. The
+/// minimum enforced by [FiltersState.minRadiusKm] is 5 km so rural users
+/// never get an empty feed; the ceiling at 500 km covers
+/// metropolitan-area travel without flipping into cross-country noise.
+class _DistanceSlider extends StatelessWidget {
+  const _DistanceSlider({
+    required this.valueKm,
     required this.onChanged,
   });
 
-  final List<Destination>? destinations;
-  final String? selected;
-  final void Function(String?) onChanged;
+  final double valueKm;
+  final ValueChanged<double> onChanged;
+
+  static const double _min = FiltersState.minRadiusKm;
+  static const double _max = 500;
 
   @override
   Widget build(BuildContext context) {
-    // Deduplicate country names from the destinations list — avoids the
-    // menu showing "Mexico" three times just because several resorts live
-    // there. Sorted alphabetically for predictability.
-    final countries = <String>{
-      if (destinations != null)
-        ...destinations!
-            .map((d) => d.country)
-            .where((c) => c.trim().isNotEmpty),
-    }.toList()
-      ..sort();
-
-    return DropdownButtonFormField<String>(
-      initialValue: selected,
-      isExpanded: true,
-      decoration: InputDecoration(
-        labelText: 'Country',
-        labelStyle: const TextStyle(color: Color(0xFFB31637)),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFB31637)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFB31637)),
-        ),
+    return SliderTheme(
+      data: SliderTheme.of(context).copyWith(
+        activeTrackColor: const Color(0xFFB31637),
+        inactiveTrackColor: const Color(0xFFB31637).withValues(alpha: 0.2),
+        thumbColor: const Color(0xFFB31637),
+        overlayColor: const Color(0xFFB31637).withValues(alpha: 0.1),
+        valueIndicatorColor: const Color(0xFFB31637),
+        valueIndicatorTextStyle: const TextStyle(color: Colors.white),
       ),
-      hint: const Text('Select country',
-          style: TextStyle(color: Color(0xFFA4A4AA))),
-      items: [
-        const DropdownMenuItem<String>(
-          value: null,
-          child: Text('Any country'),
-        ),
-        ...countries.map(
-          (c) => DropdownMenuItem<String>(value: c, child: Text(c)),
-        ),
-      ],
-      onChanged: onChanged,
+      child: Slider(
+        value: valueKm.clamp(_min, _max),
+        min: _min,
+        max: _max,
+        divisions: ((_max - _min) / 5).round(),
+        label: '${valueKm.round()} km',
+        onChanged: onChanged,
+      ),
     );
   }
 }

@@ -11,9 +11,10 @@ import 'package:app/data/datasource/couples_datasource.dart';
 /// Existing screens keep their `StatefulWidget` + `setState` patterns so we
 /// don't rewrite battle-tested flows mid-project.
 ///
-/// The `FiltersState` is effectively a typed view over [CoupleFilters]; the
-/// notifier exposes granular mutation methods so widgets don't have to
-/// rebuild the whole filter object for each toggle.
+/// Per client decision on 2026-04-23 country/city filters were removed in
+/// favour of pure geolocation-by-radius. The [centerLat] / [centerLng]
+/// come from the device's current location (resolved by the feed screen)
+/// and [radiusKm] is the only location knob the user sees.
 class FiltersState {
   /// Hard floor for the geolocation radius — client spec 2026-04-20
   /// requires the feed to never return a window tighter than 5 km so
@@ -23,8 +24,6 @@ class FiltersState {
   final double? centerLat;
   final double? centerLng;
   final double radiusKm;
-  final String? country;
-  final String? city;
   final int? minAge;
   final int? maxAge;
   final Set<String> dynamics;
@@ -46,8 +45,6 @@ class FiltersState {
     this.centerLat,
     this.centerLng,
     double radiusKm = 200,
-    this.country,
-    this.city,
     this.minAge,
     this.maxAge,
     this.dynamics = const {},
@@ -63,8 +60,6 @@ class FiltersState {
     double? centerLat,
     double? centerLng,
     double? radiusKm,
-    String? country,
-    String? city,
     int? minAge,
     int? maxAge,
     Set<String>? dynamics,
@@ -75,16 +70,12 @@ class FiltersState {
     DateTime? travelFrom,
     DateTime? travelTo,
     bool clearAgeRange = false,
-    bool clearCity = false,
-    bool clearCountry = false,
     bool clearTravel = false,
   }) {
     return FiltersState(
       centerLat: centerLat ?? this.centerLat,
       centerLng: centerLng ?? this.centerLng,
       radiusKm: radiusKm ?? this.radiusKm,
-      country: clearCountry ? null : (country ?? this.country),
-      city: clearCity ? null : (city ?? this.city),
       minAge: clearAgeRange ? null : (minAge ?? this.minAge),
       maxAge: clearAgeRange ? null : (maxAge ?? this.maxAge),
       dynamics: dynamics ?? this.dynamics,
@@ -103,8 +94,6 @@ class FiltersState {
   /// True when nothing is constraining the result set — lets the feed skip
   /// in-memory filtering entirely on cold start.
   bool get isEmpty =>
-      country == null &&
-      city == null &&
       minAge == null &&
       maxAge == null &&
       dynamics.isEmpty &&
@@ -121,8 +110,6 @@ class FiltersState {
         experiencePreferences: experiencePreferences.toList(),
         interests: interests.toList(),
         interestThreshold: interestThreshold,
-        country: country,
-        city: city,
         minAge: minAge,
         maxAge: maxAge,
       );
@@ -148,24 +135,13 @@ class FiltersNotifier extends StateNotifier<FiltersState> {
     super.dispose();
   }
 
-  void setLocation({
-    required double lat,
-    required double lng,
-    required String city,
-    required String country,
-  }) {
-    state = state.copyWith(
-      centerLat: lat,
-      centerLng: lng,
-      city: city,
-      country: country,
-    );
+  /// Sets the geolocation centre (typically from the device's current
+  /// location). Radius is controlled separately via [setRadiusKm].
+  void setLocation({required double lat, required double lng}) {
+    state = state.copyWith(centerLat: lat, centerLng: lng);
   }
 
-  void setCity(String? city) =>
-      state = state.copyWith(city: city, clearCity: city == null);
-  void setCountry(String? country) =>
-      state = state.copyWith(country: country, clearCountry: country == null);
+  void setRadiusKm(double km) => state = state.copyWith(radiusKm: km);
 
   void setAgeRange(int? min, int? max) {
     if (min == null && max == null) {

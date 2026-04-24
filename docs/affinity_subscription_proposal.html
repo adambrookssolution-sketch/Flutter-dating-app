@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Affinity — Propuesta de Módulo de Suscripciones</title>
+<style>
+  :root {
+    --burgundy: #B31637;
+    --burgundy-dark: #7A0F26;
+    --purple: #5B1280;
+    --gold: #C9A24B;
+    --ink: #1B1B1F;
+    --ink-soft: #4A4A52;
+    --muted: #8A8A93;
+    --line: #E6E6EA;
+    --bg: #FAF8F5;
+    --card: #FFFFFF;
+    --success: #2E8B5C;
+    --warn: #C76A1A;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+  }
+  .hero {
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--purple) 100%);
+    color: white;
+    border-radius: 24px;
+    padding: 56px 48px;
+    margin-bottom: 48px;
+    box-shadow: 0 12px 40px rgba(179, 22, 55, 0.18);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    right: -60px; top: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .hero .eyebrow {
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .hero h1 {
+    font-size: 42px;
+    line-height: 1.1;
+    margin: 0 0 16px 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .hero .lede {
+    font-size: 18px;
+    opacity: 0.95;
+    max-width: 640px;
+    margin: 0;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+  .hero-meta div {
+    font-size: 13px;
+    opacity: 0.85;
+  }
+  .hero-meta strong {
+    display: block;
+    font-size: 15px;
+    opacity: 1;
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 56px 0 8px 0;
+    letter-spacing: -0.3px;
+  }
+  h2 .num {
+    display: inline-block;
+    background: var(--burgundy);
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 32px;
+    font-size: 15px;
+    margin-right: 12px;
+    vertical-align: middle;
+    font-weight: 700;
+  }
+  h3 {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 32px 0 10px 0;
+  }
+  h4 {
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--burgundy);
+    margin: 24px 0 8px 0;
+  }
+  p { margin: 0 0 14px 0; color: var(--ink-soft); }
+  p.lead {
+    font-size: 17px;
+    color: var(--ink);
+  }
+  .section-intro {
+    color: var(--ink-soft);
+    font-size: 16px;
+    margin-bottom: 24px;
+    max-width: 760px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin: 20px 0;
+  }
+  .card.tier {
+    position: relative;
+  }
+  .card.tier.gold {
+    border-top: 4px solid var(--gold);
+  }
+  .card.tier.black {
+    background: linear-gradient(160deg, #1B1B1F 0%, #2A1B3A 100%);
+    color: #F5F0E5;
+    border: none;
+  }
+  .card.tier.black p,
+  .card.tier.black li,
+  .card.tier.black .tier-note {
+    color: #CFC6B8;
+  }
+  .card.tier.black h3,
+  .card.tier.black .tier-price {
+    color: #F5F0E5;
+  }
+  .card.tier.free {
+    border-top: 4px solid var(--muted);
+  }
+  .tier-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .tier-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(201, 162, 75, 0.15);
+    color: var(--gold);
+  }
+  .card.tier.black .tier-badge {
+    background: rgba(255,255,255,0.12);
+    color: #F5F0E5;
+  }
+  .card.tier.free .tier-badge {
+    background: #EEEEF0;
+    color: var(--muted);
+  }
+  .tier-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .tier-price small {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    margin-left: 6px;
+  }
+  .card.tier.black .tier-price small { color: #9A8F7D; }
+  .tier-note {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 12px;
+  }
+  ul.benefits {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+  }
+  ul.benefits li {
+    padding: 8px 0 8px 28px;
+    position: relative;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+  ul.benefits li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    color: var(--burgundy);
+    font-weight: 700;
+  }
+  .card.tier.black ul.benefits li { color: #CFC6B8; }
+  .card.tier.black ul.benefits li::before { color: var(--gold); }
+  .input-request {
+    background: #FFF9EF;
+    border-left: 3px solid var(--gold);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .card.tier.black .input-request {
+    background: rgba(201, 162, 75, 0.1);
+    border-left-color: var(--gold);
+    color: #E8DDC8;
+  }
+  .input-request strong {
+    display: block;
+    color: var(--warn);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .card.tier.black .input-request strong { color: var(--gold); }
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  table.compare th, table.compare td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    vertical-align: top;
+  }
+  table.compare th {
+    background: #F5F2EE;
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  table.compare tr:last-child td { border-bottom: none; }
+  table.compare td.strong-col {
+    background: rgba(179, 22, 55, 0.03);
+    font-weight: 500;
+  }
+  .callout {
+    background: white;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--burgundy);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .callout.recommend {
+    border-left-color: var(--success);
+    background: #F3F9F5;
+  }
+  .callout.warn {
+    border-left-color: var(--warn);
+    background: #FFF6ED;
+  }
+  .callout h4 {
+    margin-top: 0;
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 16px;
+  }
+  .callout.recommend h4 { color: var(--success); }
+  .callout.warn h4 { color: var(--warn); }
+  .policy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .policy-grid .ok, .policy-grid .no {
+    padding: 20px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  .policy-grid .ok {
+    background: #EDF7F0;
+    border: 1px solid #CFE6D6;
+  }
+  .policy-grid .no {
+    background: #FBEFEC;
+    border: 1px solid #F0CDC6;
+  }
+  .policy-grid h4 {
+    margin-top: 0;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .policy-grid .ok h4 { color: var(--success); }
+  .policy-grid .no h4 { color: #B33017; }
+  .policy-grid ul {
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+  }
+  .policy-grid ul li {
+    margin-bottom: 6px;
+    color: var(--ink-soft);
+  }
+  .examples {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .examples .chip {
+    padding: 8px 14px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .timeline {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0;
+    margin: 24px 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .timeline .week {
+    padding: 20px 18px;
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--purple) 100%);
+    color: white;
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .timeline .week:last-of-type { border-bottom: none; }
+  .timeline .week small {
+    font-weight: 400;
+    opacity: 0.85;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .timeline .tasks {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .timeline .tasks:last-of-type { border-bottom: none; }
+  .timeline .tasks ul {
+    margin: 6px 0 0 0;
+    padding-left: 20px;
+  }
+  .timeline .tasks ul li {
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .milestones {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .milestone {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px 24px;
+    position: relative;
+  }
+  .milestone::before {
+    content: attr(data-n);
+    position: absolute;
+    top: -14px;
+    left: 20px;
+    background: var(--burgundy);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 28px;
+  }
+  .milestone .amount {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .milestone .percent {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--burgundy);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .milestone p {
+    font-size: 13px;
+    margin-top: 10px;
+    color: var(--ink-soft);
+  }
+  .revenue-table {
+    background: linear-gradient(160deg, #FAF5EE 0%, #F5ECDD 100%);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin: 24px 0;
+    border: 1px solid #E8D9BC;
+  }
+  .revenue-table h3 {
+    margin-top: 0;
+    color: var(--burgundy-dark);
+  }
+  .revenue-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+  .revenue-table th, .revenue-table td {
+    padding: 10px 12px;
+    font-size: 14px;
+    text-align: right;
+  }
+  .revenue-table th:first-child,
+  .revenue-table td:first-child { text-align: left; }
+  .revenue-table th {
+    border-bottom: 2px solid #D4BF98;
+    color: var(--burgundy-dark);
+    font-weight: 700;
+  }
+  .revenue-table td {
+    border-bottom: 1px solid #EADFCB;
+  }
+  .revenue-table td.highlight {
+    color: var(--success);
+    font-weight: 700;
+  }
+  .ask {
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--purple) 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 40px 44px;
+    margin: 48px 0 0 0;
+  }
+  .ask h2 {
+    color: white;
+    margin-top: 0;
+  }
+  .ask h2 .num { background: white; color: var(--burgundy); }
+  .ask ol {
+    padding-left: 24px;
+    margin: 16px 0;
+  }
+  .ask ol li {
+    padding: 8px 0;
+    font-size: 16px;
+  }
+  .ask .signoff {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    font-size: 15px;
+    opacity: 0.95;
+  }
+  .ask .signoff strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 720px) {
+    .page { padding: 24px 16px 64px; }
+    .hero { padding: 36px 24px; border-radius: 18px; }
+    .hero h1 { font-size: 30px; }
+    .timeline { grid-template-columns: 1fr; }
+    .timeline .week {
+      padding: 14px 18px;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .timeline .week small { margin-top: 0; }
+    .milestones { grid-template-columns: 1fr; }
+    .policy-grid { grid-template-columns: 1fr; }
+    .card { padding: 22px 20px; }
+    .ask { padding: 28px 24px; border-radius: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ─────────────────────── HERO ─────────────────────── -->
+  <header class="hero">
+    <div class="eyebrow">Propuesta Formal · Módulo de Suscripciones</div>
+    <h1>Affinity, listo para monetizar<br/>desde el primer día.</h1>
+    <p class="lede">
+      Diseño técnico y económico del sistema de membresías
+      <strong style="color:#fff;">Free · Gold · Black</strong>,
+      pensado para crecer ingresos sin fricción, respetando las reglas de
+      Apple y Google, y alineado con la visión que ya venimos construyendo.
+    </p>
+    <div class="hero-meta">
+      <div><strong>Preparado para</strong>Alejandra — Affinity Social Club</div>
+      <div><strong>Preparado por</strong>Gabriel · Desarrollo</div>
+      <div><strong>Fecha</strong>24 de abril, 2026</div>
+    </div>
+  </header>
+
+  <!-- ─────────────────── INTRO ─────────────────── -->
+  <section>
+    <p class="lead">
+      Esta propuesta está pensada para una sola cosa: que Affinity
+      <strong>llegue al mercado con un modelo de negocio sólido desde el
+      día uno</strong>. No es un añadido técnico ni una fase 2 — es la
+      decisión que, tomada ahora, te ahorra meses de migración después
+      y te posiciona de golpe como un producto con estructura real.
+    </p>
+    <p>
+      La dividí en cinco bloques, en el orden que creo más útil para tu
+      lectura: primero los beneficios por plan (donde quiero integrar
+      tus ideas), después la arquitectura de cobros y el tema de
+      políticas de las stores (que era tu preocupación principal),
+      luego el plan de trabajo aprovechando la espera de la agencia, y
+      al final el detalle económico con hitos claros.
+    </p>
+  </section>
+
+  <!-- ─────────────────── 1. TIERS ─────────────────── -->
+  <section>
+    <h2><span class="num">1</span> Beneficios por nivel</h2>
+    <p class="section-intro">
+      Lo dejo a propósito como <strong>borrador colaborativo</strong>,
+      no como definitivo. Me mencionaste que ya tenían ideas de qué iba
+      en cada nivel; mi propuesta es que la tomes como punto de partida
+      y me pases tus adiciones en las zonas marcadas. Con los dos
+      insumos armamos la matriz final y la cerramos en una sola iteración.
+    </p>
+
+    <div class="card tier free">
+      <div class="tier-header">
+        <h3>Free · Puerta de entrada</h3>
+        <span class="tier-badge">Gratis</span>
+      </div>
+      <p>El canal de adquisición. Tiene que sentirse útil para que la
+         pareja complete registro y se quede, pero con límites claros
+         que dejen motivos para suscribirse.</p>
+      <ul class="benefits">
+        <li>Registro de pareja con verificación por video</li>
+        <li>Ver el feed de parejas sin límite de cantidad</li>
+        <li>Perfil editable, fotos, descripción</li>
+        <li>Filtros básicos: distancia (km) y rango de edad</li>
+        <li>Máximo <strong>3 solicitudes de mensaje por semana</strong></li>
+        <li>Travel Match: puede crear sus viajes, ve matches de los próximos 30 días</li>
+        <li>Notificaciones push de mensajes entrantes</li>
+      </ul>
+      <div class="input-request">
+        <strong>Tu aporte</strong>
+        ¿Qué otras limitaciones o accesos quieres reservar / permitir en
+        Free? Por ejemplo: ¿puede ver quién lo guardó como favorito,
+        puede filtrar por dinámicas específicas, puede ver parejas
+        verificadas primero?
+      </div>
+    </div>
+
+    <div class="card tier gold">
+      <div class="tier-header">
+        <h3>Gold · El plan core</h3>
+        <div>
+          <span class="tier-badge">Popular</span>
+          <div class="tier-price" style="margin-top:8px;">
+            USD 14.99<small>/mes</small>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">
+            USD 119.99/año · ahorra 33%
+          </div>
+        </div>
+      </div>
+      <p>El plan de quien está en serio. Aquí vive el grueso de la
+         conversión — es donde la propuesta de valor tiene que ser
+         obvia después de unos días de uso.</p>
+      <ul class="benefits">
+        <li>Todo lo del Free</li>
+        <li><strong>Solicitudes de mensaje ilimitadas</strong></li>
+        <li><strong>Filtros avanzados completos</strong>: dinámicas, experiencia, intereses, Travel Match sin límite de ventana temporal</li>
+        <li><strong>Prioridad visual en el feed</strong> frente a parejas Free</li>
+        <li>Ver quién marcó el perfil como favorito</li>
+        <li>Soporte estándar por correo electrónico</li>
+      </ul>
+      <div class="input-request">
+        <strong>Tu aporte</strong>
+        ¿Qué beneficio específico te imaginas como el "click" que hace
+        que una pareja Free pague por pasarse a Gold? A veces un solo
+        beneficio emocional (ver quién te marcó, desbloquear un filtro
+        que usaban mucho) vale más que cinco funcionales.
+      </div>
+    </div>
+
+    <div class="card tier black">
+      <div class="tier-header">
+        <h3>Black · Círculo cerrado</h3>
+        <div>
+          <span class="tier-badge">VIP</span>
+          <div class="tier-price" style="margin-top:8px;">
+            USD 39.99<small>/mes</small>
+          </div>
+          <div style="font-size:12px;color:#9A8F7D;margin-top:2px;">
+            USD 349.99/año
+          </div>
+        </div>
+      </div>
+      <p>La experiencia exclusiva. El Black no es para todos — es para
+         que quien lo compra sienta que está en un círculo más cerrado
+         dentro de la comunidad. El margen de precio frente a Gold es
+         amplio a propósito.</p>
+      <ul class="benefits">
+        <li>Todo lo del Gold</li>
+        <li><strong>Badge visible</strong> en la tarjeta del perfil</li>
+        <li><strong>Conexión directa con otros Black</strong> sin solicitud previa</li>
+        <li>Acceso temprano a nuevos destinos y eventos lifestyle</li>
+        <li>Invitaciones a eventos privados curados por el equipo</li>
+        <li>Perfil verificado destacado con checkmark + borde dorado</li>
+        <li>Soporte prioritario por WhatsApp o Telegram directo</li>
+      </ul>
+      <div class="input-request">
+        <strong>Tu aporte</strong>
+        ¿Hay un elemento de "círculo cerrado" adicional que quieras
+        reservar solo para Black? Un espacio de chat grupal privado,
+        recomendaciones curadas por un editor, anuncios de eventos
+        presenciales, acceso anticipado a destinos nuevos de Travel
+        Match — cualquier pieza que refuerce el "esto no lo tiene
+        nadie más" refuerza el precio.
+      </div>
+    </div>
+
+    <div class="callout">
+      <h4>Referencia de precios del mercado</h4>
+      <p>Los rangos propuestos están alineados con apps lifestyle
+         comparables: Feeld Majestic $11.99/mes, #Open Premium
+         $14.99/mes, Tinder Gold $19.99/mes. Gold a $14.99 cae en la
+         zona de "precio de comunidad premium" sin volverse caro; Black
+         a $39.99 posiciona el VIP en otro nivel y ancla el valor
+         percibido del Gold hacia arriba.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────── 2. PAYMENT PATHS ─────────────────── -->
+  <section>
+    <h2><span class="num">2</span> Arquitectura de cobros</h2>
+    <p class="section-intro">
+      Hay solo dos caminos limpios y aprobables. Te los comparo sin
+      sesgo para que la decisión sea tuya con todos los datos
+      encima de la mesa.
+    </p>
+
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Camino A · IAP nativo (Apple / Google)</th>
+          <th class="strong-col">Camino B · Stripe + sincronización</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Comisión por transacción</strong></td>
+          <td>30% año 1 · 15% desde el año 2<br/>
+            <small style="color:var(--muted);">
+              Small Business Program puede bajar a 15% desde el día 1
+            </small>
+          </td>
+          <td class="strong-col">~2.9% + USD 0.30 por transacción</td>
+        </tr>
+        <tr>
+          <td><strong>Aprobación en stores</strong></td>
+          <td>La más sencilla — Apple y Google la prefieren</td>
+          <td class="strong-col">Permitida respetando Guideline 3.1.3 — detalle en §3</td>
+        </tr>
+        <tr>
+          <td><strong>UX de suscripción</strong></td>
+          <td>Nativa, un tap, Face ID / Touch ID</td>
+          <td class="strong-col">Abre navegador externo una vez; renovaciones invisibles</td>
+        </tr>
+        <tr>
+          <td><strong>Datos del suscriptor</strong></td>
+          <td>Muy limitados — solo un receipt ID opaco</td>
+          <td class="strong-col">Completos — correo, método, historial, geo</td>
+        </tr>
+        <tr>
+          <td><strong>Gestión de renovación y reembolsos</strong></td>
+          <td>La hace Apple / Google, tú tienes poco control</td>
+          <td class="strong-col">La controlas tú desde Stripe</td>
+        </tr>
+        <tr>
+          <td><strong>Integración con panel admin</strong></td>
+          <td>Compleja — API de Apple + API de Google por separado</td>
+          <td class="strong-col">Directa — webhooks en tiempo real</td>
+        </tr>
+        <tr>
+          <td><strong>Marketing / CRM</strong></td>
+          <td>Muy difícil — no tienes correo del usuario</td>
+          <td class="strong-col">Libre — retention, reactivación, descuentos, etc.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Revenue calc table -->
+    <div class="revenue-table">
+      <h3>Impacto real del 27% de margen adicional</h3>
+      <p style="margin:0 0 6px 0; color:var(--ink-soft); font-size:14px;">
+        Escenario conservador: 200 suscriptores Gold estables a $14.99/mes,
+        primeros 6 meses.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>IAP (30%)</th>
+            <th>Stripe (3%)</th>
+            <th>Diferencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Revenue bruto (6 meses)</td>
+            <td>$17,988</td>
+            <td>$17,988</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Comisión a plataforma</td>
+            <td>−$5,396</td>
+            <td>−$540</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><strong>Lo que queda en tu caja</strong></td>
+            <td><strong>$12,592</strong></td>
+            <td><strong>$17,448</strong></td>
+            <td class="highlight">+ $4,856</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin:12px 0 0 0; color:var(--ink-soft); font-size:13px;">
+        Con 500 suscriptores mixtos Gold + Black la diferencia anual
+        pasa de <strong>USD 20,000</strong>. Ese dinero, con Stripe,
+        queda en tu cuenta bancaria — y <strong>recupera el desarrollo
+        del módulo (USD 2,000) en el primer mes</strong> de operación
+        real.
+      </p>
+    </div>
+
+    <div class="callout recommend">
+      <h4>Recomendación</h4>
+      <p>
+        <strong>Camino B (Stripe) como principal</strong>, con la
+        opción abierta de sumar IAP solo en iOS más adelante si vemos
+        que la fricción de salir al navegador impacta la conversión.
+        Los motivos pesados: <strong>27% más de margen</strong>,
+        control total de datos para retention, y —crítico para tu
+        estrategia— un único sistema de cobros que vale para Affinity
+        <em>y</em> para el bot de monetización de Telegram que vimos
+        por separado. Ambos sistemas sobre la misma cuenta Stripe,
+        misma base de suscriptores, misma contabilidad.
+      </p>
+    </div>
+  </section>
+
+  <!-- ─────────────────── 3. POLICY ─────────────────── -->
+  <section>
+    <h2><span class="num">3</span> Políticas de Apple y Google — tranquilidad documentada</h2>
+    <p class="section-intro">
+      Entiendo que esta era la parte donde más necesitabas seguridad,
+      así que la trato con detalle. Hay un camino aprobado y hay
+      líneas que no se cruzan. Respetando el camino, el riesgo de
+      rechazo o sanción es <strong>bajo</strong>.
+    </p>
+
+    <h3>Lo que dice Apple textualmente</h3>
+    <div class="callout">
+      <p style="font-style: italic; color: var(--ink); margin: 0;">
+        <strong>Guideline 3.1.3(b) — Multiplatform Services:</strong>
+        "Apps may allow a user to access previously purchased content
+        or subscriptions […], provided that you agree not to directly
+        or indirectly target iOS users to use a purchasing method other
+        than in-app purchase."
+      </p>
+    </div>
+    <p>
+      En palabras simples: la app <strong>puede</strong> reconocer una
+      suscripción comprada fuera y activar los beneficios, <strong>pero
+      no puede</strong> empujar al usuario a comprarla fuera desde
+      dentro de la app.
+    </p>
+
+    <h3>Qué significa esto en la práctica</h3>
+    <div class="policy-grid">
+      <div class="ok">
+        <h4>✓ Permitido dentro de la app</h4>
+        <ul>
+          <li>Mostrar el estado de suscripción actual (Free / Gold / Black)</li>
+          <li>Botón "Upgrade" que abre una página web externa</li>
+          <li>Activar automáticamente los beneficios al suscribirse fuera</li>
+          <li>Enviar correos al usuario con ofertas (fuera de la app)</li>
+          <li>Tener una landing pública con la tabla de planes y precios</li>
+        </ul>
+      </div>
+      <div class="no">
+        <h4>✗ Prohibido dentro de la app iOS</h4>
+        <ul>
+          <li>Mostrar precios de la suscripción</li>
+          <li>Botones que digan "Suscríbete por $14.99"</li>
+          <li>Textos como "ahorra 30% pagando fuera"</li>
+          <li>Comparar precios con los de IAP</li>
+          <li>Pop-ups o banners que presionen a salir a pagar</li>
+        </ul>
+      </div>
+    </div>
+    <p style="font-size:13px; color:var(--muted);">
+      Android (Google Play) es un poco más flexible, pero por
+      coherencia usamos la misma regla estricta en ambas plataformas.
+    </p>
+
+    <h3>Apps que usan exactamente este patrón hoy</h3>
+    <p>Estos son los ejemplos que le puedes mostrar a cualquiera que
+       te pregunte si "eso es legal". Todos son negocios de varios
+       billones de dólares operando bajo el mismo esquema:</p>
+    <div class="examples">
+      <span class="chip">Netflix</span>
+      <span class="chip">Spotify</span>
+      <span class="chip">Amazon Kindle</span>
+      <span class="chip">Disney+</span>
+      <span class="chip">Amazon Prime Video</span>
+      <span class="chip">Dropbox</span>
+      <span class="chip">Evernote</span>
+      <span class="chip">HBO Max</span>
+    </div>
+
+    <h3>Evaluación de riesgo</h3>
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Escenario</th>
+          <th>Riesgo</th>
+          <th>Consecuencia</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Respetamos las dos listas de arriba al pie de la letra</td>
+          <td style="color:var(--success); font-weight:600;">Bajo</td>
+          <td>Aprobación normal. Apple revisa apps así cada día.</td>
+        </tr>
+        <tr>
+          <td>Accidentalmente mostramos precios dentro de la app</td>
+          <td style="color:var(--warn); font-weight:600;">Medio</td>
+          <td>Rejection en review. Se corrige y se reenvía — no es suspensión.</td>
+        </tr>
+        <tr>
+          <td>Agregamos IAP como segunda opción más adelante</td>
+          <td style="color:var(--success); font-weight:600;">Muy bajo</td>
+          <td>Aprobación más rápida. Queda como mejora futura.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout recommend">
+      <h4>Mi compromiso antes de cada submit</h4>
+      <p>Paso la app por un <strong>check-list de compliance</strong>
+         personal — reviso cada pantalla buscando cualquier mención de
+         precio, botón de pago, o texto que Apple pueda interpretar
+         como "purchase directing". Si algo está al borde, lo cambio
+         antes de subir. Es un proceso que ya he hecho antes y sé qué
+         palabras exactas disparan rejections.</p>
+    </div>
+  </section>
+
+  <!-- ─────────────────── 4. PLAN ─────────────────── -->
+  <section>
+    <h2><span class="num">4</span> Plan de trabajo · aprovechando la espera de la agencia</h2>
+    <p class="section-intro">
+      Entendí que la fase 2 de la agencia llega esta o la próxima
+      semana. En vez de quedarme quieto, aprovecho la ventana para
+      avanzar el backend de suscripciones en paralelo. Cuando llegue
+      la fase 2, ya tenemos la mitad del trabajo hecho.
+    </p>
+
+    <div class="timeline">
+      <div class="week">Semana 1<small>Esta semana</small></div>
+      <div class="tasks">
+        <strong>Backend, sin tocar app (no depende de la agencia)</strong>
+        <ul>
+          <li>Setup de Stripe: cuenta, productos Gold / Black, webhooks</li>
+          <li>Esquema de base de datos: <code>subscriptions/{userId}</code> con plan, estado, vencimiento</li>
+          <li>Cloud Functions: webhook de Stripe, sync de estado, reintentos en pago fallido</li>
+          <li>Lógica de permisos por plan — qué funciones limita Free</li>
+        </ul>
+      </div>
+
+      <div class="week">Semana 2<small>Fase 2 + integración</small></div>
+      <div class="tasks">
+        <strong>Llega la fase 2 de la agencia; integro y armo el paywall</strong>
+        <ul>
+          <li>Merge del trabajo de la agencia + ajustes del feedback actual</li>
+          <li>Pantallas de paywall (comparación de planes) en ES + EN</li>
+          <li>Pantalla "Tu suscripción" dentro de Perfil</li>
+          <li>Landing web pública con Stripe Checkout embebido</li>
+        </ul>
+      </div>
+
+      <div class="week">Semana 3<small>QA + submit</small></div>
+      <div class="tasks">
+        <strong>Pruebas end-to-end y subida a stores</strong>
+        <ul>
+          <li>Compra real de Gold y Black con tarjeta de prueba Stripe</li>
+          <li>Validación de que los beneficios se activan al iniciar sesión</li>
+          <li>Check de compliance Apple / Google</li>
+          <li>Submit a App Store Connect y Google Play Console</li>
+        </ul>
+      </div>
+
+      <div class="week">Semana 4<small>Review + ajustes</small></div>
+      <div class="tasks">
+        <strong>Aprobación y respuesta a review</strong>
+        <ul>
+          <li>Responder a cualquier feedback del review team</li>
+          <li>Segunda submission si aplica</li>
+          <li>Launch — suscripciones vivas el día que publica</li>
+        </ul>
+      </div>
+    </div>
+
+    <p>Si la fase 2 de la agencia llega más tarde, los tiempos se
+       corren sin pérdida: el backend de suscripciones ya está listo
+       esperando la integración.</p>
+  </section>
+
+  <!-- ─────────────────── 5. PRICING ─────────────────── -->
+  <section>
+    <h2><span class="num">5</span> Alcance, entregables y parte económica</h2>
+
+    <h3>Qué incluye este módulo</h3>
+    <ul class="benefits">
+      <li>Integración completa con Stripe (cuenta, productos, webhooks, reintentos automáticos)</li>
+      <li>Cloud Functions de sincronización y validación de estado</li>
+      <li>Esquema de base de datos de suscripciones + auditoría</li>
+      <li>Lógica de permisos por plan aplicada a cada feature: solicitudes, filtros avanzados, Travel Match, badges</li>
+      <li>Pantallas nativas: paywall, gestión de suscripción propia, badges en perfil</li>
+      <li>Landing web de checkout responsive con Stripe Checkout</li>
+      <li>Integración con el panel de administración: quién está en cada plan, suscriptores activos, revenue mensual</li>
+      <li>Check de compliance Apple + Google previo a cada submit</li>
+      <li>Video corto (3–5 min) explicándote cómo operar el sistema</li>
+    </ul>
+
+    <h3>Qué NO incluye — para que quede transparente</h3>
+    <ul style="padding-left:20px; color:var(--ink-soft);">
+      <li>El sistema de monetización del bot de Telegram — va en propuesta aparte</li>
+      <li>Publicidad paga o marketing de la suscripción</li>
+      <li>Textos finales e imágenes del paywall — los entrego como placeholders, el equipo creativo los pule</li>
+    </ul>
+
+    <h3>Inversión total del módulo</h3>
+    <p class="lead" style="font-size:28px; color:var(--ink); font-weight:700; margin:16px 0;">
+      USD 2,000
+    </p>
+    <p>Dividido en <strong>3 entregas</strong> — revisas el resultado
+       de cada etapa, validas que está funcionando según lo
+       acordado, y recién entonces pagas esa etapa. Así ninguno de
+       los dos asume todo el riesgo y tú tienes visibilidad en cada
+       paso.</p>
+
+    <div class="milestones">
+      <div class="milestone" data-n="1">
+        <div class="percent">Entrega 1 · 40%</div>
+        <div class="amount">USD 800</div>
+        <p><strong>Qué recibes:</strong> Stripe configurado con tus
+           productos Gold / Black, base de datos de suscripciones
+           lista, webhooks activos. Demo en video mostrando que el
+           sistema ya procesa suscripciones reales con tarjeta de
+           prueba.</p>
+        <p style="color:var(--burgundy); font-weight:600; font-size:13px; margin-top:10px;">
+          Validas la demo → pagas esta entrega.
+        </p>
+      </div>
+      <div class="milestone" data-n="2">
+        <div class="percent">Entrega 2 · 30%</div>
+        <div class="amount">USD 600</div>
+        <p><strong>Qué recibes:</strong> Lógica de permisos por plan
+           integrada en cada función de la app (solicitudes,
+           filtros, Travel Match, badges). Pantallas de paywall y
+           "Tu suscripción" dentro del perfil. Navegable en APK
+           interno.</p>
+        <p style="color:var(--burgundy); font-weight:600; font-size:13px; margin-top:10px;">
+          Pruebas el APK → pagas esta entrega.
+        </p>
+      </div>
+      <div class="milestone" data-n="3">
+        <div class="percent">Entrega 3 · 30%</div>
+        <div class="amount">USD 600</div>
+        <p><strong>Qué recibes:</strong> Suscripción real funcionando
+           end-to-end, landing web lista, app aprobada por Apple y
+           Google con las suscripciones activas, panel admin con
+           métricas de revenue, video operativo de 3–5 min.</p>
+        <p style="color:var(--burgundy); font-weight:600; font-size:13px; margin-top:10px;">
+          Confirmas que todo queda operando → pagas esta entrega.
+        </p>
+      </div>
+    </div>
+
+    <div class="callout recommend">
+      <h4>Cómo funciona el ritmo de entregas</h4>
+      <p>En ningún momento pagas por algo que todavía no puedes
+         tocar o probar. Cada entrega incluye una demo en video y,
+         cuando corresponde, un APK navegable. Tú decides cuándo
+         aprobar cada etapa. Es el mismo ritmo de trabajo
+         colaborativo con el que venimos avanzando — solo que esta
+         vez cada etapa tiene su propio resultado verificable.</p>
+    </div>
+
+    <div class="callout warn">
+      <h4>Este módulo es adicional al paquete original de Affinity</h4>
+      <p>No toca ni modifica las condiciones del contrato que ya
+         tenemos firmado. El paquete MVP mantiene su propia lógica de
+         entrega final; este módulo es una ampliación de alcance
+         independiente con su propio ritmo de trabajo y entregables.</p>
+    </div>
+
+    <!-- ─────────── BUNDLE OFFER ─────────── -->
+    <h3 style="margin-top:40px;">Bonus · Bot de Telegram de monetización</h3>
+    <p>
+      Como conversamos por separado, el bot de Telegram para
+      monetizar tus dos grupos existentes es una pieza que encaja
+      naturalmente con este módulo: <strong>puede correr sobre la
+      misma cuenta Stripe</strong>, compartir la base de suscriptores
+      y unificar la contabilidad. En vez de cobrarlos por separado,
+      te los ofrezco como paquete combinado.
+    </p>
+
+    <div class="revenue-table" style="background: linear-gradient(160deg, #1B1B1F 0%, #2A1B3A 100%); color: #F5F0E5; border: none;">
+      <h3 style="color: #F5F0E5;">Oferta combinada · Affinity + Telegram</h3>
+      <table>
+        <tbody style="color: #CFC6B8;">
+          <tr>
+            <td>Módulo de suscripciones Affinity</td>
+            <td>USD 2,000</td>
+          </tr>
+          <tr>
+            <td>Bot de Telegram completo (nuevo + migración de miembros actuales)</td>
+            <td>USD 1,200</td>
+          </tr>
+          <tr>
+            <td>Precio por separado</td>
+            <td style="text-decoration: line-through; color: #9A8F7D;">USD 3,200</td>
+          </tr>
+          <tr>
+            <td style="color: #F5F0E5; font-weight: 700;">Precio combinado (paquete)</td>
+            <td style="color: var(--gold); font-weight: 700; font-size: 20px;">USD 2,800</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 12px; color: #CFC6B8; font-size: 13px;">
+        <strong style="color: var(--gold);">Ahorras USD 400</strong>
+        y ambos sistemas se entregan conectados sobre la misma
+        infraestructura de pagos, listos para operar en conjunto
+        desde el primer día.
+      </p>
+    </div>
+
+    <p style="font-size: 14px; color: var(--muted); margin-top: 16px;">
+      Si prefieres avanzar primero con Affinity y dejar Telegram
+      para más adelante, mantengo los USD 2,000 del módulo de
+      suscripciones sin cambio. La oferta combinada es opcional y
+      está abierta durante esta propuesta.
+    </p>
+  </section>
+
+  <!-- ─────────────────── ASK ─────────────────── -->
+  <section class="ask">
+    <h2><span class="num">✓</span> Lo que necesito de tu lado para arrancar</h2>
+    <ol>
+      <li>Tu lectura de la sección 1 — adiciones o cambios a los beneficios de cada nivel.</li>
+      <li>Confirmación de que el camino Stripe (§2 + §3) te queda claro y cómodo.</li>
+      <li>OK al plan de trabajo y al ritmo de entregas de §5 — recuerda, pagas cada entrega después de validarla, no antes.</li>
+      <li>Si te interesa la oferta combinada con el bot de Telegram, me avisas para ajustar la propuesta.</li>
+      <li>Correo con el que abrir la cuenta de Stripe a tu nombre — el dinero entra directo a tu cuenta bancaria desde el día uno, yo no toco el flujo de pagos.</li>
+    </ol>
+    <div class="signoff">
+      <strong>Con tu OK arranco el trabajo de la Entrega 1 de inmediato.</strong>
+      En paralelo sigo aplicando los ajustes del feedback actual de
+      Affinity que quedamos ayer. Sin prisa con la lectura de este
+      documento — prefiero que la hagas con calma.
+    </div>
+  </section>
+
+  <!-- ─────────────────── FOOTER ─────────────────── -->
+  <div class="footer-note">
+    Propuesta preparada por Gabriel para Affinity Social Club ·
+    Confidencial · 24 de abril, 2026
+  </div>
+
+</div>
+</body>
+</html>

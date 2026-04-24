@@ -43,8 +43,7 @@ class _CouplesScreenState extends ConsumerState<CouplesScreen> {
   }
 
   int _countActive(FiltersState f) =>
-      (f.city != null ? 1 : 0) +
-      (f.country != null ? 1 : 0) +
+      (f.centerLat != null ? 1 : 0) +
       (f.minAge != null || f.maxAge != null ? 1 : 0) +
       f.dynamics.length +
       f.experiencePreferences.length +
