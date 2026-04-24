@@ -43,3 +43,36 @@ jobs:
           path: build/app/outputs/flutter-apk/app-debug.apk
           retention-days: 7
           if-no-files-found: error
+
+  build-admin-web:
+    # Builds the moderation admin panel (Flutter Web) so it can be
+    # deployed to Firebase Hosting without fighting the Windows file-
+    # lock issue that affects the dev workstation. Independent from
+    # the APK job so the two run in parallel.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build admin web
+        run: flutter build web -t lib/main_admin.dart --release --no-wasm-dry-run
+
+      - name: Upload admin web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-web-build
+          path: build/web
+          retention-days: 7
+          if-no-files-found: error
