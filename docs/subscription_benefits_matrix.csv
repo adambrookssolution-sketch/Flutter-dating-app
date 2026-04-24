@@ -1,0 +1,36 @@
+Categoría,Beneficio,Free,Gold (USD 14.99/mes),Black (USD 39.99/mes),Notas / Comentario de la cliente
+Cuenta básica,Registro de pareja con verificación por video,Sí,Sí,Sí,—
+Cuenta básica,Perfil editable (fotos + descripción + intereses),Sí,Sí,Sí,—
+Cuenta básica,Cambio de idioma ES / EN,Sí,Sí,Sí,—
+Cuenta básica,Recuperación de contraseña + eliminación de cuenta,Sí,Sí,Sí,—
+Feed y descubrimiento,Ver el feed de parejas sin límite diario,Sí,Sí,Sí,—
+Feed y descubrimiento,Prioridad visual en el feed (aparecer más arriba),No,Sí,Sí,—
+Feed y descubrimiento,Badge dorado en tu tarjeta de perfil,No,No,Sí,Distingue visualmente a Black del resto
+Feed y descubrimiento,Perfil verificado destacado (checkmark + borde),No,No,Sí,—
+Solicitudes de mensaje,Enviar solicitudes de mensaje,3 por semana,Ilimitadas,Ilimitadas,—
+Solicitudes de mensaje,Ver confirmación de lectura (read receipts),No,Sí,Sí,A confirmar con la cliente si se quiere incluir
+Solicitudes de mensaje,Conexión directa con otros Black (sin pasar por solicitud),No,No,Sí,Solo aplica cuando ambos son Black
+Filtros,Filtro de distancia (km),Sí,Sí,Sí,—
+Filtros,Filtro de rango de edad,Sí,Sí,Sí,—
+Filtros,Filtro de Dinámicas (Parallel/Soft/Full),No,Sí,Sí,—
+Filtros,Filtro de Experience preferences,No,Sí,Sí,—
+Filtros,Filtro de Intereses (tags libres),No,Sí,Sí,—
+Filtros,Cantidad máxima de filtros aplicados a la vez,1,Sin límite,Sin límite,—
+Travel Match,Crear viajes propios en Manage Trips,Sí,Sí,Sí,—
+Travel Match,Ver matches en los próximos 30 días,Sí,Sí,Sí,—
+Travel Match,Ver matches sin límite de ventana temporal,No,Sí,Sí,—
+Travel Match,Acceso anticipado a nuevos destinos lifestyle,No,No,Sí,—
+Favoritos / guardados,Marcar parejas como favoritas,No,Sí,Sí,—
+Favoritos / guardados,Ver quién te marcó como favorita,No,Sí,Sí,Posible gancho emocional para pasar de Free a Gold
+Notificaciones,Notificaciones push de mensajes entrantes,Sí,Sí,Sí,—
+Notificaciones,Notificaciones de Travel Match (nuevas coincidencias),No,Sí,Sí,—
+Notificaciones,Recordatorio 7 días antes del viaje,No,Sí,Sí,—
+Eventos y comunidad,Invitaciones a eventos privados curados por Affinity,No,No,Sí,Depende de la agenda que armes tú
+Eventos y comunidad,Acceso temprano a anuncios de eventos presenciales,No,No,Sí,A confirmar con la cliente
+Eventos y comunidad,Espacio de chat grupal Black (opcional),No,No,Por definir,¿Lo quieres incluir? Apagado por defecto si no lo confirmas
+Seguridad y bloqueo,Bloqueo bidireccional invisible,Sí,Sí,Sí,—
+Seguridad y bloqueo,Reporte de otras parejas,Sí,Sí,Sí,—
+Seguridad y bloqueo,Protección de capturas de pantalla,Sí,Sí,Sí,—
+Soporte,Canal de soporte,Correo estándar,Correo estándar,WhatsApp / Telegram directo,—
+Soporte,Tiempo de respuesta objetivo,72 h,48 h,12 h,Negociable — depende de tu capacidad de atención
+Administración,Panel admin con métricas de suscriptores,N/A,N/A,N/A,Solo visible para ti y moderadores — no es un beneficio de plan
