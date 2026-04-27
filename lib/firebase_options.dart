@@ -36,13 +36,17 @@ class DefaultFirebaseOptions {
   // ─── Replace every placeholder value below with real values ───────────────
   // from the Firebase Console or by running: flutterfire configure
 
+  // Web config — points at the test Firebase project so the moderation
+  // panel deployed at affinity-admin-test.web.app can authenticate.
+  // When migrating to production, replace these values with the
+  // production project's web config (or run `flutterfire configure`).
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_WEB_API_KEY',
-    appId: 'REPLACE_WITH_WEB_APP_ID',
-    messagingSenderId: 'REPLACE_WITH_MESSAGING_SENDER_ID',
-    projectId: 'REPLACE_WITH_PROJECT_ID',
-    authDomain: 'REPLACE_WITH_PROJECT_ID.firebaseapp.com',
-    storageBucket: 'REPLACE_WITH_PROJECT_ID.firebasestorage.app',
+    apiKey: 'AIzaSyDNdUkNvOS2sXx7ABvojd9qYJmeFLO7-Pw',
+    appId: '1:729691413850:web:0b964e85aa0060b64fe763',
+    messagingSenderId: '729691413850',
+    projectId: 'affinity-test-f4c84',
+    authDomain: 'affinity-test-f4c84.firebaseapp.com',
+    storageBucket: 'affinity-test-f4c84.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
