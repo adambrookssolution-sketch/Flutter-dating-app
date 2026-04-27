@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Panel de Moderación Affinity — Walkthrough</title>
+<style>
+  :root {
+    --burgundy: #B31637;
+    --purple: #5B1280;
+    --gold: #C9A24B;
+    --ink: #1B1B1F;
+    --ink-soft: #4A4A52;
+    --muted: #8A8A93;
+    --line: #E6E6EA;
+    --bg: #FAF8F5;
+    --card: #FFFFFF;
+    --done: #2E8B5C;
+    --done-bg: #EDF7F0;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  .page { max-width: 940px; margin: 0 auto; padding: 40px 28px 80px; }
+
+  .hero {
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--purple) 100%);
+    color: white;
+    border-radius: 22px;
+    padding: 40px 36px;
+    margin-bottom: 36px;
+    box-shadow: 0 12px 40px rgba(179, 22, 55, 0.18);
+  }
+  .hero .eyebrow {
+    font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+    opacity: 0.85; margin-bottom: 14px; font-weight: 700;
+  }
+  .hero h1 { font-size: 30px; margin: 0 0 12px 0; font-weight: 800; letter-spacing: -0.4px; }
+  .hero .lede { font-size: 16px; opacity: 0.95; max-width: 680px; }
+
+  h2 {
+    font-size: 20px; font-weight: 800; color: var(--ink);
+    margin: 40px 0 6px 0; letter-spacing: -0.2px;
+  }
+  h2 .step {
+    display: inline-block;
+    background: var(--burgundy); color: white;
+    width: 28px; height: 28px; border-radius: 50%;
+    text-align: center; line-height: 28px;
+    font-size: 13px; margin-right: 10px;
+    vertical-align: middle; font-weight: 700;
+  }
+  p { margin: 0 0 12px 0; color: var(--ink-soft); }
+  .intro { margin-bottom: 18px; max-width: 760px; }
+  code {
+    background: #F5F2EE; padding: 1px 6px; border-radius: 4px;
+    font-size: 13px; color: #7A0F26;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  /* Mock device frame for each screen */
+  .mock {
+    background: white;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    margin: 16px 0 8px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+  .mock .browser-bar {
+    background: #F0EFEC;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .mock .browser-bar .dots {
+    display: flex; gap: 6px;
+  }
+  .mock .browser-bar .dots span {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #D1D1D6;
+  }
+  .mock .browser-bar .url {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--line);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .mock .body {
+    padding: 0;
+    min-height: 360px;
+    background: #F6F6F8;
+  }
+
+  /* ── Screen 1 — Login ─────────────────────────────── */
+  .screen-login {
+    display: flex; align-items: center; justify-content: center;
+    padding: 48px 24px;
+    min-height: 380px;
+  }
+  .login-card {
+    width: 100%; max-width: 360px;
+    background: white;
+    padding: 32px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .login-card h3 {
+    font-size: 22px; margin: 0; font-weight: 800;
+  }
+  .login-card .sub {
+    font-size: 12px; color: var(--muted);
+    margin: 4px 0 22px 0;
+  }
+  .field {
+    margin-bottom: 12px;
+  }
+  .field label {
+    display: block; font-size: 12px; color: var(--muted);
+    margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .field .input-mock {
+    border: 1px solid var(--line);
+    background: white;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .btn-burgundy {
+    width: 100%;
+    background: var(--burgundy);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  /* ── Screen 2 — Queue ─────────────────────────────── */
+  .screen-queue {
+    background: white;
+  }
+  .app-bar {
+    background: var(--burgundy);
+    color: white;
+    padding: 14px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .app-bar .title {
+    font-weight: 700; font-size: 16px;
+  }
+  .app-bar .logout {
+    font-size: 12px; opacity: 0.85;
+  }
+  .queue-list {
+    background: white;
+  }
+  .queue-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px; border-bottom: 1px solid var(--line);
+    gap: 12px;
+  }
+  .queue-row:last-child { border-bottom: none; }
+  .queue-row .names {
+    font-weight: 700; color: var(--ink); font-size: 14px;
+    margin-bottom: 3px;
+  }
+  .queue-row .meta {
+    font-size: 12px; color: var(--muted);
+  }
+  .queue-row .chevron {
+    color: var(--muted); font-size: 18px;
+  }
+
+  /* ── Screen 3 — Review ─────────────────────────────── */
+  .screen-review {
+    background: white;
+  }
+  .review-body {
+    padding: 18px 22px;
+  }
+  .video-mock {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(135deg, #1B1B1F 0%, #2A1B3A 100%);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .video-mock::after {
+    content: "▶";
+    position: absolute;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    backdrop-filter: blur(8px);
+  }
+  .review-meta {
+    background: #F6F6F8;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .review-meta .row {
+    display: flex; justify-content: space-between;
+    padding: 4px 0; font-size: 13px;
+  }
+  .review-meta .row .k { color: var(--muted); }
+  .review-meta .row .v { color: var(--ink); font-weight: 600; }
+  .reasons-block {
+    margin-bottom: 14px;
+  }
+  .reasons-block .label {
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 700; margin-bottom: 8px;
+  }
+  .reason-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .reason-chips .chip {
+    padding: 6px 11px;
+    background: #F6F6F8;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .review-actions {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .btn-action {
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    text-align: center;
+    border: 1px solid;
+  }
+  .btn-approve {
+    background: var(--done-bg);
+    color: var(--done);
+    border-color: var(--done);
+  }
+  .btn-reject {
+    background: white;
+    color: var(--burgundy);
+    border-color: var(--burgundy);
+  }
+
+  /* Notes / details under each screen */
+  .notes {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 8px 0 28px 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .notes ul { margin: 6px 0 0 18px; padding: 0; }
+  .notes ul li { margin-bottom: 6px; }
+
+  .closing {
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--purple) 100%);
+    color: white;
+    border-radius: 18px;
+    padding: 30px 32px;
+    margin: 36px 0 0 0;
+  }
+  .closing h2 { color: white; margin-top: 0; }
+  .closing h2 .step { background: white; color: var(--burgundy); }
+  .closing p { color: rgba(255,255,255,0.92); }
+  .closing .sig {
+    margin-top: 18px; padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    font-size: 14px;
+  }
+  .closing .sig strong {
+    display: block; font-size: 16px; margin-bottom: 2px;
+  }
+
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 720px) {
+    .page { padding: 24px 14px 56px; }
+    .hero { padding: 28px 22px; border-radius: 16px; }
+    .hero h1 { font-size: 24px; }
+    .review-actions { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="eyebrow">Panel web de moderación · Walkthrough</div>
+    <h1>Cómo funciona el panel de revisión<br/>de verificaciones</h1>
+    <p class="lede">
+      Recorrido visual de las tres pantallas del panel: login del
+      moderador, cola de pendientes y pantalla de revisión con
+      aprobar/rechazar. Esto es lo que vas a usar tú o tu equipo
+      para revisar cada verificación cuando llegue una pareja nueva.
+    </p>
+  </header>
+
+  <p class="intro">
+    El panel se accede desde una URL pública con login propio
+    (separada de la app móvil). Solo entran cuentas que tienen el
+    permiso de moderador activado. Cualquier intento de acceso sin
+    permiso queda bloqueado tanto en la interfaz como en el servidor.
+  </p>
+
+  <!-- ── SCREEN 1 — LOGIN ─────────────────────────────── -->
+  <h2><span class="step">1</span> Login del moderador</h2>
+  <p class="intro">
+    Pantalla de entrada. Tu correo + contraseña. Sin redes sociales,
+    porque el panel es interno y solo lo usan personas que tú
+    autorices.
+  </p>
+
+  <div class="mock">
+    <div class="browser-bar">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="url">affinity-admin.web.app</div>
+    </div>
+    <div class="body screen-login">
+      <div class="login-card">
+        <h3>Affinity Moderation</h3>
+        <div class="sub">Internal tool — moderator access required</div>
+        <div class="field">
+          <label>Email</label>
+          <div class="input-mock">moderador@affinitysocialclub.com</div>
+        </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <div class="input-mock">••••••••••••</div>
+        </div>
+        <div class="btn-burgundy">Iniciar sesión</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <strong>Detrás de la pantalla</strong>
+    <ul>
+      <li>Si la cuenta no tiene el permiso de moderador, el panel rechaza el acceso con un mensaje claro y la sesión se cierra.</li>
+      <li>Los permisos se asignan desde mi lado con un script de un solo comando — toma 30 segundos por persona.</li>
+      <li>El servidor también valida el permiso en cada acción, así que no se puede aprobar o rechazar nada saltándose el panel.</li>
+    </ul>
+  </div>
+
+  <!-- ── SCREEN 2 — QUEUE ─────────────────────────────── -->
+  <h2><span class="step">2</span> Cola de verificaciones pendientes</h2>
+  <p class="intro">
+    Una vez dentro, ves la lista de parejas esperando revisión, en
+    orden de llegada. La lista se actualiza en tiempo real — cuando
+    una pareja envía su video, aparece sola sin tener que recargar.
+  </p>
+
+  <div class="mock">
+    <div class="browser-bar">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="url">affinity-admin.web.app</div>
+    </div>
+    <div class="body screen-queue">
+      <div class="app-bar">
+        <div class="title">Cola de verificación</div>
+        <div class="logout">Cerrar sesión</div>
+      </div>
+      <div class="queue-list">
+        <div class="queue-row">
+          <div>
+            <div class="names">Rafael &amp; María</div>
+            <div class="meta">CDMX, México · Intento 1 · Hace 12 min</div>
+          </div>
+          <div class="chevron">›</div>
+        </div>
+        <div class="queue-row">
+          <div>
+            <div class="names">Andrés &amp; Lucía</div>
+            <div class="meta">Cancún, México · Intento 1 · Hace 1 h</div>
+          </div>
+          <div class="chevron">›</div>
+        </div>
+        <div class="queue-row">
+          <div>
+            <div class="names">Juan &amp; Sofía</div>
+            <div class="meta">Guadalajara, México · Intento 2 · Hace 3 h</div>
+          </div>
+          <div class="chevron">›</div>
+        </div>
+        <div class="queue-row">
+          <div>
+            <div class="names">Carlos &amp; Daniela</div>
+            <div class="meta">Buenos Aires, Argentina · Intento 1 · Hace 5 h</div>
+          </div>
+          <div class="chevron">›</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <strong>Lo que se ve en cada fila</strong>
+    <ul>
+      <li>Nombres de los dos miembros de la pareja.</li>
+      <li>Ciudad y país (vienen del registro).</li>
+      <li>Intento de verificación (1 = primer envío, 2 = segundo, 3 = bloqueo permanente).</li>
+      <li>Cuánto tiempo lleva la solicitud esperando.</li>
+    </ul>
+  </div>
+
+  <!-- ── SCREEN 3 — REVIEW ─────────────────────────────── -->
+  <h2><span class="step">3</span> Pantalla de revisión — Aprobar o Rechazar</h2>
+  <p class="intro">
+    Al tocar una pareja en la cola, se abre la pantalla de revisión
+    con el video, los datos de la pareja y los dos botones de acción.
+    El motivo de rechazo es obligatorio y viene de una lista cerrada
+    para mantener consistencia.
+  </p>
+
+  <div class="mock">
+    <div class="browser-bar">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="url">affinity-admin.web.app</div>
+    </div>
+    <div class="body screen-review">
+      <div class="app-bar">
+        <div class="title">Rafael &amp; María — Revisión</div>
+        <div class="logout">Cerrar sesión</div>
+      </div>
+      <div class="review-body">
+        <div class="video-mock">Video de verificación · 4 segundos</div>
+        <div class="review-meta">
+          <div class="row"><span class="k">Pareja</span><span class="v">Rafael Hernández &amp; María López</span></div>
+          <div class="row"><span class="k">Edades</span><span class="v">32 &amp; 29</span></div>
+          <div class="row"><span class="k">Ubicación</span><span class="v">CDMX, México</span></div>
+          <div class="row"><span class="k">Fotos</span><span class="v">6 / 6</span></div>
+          <div class="row"><span class="k">Intento</span><span class="v">1 de 2</span></div>
+          <div class="row"><span class="k">Enviado</span><span class="v">Hace 12 minutos</span></div>
+        </div>
+        <div class="reasons-block">
+          <div class="label">Motivos de rechazo (lista cerrada)</div>
+          <div class="reason-chips">
+            <div class="chip">Las fotos no coinciden entre sí</div>
+            <div class="chip">El video es poco claro</div>
+            <div class="chip">Perfil sospechoso</div>
+            <div class="chip">Fotos con contenido inapropiado</div>
+            <div class="chip">Solo aparece una persona</div>
+            <div class="chip">Se sospecha menor de edad</div>
+            <div class="chip">Calidad del video baja</div>
+            <div class="chip">Otro</div>
+          </div>
+        </div>
+        <div class="review-actions">
+          <div class="btn-action btn-approve">✓ Aprobar pareja</div>
+          <div class="btn-action btn-reject">✗ Rechazar con motivo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <strong>Cómo funciona la decisión</strong>
+    <ul>
+      <li><strong>Aprobar</strong>: la pareja pasa a estado <code>approved</code> y aparece de inmediato en el feed de las demás parejas. La app del usuario refresca sola sin reinstalar.</li>
+      <li><strong>Rechazar</strong>: el usuario recibe el motivo y puede reintentar. Al tercer rechazo la cuenta queda bloqueada permanentemente, conforme al documento.</li>
+      <li>El video se guarda 7 días tras la aprobación y luego se elimina automáticamente, conservando solo el hash y los frames de referencia.</li>
+      <li>Cada decisión queda registrada con el ID del moderador que la tomó, para trazabilidad.</li>
+    </ul>
+  </div>
+
+  <!-- CLOSING -->
+  <section class="closing">
+    <h2><span class="step">→</span> Lo que sigue</h2>
+    <p>
+      Las tres pantallas que ves arriba están construidas y compilando
+      correctamente. Para que las puedas usar tú esta semana solo
+      necesito desplegar el bundle a una URL pública y darte permiso
+      de moderadora.
+    </p>
+    <p>
+      <strong>Lo único que necesito de tu lado:</strong> el correo que
+      vas a usar como administradora. Con eso te dejo el panel
+      funcionando y le puedes dar acceso a quien tú quieras de tu
+      equipo cuando estés lista.
+    </p>
+    <div class="sig">
+      <strong>Quedo atento.</strong>
+      Si quieres que ajuste algo de la interfaz antes del despliegue,
+      mándame captura y lo cambio.
+    </div>
+  </section>
+
+  <div class="footer-note">
+    Walkthrough preparado por Gabriel — Affinity · 25 de abril, 2026
+  </div>
+
+</div>
+</body>
+</html>

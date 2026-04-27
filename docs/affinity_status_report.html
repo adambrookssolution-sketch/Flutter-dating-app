@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Affinity — Reporte de Estado del Proyecto</title>
+<style>
+  :root {
+    --burgundy: #B31637;
+    --burgundy-dark: #7A0F26;
+    --purple: #5B1280;
+    --gold: #C9A24B;
+    --ink: #1B1B1F;
+    --ink-soft: #4A4A52;
+    --muted: #8A8A93;
+    --line: #E6E6EA;
+    --bg: #FAF8F5;
+    --card: #FFFFFF;
+    --done: #2E8B5C;
+    --done-bg: #EDF7F0;
+    --progress: #C76A1A;
+    --progress-bg: #FFF6ED;
+    --pending: #6B7280;
+    --pending-bg: #F3F4F6;
+    --blocked: #B33017;
+    --blocked-bg: #FBEFEC;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 28px 80px;
+  }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--purple) 100%);
+    color: white;
+    border-radius: 22px;
+    padding: 44px 40px;
+    margin-bottom: 36px;
+    box-shadow: 0 12px 40px rgba(179, 22, 55, 0.18);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .hero .eyebrow {
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 14px;
+    font-weight: 700;
+  }
+  .hero h1 {
+    font-size: 34px; line-height: 1.15;
+    margin: 0 0 14px 0;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+  }
+  .hero .lede {
+    font-size: 16px;
+    opacity: 0.95;
+    max-width: 700px;
+    margin: 0;
+  }
+  .hero-meta {
+    display: flex; gap: 32px; margin-top: 28px; flex-wrap: wrap;
+    position: relative; z-index: 1;
+  }
+  .hero-meta div {
+    font-size: 12px; opacity: 0.85;
+  }
+  .hero-meta strong {
+    display: block; font-size: 14px; opacity: 1;
+    margin-bottom: 2px; font-weight: 700;
+  }
+
+  /* Summary */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .stat {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 22px;
+    position: relative;
+  }
+  .stat .num {
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+    letter-spacing: -1px;
+  }
+  .stat .lbl {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: 700;
+  }
+  .stat.done .num   { color: var(--done); }
+  .stat.progress .num { color: var(--progress); }
+  .stat.pending .num  { color: var(--pending); }
+  .stat.blocked .num  { color: var(--blocked); }
+
+  /* Section headers */
+  h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--ink);
+    margin: 48px 0 6px 0;
+    letter-spacing: -0.3px;
+  }
+  h2 .num-badge {
+    display: inline-block;
+    background: var(--burgundy);
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    text-align: center; line-height: 28px;
+    font-size: 14px; margin-right: 10px;
+    vertical-align: middle; font-weight: 700;
+  }
+  h2 .num-badge.gold { background: var(--gold); }
+  h3 { font-size: 17px; margin: 24px 0 8px 0; font-weight: 700; }
+  p { margin: 0 0 12px 0; color: var(--ink-soft); }
+  .section-intro {
+    color: var(--ink-soft); font-size: 15px;
+    margin-bottom: 18px; max-width: 760px;
+  }
+
+  /* Item card */
+  .item {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    margin: 14px 0;
+    padding: 20px 24px;
+  }
+  .item-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 18px; margin-bottom: 10px;
+  }
+  .item-title {
+    font-size: 17px; font-weight: 700; color: var(--ink);
+    margin: 0;
+  }
+  .item-title .id {
+    color: var(--muted); font-weight: 600; margin-right: 6px;
+  }
+  .badge {
+    flex-shrink: 0;
+    font-size: 11px; font-weight: 800;
+    padding: 5px 11px; border-radius: 14px;
+    letter-spacing: 1px; text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .badge.done    { color: var(--done);     background: var(--done-bg); }
+  .badge.progress{ color: var(--progress); background: var(--progress-bg); }
+  .badge.pending { color: var(--pending);  background: var(--pending-bg); }
+  .badge.blocked { color: var(--blocked);  background: var(--blocked-bg); }
+
+  .item-body {
+    font-size: 14px; color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .item-body p { margin: 0 0 8px 0; }
+  .item-body ul { margin: 6px 0 8px 18px; padding: 0; }
+  .item-body li { margin-bottom: 4px; }
+  .item-body code {
+    background: #F5F2EE;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--burgundy-dark);
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  .deps {
+    margin-top: 10px;
+    font-size: 13px;
+    padding: 10px 14px;
+    background: #FFF9EF;
+    border-left: 3px solid var(--gold);
+    border-radius: 6px;
+    color: var(--ink-soft);
+  }
+  .deps strong {
+    color: var(--burgundy-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Order / next steps */
+  .order-card {
+    background: linear-gradient(160deg, #FAF5EE 0%, #F5ECDD 100%);
+    border-radius: 16px;
+    padding: 26px 30px;
+    margin: 24px 0;
+    border: 1px solid #E8D9BC;
+  }
+  .order-card h3 {
+    margin-top: 0; color: var(--burgundy-dark);
+    font-size: 18px;
+  }
+  .order-card ol {
+    padding-left: 22px;
+    margin: 8px 0 0 0;
+  }
+  .order-card ol li {
+    padding: 6px 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+  .order-card ol li strong { color: var(--ink); }
+
+  /* Closing */
+  .closing {
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--purple) 100%);
+    color: white;
+    border-radius: 18px;
+    padding: 32px 36px;
+    margin: 40px 0 0 0;
+  }
+  .closing h2 {
+    color: white; margin-top: 0;
+  }
+  .closing h2 .num-badge { background: white; color: var(--burgundy); }
+  .closing p { color: rgba(255,255,255,0.92); }
+  .closing .sig {
+    margin-top: 22px; padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    font-size: 14px;
+  }
+  .closing .sig strong {
+    display: block; font-size: 16px; margin-bottom: 2px;
+  }
+
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 36px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 720px) {
+    .page { padding: 24px 14px 56px; }
+    .hero { padding: 30px 22px; border-radius: 16px; }
+    .hero h1 { font-size: 26px; }
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    .item-head { flex-direction: column; }
+    .item { padding: 18px 18px; }
+    .closing { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="eyebrow">Reporte interno · Estado del Proyecto</div>
+    <h1>Affinity — punto por punto sobre las<br/>Condiciones Generales</h1>
+    <p class="lede">
+      Mapeo completo de los 14 puntos del documento que firmamos el
+      8 de abril, con el estado actual de cada uno y el orden en que
+      seguimos avanzando. Pensado para revisarlo juntas y ajustar
+      prioridades donde haga falta.
+    </p>
+    <div class="hero-meta">
+      <div><strong>Documento base</strong>CONDICIONES GENERALES — 8 abr 2026</div>
+      <div><strong>Estado del reporte</strong>25 de abril, 2026</div>
+      <div><strong>Preparado por</strong>Gabriel</div>
+    </div>
+  </header>
+
+  <!-- SUMMARY STATS -->
+  <section class="summary">
+    <div class="stat done">
+      <div class="num">10</div>
+      <div class="lbl">Completados</div>
+    </div>
+    <div class="stat progress">
+      <div class="num">2</div>
+      <div class="lbl">En curso</div>
+    </div>
+    <div class="stat pending">
+      <div class="num">2</div>
+      <div class="lbl">Por activar</div>
+    </div>
+    <div class="stat blocked">
+      <div class="num">0</div>
+      <div class="lbl">Bloqueados</div>
+    </div>
+  </section>
+
+  <p class="section-intro">
+    "Por activar" significa que el código y la lógica ya están listos
+    en el entorno de pruebas, pero la activación final depende de
+    pasos que no son de código (compra de cuentas de desarrollador,
+    despliegue al Firebase real, etc.). Ningún punto está bloqueado.
+  </p>
+
+  <!-- ────────── 8 PUNTOS PRINCIPALES ────────── -->
+
+  <h2><span class="num-badge">1</span> Verificación por video</h2>
+  <p class="section-intro">
+    Registro como pareja, video de 3–5 s con prompt de cabeza, panel
+    de moderación con aprobar/rechazar y motivos predefinidos.
+  </p>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">1.1</span> Flujo de pareja + 3 fotos mínimas + video</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Registro implementado como un único flujo de pareja, con foto mínima de 3 imágenes,
+        cámara para grabar 3–5 s y prompt rotativo (mira al frente → derecha → izquierda).
+        Tras enviar, el perfil queda en <code>pending_review</code> y la app bloquea
+        cualquier acceso al feed hasta la aprobación.
+      </p>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">1.2</span> Panel web de moderación</h3>
+      </div>
+      <span class="badge progress">En curso</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Las tres pantallas (login, cola de pendientes, revisión con aprobar/rechazar)
+        están construidas en Flutter Web y compilan correctamente.
+      </p>
+      <ul>
+        <li><strong>Login</strong> con Firebase Auth + verificación del custom claim <code>moderator: true</code>.</li>
+        <li><strong>Cola</strong> en tiempo real (stream sobre <code>couples</code> con <code>status == pending_review</code>).</li>
+        <li><strong>Pantalla de revisión</strong> con reproductor de video, lista cerrada de motivos de rechazo, y al tercer rechazo la cuenta queda permanentemente bloqueada.</li>
+      </ul>
+      <p>
+        Pendiente: desplegar el bundle a un dominio público
+        (<code>affinity-admin.web.app</code>) y mintear el primer claim de moderador.
+        Eso es trabajo de configuración, no de código.
+      </p>
+    </div>
+    <div class="deps">
+      <strong>Para activar</strong>
+      Necesito que me confirmes el correo que usarás como administradora
+      para mintear el primer claim de moderador. El despliegue se puede
+      hacer al entorno de pruebas hoy mismo si lo prefieres.
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">1.3</span> Manejo de video — 7 días + hash + 2-3 frames</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Cloud Function <code>cleanupExpiredVideos</code> programada diariamente a las
+        04:00 UTC: borra el archivo del Storage y conserva el hash SHA-256, la fecha,
+        el ID del moderador y el espacio para los 2–3 frames de referencia.
+      </p>
+    </div>
+  </div>
+
+  <h2><span class="num-badge">2</span> Recuperación de cuentas</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">2.0</span> Email recovery sin branding, 15 min, sesiones cerradas</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Cloud Function <code>sendCustomReset</code> genera el link de Firebase Auth con
+        TTL de 15 minutos, se envía con asunto neutro y sin branding.
+        <code>markRecoveryCompleted</code> revoca todos los refresh tokens al cambiar
+        la contraseña (cierre de sesiones activas).
+      </p>
+      <p>
+        Cada intento se registra con IP + dispositivo + fecha y se le muestra al
+        usuario un diálogo informativo después de iniciar sesión.
+      </p>
+    </div>
+    <div class="deps">
+      <strong>Para activar en producción</strong>
+      Conexión con servidor de correo profesional (SendGrid o Mailgun) con dominio
+      verificado. Es la pieza que resuelve el problema de "los correos caen en spam".
+    </div>
+  </div>
+
+  <h2><span class="num-badge">3</span> Eliminación de cuentas</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">3.0</span> Borrado atómico + 30 días de gracia</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Tres pantallas (Account Settings → Delete account → Cancel deletion) con
+        doble confirmación. La cuenta queda en <code>pending_deletion</code> e invisible
+        para otras parejas durante 30 días, con opción de cancelar.
+      </p>
+      <p>
+        Cloud Function <code>executeDeletion</code> programada diariamente a las 03:00 UTC
+        purga atómicamente: documento de la pareja, fotos, video, conversaciones,
+        solicitudes, bloqueos y la cuenta de Firebase Auth. Los reportes quedan
+        anonimizados según el documento. En conversaciones ajenas el perfil se ve como
+        "usuario eliminado".
+      </p>
+    </div>
+  </div>
+
+  <h2><span class="num-badge">4</span> Filtros + geolocalización + Travel Match</h2>
+  <p class="section-intro">
+    Pantalla de filtros completa, geohash, Travel Match dentro del panel
+    de filtros, sistema de Requests de mensajes con expiración y
+    cooldown.
+  </p>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">4.1</span> Pantalla de filtros + Riverpod + sesión por usuario</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Pantalla de filtros construida desde cero en Riverpod (introducción
+        progresiva, sin tocar pantallas existentes). Distancia (km) con piso
+        de 5 km, rango de edad, las tres categorías de tags
+        (Dynamics, Experience, Interests con umbral del 50%) y el bloque de
+        Travel Match. Los filtros se resetean automáticamente al cerrar sesión
+        para que el siguiente usuario empiece limpio.
+      </p>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">4.2</span> Geolocalización por kilómetros (sin country/city)</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Per feedback del 23 de abril, los campos Country y City quedaron fuera.
+        Toda la búsqueda se hace por kilometraje usando la geolocalización
+        automática del dispositivo, con piso de 5 km. La integración con
+        <code>geoflutterfire_plus</code> está lista para activarse cuando el feed
+        consuma desde la colección <code>couples</code>.
+      </p>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">4.3</span> Travel Match — destinos + matching combinado</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Subcolección <code>couples/{id}/trips</code> con destino + fecha_inicio +
+        fecha_fin. Cloud Function <code>findMatches</code> hace el cruce
+        (mismo destino + fechas con solapamiento), excluyendo bloqueos en ambos
+        sentidos. El bloque de Travel Match vive dentro del panel de filtros
+        como pediste.
+      </p>
+    </div>
+    <div class="deps">
+      <strong>Pendiente</strong>
+      Reemplazar la lista actual de 10 destinos sembrados por la lista
+      actualizada que me vas a pasar. Es un cambio en el panel de
+      administración, son minutos.
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">4.4</span> Notificaciones automáticas + recordatorio 7 días antes</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Cloud Function <code>onTripCreated</code> notifica al instante a la pareja que
+        agregó el viaje y a las parejas con coincidencia. <code>tripReminder</code>
+        corre diariamente a las 08:00 UTC y envía el aviso 7 días antes del viaje.
+      </p>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">4.5</span> Sistema de Requests — 14 días, cooldown 30, rechazo silencioso</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Colección <code>message_requests</code> con todos los campos del documento.
+        El diálogo de envío hace preflight (canSend) que respeta el cooldown de
+        30 días tras un rechazo. <code>expireRequests</code> corre diariamente a las
+        05:00 UTC y marca las solicitudes pendientes mayores a 14 días como
+        <code>expired</code> sin notificar al receptor.
+      </p>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">4.6</span> Botón "Explore More Trips" en Manage Trips</h3>
+      </div>
+      <span class="badge progress">En curso</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Botón ya colocado en la parte inferior de Manage Trips, junto al de
+        "Add trip", con el estilo que me mostraste. Apertura externa en
+        navegador.
+      </p>
+    </div>
+    <div class="deps">
+      <strong>Pendiente</strong>
+      Que me confirmes el link de la agencia de viajes con la que estás
+      colaborando. Mientras, el botón abre un placeholder
+      (<code>https://affinitysocialclub.com/trips</code>) que se reemplaza en una
+      línea de código.
+    </div>
+  </div>
+
+  <h2><span class="num-badge">5</span> Sistema de denuncias</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">5.0</span> Reports + bloqueo automático + auto-suspensión</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Pantalla de reporte con 6 categorías cerradas, descripción opcional
+        (obligatoria para "Otro") y checkbox "Bloquear también" pre-marcado por
+        defecto. Cloud Function <code>onReportCreated</code> aplica las dos reglas
+        automáticas: 5 reportes de fuentes distintas en 30 días → suspensión
+        automática; más de 10 reportes del mismo emisor en 7 días → reporte
+        bloqueado por abuso. Confidencialidad total del que reporta.
+      </p>
+    </div>
+  </div>
+
+  <h2><span class="num-badge">6</span> Bloqueo de usuarios</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">6.0</span> Bloqueo bidireccional silencioso + Security screen</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Colección <code>blocks</code> con bloqueo bidireccional invisible, requests
+        simulados al usuario bloqueado (parecen enviados pero nunca llegan).
+        Pantalla "Security" en Perfil con la lista de bloqueos y la opción de
+        desbloquear. Cloud Function <code>onSuspension</code> dispara el bloqueo
+        automático contra todas las parejas que reportaron en los últimos 90
+        días, según lo que decidiste en el documento.
+      </p>
+    </div>
+  </div>
+
+  <h2><span class="num-badge">7</span> Protección contra screenshots</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">7.0</span> SecureView (iOS) + FLAG_SECURE (Android) + watermark + sin caché</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Capa nativa en Android (FLAG_SECURE vía MethodChannel) y en iOS
+        (SecureView con UITextField). Widget Flutter <code>SecureView</code> aplicado a
+        Chat, Travel Match, Request preview e imágenes ampliadas. Marca de
+        agua invisible (LSB) que codifica el ID de la pareja al renderizar — 4 de
+        4 tests unitarios pasando. Imágenes sensibles sin caché local
+        (<code>NoCacheImage</code>).
+      </p>
+    </div>
+  </div>
+
+  <h2><span class="num-badge">8</span> Publicación en stores</h2>
+  <p class="section-intro">
+    El código está listo en su totalidad. Los puntos pendientes son
+    administrativos: cuentas de desarrollador, assets visuales y
+    metadata.
+  </p>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">8.1</span> Renombrado, age gate +21, demo account, regression checklist</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Paquete de Android renombrado a <code>com.affinitysocialclub.app</code>,
+        bundle ID iOS actualizado, validador +21 en el registro, script
+        <code>seed_demo_account</code> que crea la pareja demo pre-aprobada para los
+        revisores, checklist de 7 flujos para QA antes de cada submit.
+      </p>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">8.2</span> Descripciones EN/ES + privacy labels + reviewer notes</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Borrador completo en español e inglés de las descripciones para App
+        Store y Google Play, cuidando el vocabulario que Apple flagga
+        automáticamente. Tabla de privacy labels lista, notas para los
+        revisores con accesos al panel de moderación y al perfil demo.
+      </p>
+    </div>
+    <div class="deps">
+      <strong>Para activar</strong>
+      Te paso los textos cuando los revisemos juntas (queremos un
+      visto bueno tuyo antes de subirlos).
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">8.3</span> Iconos finales + capturas + páginas legales</h3>
+      </div>
+      <span class="badge pending">Por activar</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Configuración de íconos y splash screen ya integrada
+        (<code>flutter_launcher_icons</code>, <code>flutter_native_splash</code>). Plantillas
+        HTML de Privacy Policy, Terms y Moderation Policy listas en
+        <code>legal/</code>.
+      </p>
+    </div>
+    <div class="deps">
+      <strong>Para activar</strong>
+      <ul style="margin: 6px 0 0 18px;">
+        <li>Arte final del ícono y splash (motivo piña) — del equipo creativo.</li>
+        <li>Revisión legal del Privacy Policy / Terms / Moderation por su abogado.</li>
+        <li>Cuenta de Apple Developer (D-U-N-S, 3–7 días) y Google Play Console.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">8.4</span> TestFlight + Submission</h3>
+      </div>
+      <span class="badge pending">Por activar</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Listo para ejecutar en cuanto las cuentas de desarrollador
+        estén activas. La regression checklist queda corrida en
+        físico (Android + iOS) la víspera del submit.
+      </p>
+    </div>
+  </div>
+
+  <!-- ────────── PUNTOS TÉCNICOS ADICIONALES ────────── -->
+
+  <h2><span class="num-badge gold">9</span> Migración del modelo de datos</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">9.0</span> profiles → couples + arrays separados + campos faltantes</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Script <code>migrate_profiles_to_couples.ts</code> escrito en TypeScript con
+        modos <code>--dry-run</code> y <code>--write</code>. Convierte el campo CSV
+        <code>interests</code> en tres arrays (Dynamics, Experience, Interests),
+        añade <code>country</code>, <code>geohash</code>, <code>status</code> y la subcolección
+        <code>trips</code>. La ejecución real sobre tu Firebase oficial está
+        documentada paso a paso (con backups y rollback).
+      </p>
+    </div>
+  </div>
+
+  <h2><span class="num-badge gold">10</span> State Management — Riverpod progresivo</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">10.0</span> Introducción gradual sin romper la estructura existente</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Riverpod introducido vía <code>ProviderScope</code> en <code>main.dart</code>.
+        La pantalla de filtros y los providers de suscripción son los primeros
+        consumidores. Las pantallas existentes (login, profile setup, chat)
+        siguen con su <code>setState</code> habitual — política de adopción progresiva.
+      </p>
+    </div>
+  </div>
+
+  <h2><span class="num-badge gold">11</span> Paginación del feed</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">11.0</span> Cursor de Firestore + 20 por página + scroll infinito</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        <code>getProfilesPage</code> trae 20 documentos por página devolviendo el
+        cursor para la siguiente. La pantalla del feed dispara la siguiente
+        página al 80% del scroll, con un footer loader cuando se está
+        recargando.
+      </p>
+    </div>
+  </div>
+
+  <h2><span class="num-badge gold">12</span> Notificaciones push</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">12.0</span> FCM — registro + envío para Requests, Travel Match, Moderación</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Cliente registra el token FCM al iniciar sesión y lo retira al
+        cerrarla. Cloud Functions ya disparan los pushes para los tres
+        eventos del documento: Requests entrantes, Travel Match (al instante
+        + 7 días antes), y eventos de moderación.
+      </p>
+    </div>
+    <div class="deps">
+      <strong>Para activar</strong>
+      Plan Blaze de Firebase en tu proyecto oficial (las Cloud Functions corren
+      ahí). En el entorno de pruebas actual está en plan Spark a propósito,
+      para no involucrar facturación antes de la integración final.
+    </div>
+  </div>
+
+  <h2><span class="num-badge gold">13</span> Estructura de datos de pareja</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">13.0</span> Renombrado a couples + nuevos campos</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Modelo <code>Couple</code> con sub-objetos <code>partner_a</code> /
+        <code>partner_b</code>, campos
+        <code>status</code>, <code>verification</code>, <code>geo</code>, <code>trips</code>
+        (subcolección). El script de migración es la pieza que mueve los datos
+        existentes al nuevo nombre y forma.
+      </p>
+    </div>
+  </div>
+
+  <h2><span class="num-badge gold">14</span> Pantallas faltantes en Profile</h2>
+  <div class="item">
+    <div class="item-head">
+      <div>
+        <h3 class="item-title"><span class="id">14.0</span> Manage Trips, Security, Account Settings, Help</h3>
+      </div>
+      <span class="badge done">Completado</span>
+    </div>
+    <div class="item-body">
+      <p>
+        Las pantallas que antes eran botones placeholder ahora navegan a
+        funcionalidad real:
+      </p>
+      <ul>
+        <li><strong>Manage Trips</strong> — listar, agregar, eliminar viajes; ver matches.</li>
+        <li><strong>Security</strong> — lista de bloqueos con badges (manual / vía reporte / automático) y opción de desbloquear.</li>
+        <li><strong>Account Settings</strong> — entrada al flujo de eliminación de cuenta, cierre de sesión.</li>
+        <li><strong>Favorites</strong> — pendiente para la fase 2 (no estaba en el alcance MVP, pero queda registrado para no perderlo).</li>
+        <li><strong>Help</strong> — pendiente del enlace final que decidamos juntas (correo o formulario web).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ────────── ORDER OF NEXT STEPS ────────── -->
+
+  <h2><span class="num-badge">→</span> Orden propuesto para los próximos pasos</h2>
+  <p class="section-intro">
+    Esto es lo que sigue, en el orden que tiene más sentido por
+    dependencia técnica. Cualquier reordenamiento que prefieras lo
+    aplico.
+  </p>
+
+  <div class="order-card">
+    <h3>Esta semana</h3>
+    <ol>
+      <li><strong>Despliegue del panel de moderación</strong> al entorno de pruebas con su URL pública (<code>affinity-admin-test.web.app</code>) y minteo del primer claim de moderador a tu correo. Lo puedes empezar a usar para revisar verificaciones reales.</li>
+      <li><strong>Reemplazo de la lista de destinos de Travel Match</strong> con la lista actualizada que me pases.</li>
+      <li><strong>Revisión conjunta de las descripciones EN/ES</strong> para App Store y Google Play.</li>
+    </ol>
+  </div>
+
+  <div class="order-card">
+    <h3>Cuando cierre la fase 2 de la agencia</h3>
+    <ol>
+      <li><strong>Integración del trabajo de la agencia con esta versión</strong> (modular, sin reescribir nada de lo suyo).</li>
+      <li><strong>Migración a tu Firebase oficial</strong>: claves de Google Places, servidor de correo profesional (SendGrid/Mailgun), activación del plan Blaze, despliegue de funciones, ejecución del script de migración con sus snapshots de seguridad.</li>
+      <li><strong>Despliegue del panel de moderación</strong> a su dominio definitivo (<code>affinity-admin.web.app</code>).</li>
+    </ol>
+  </div>
+
+  <div class="order-card">
+    <h3>Inmediatamente después</h3>
+    <ol>
+      <li><strong>Generación de assets finales</strong> con el equipo creativo (íconos, splash, capturas de pantalla en 5 tamaños por idioma).</li>
+      <li><strong>Revisión legal</strong> de Privacy Policy, Terms y Moderation Policy.</li>
+      <li><strong>Submission a App Store y Google Play</strong> con cuenta de desarrollador, testflight, demo account para los revisores y seguimiento del proceso de revisión.</li>
+    </ol>
+  </div>
+
+  <!-- CLOSING -->
+  <section class="closing">
+    <h2><span class="num-badge">✓</span> Lo que necesito de tu lado para arrancar lo de esta semana</h2>
+    <p>
+      Solo dos cosas, ambas livianas:
+    </p>
+    <ol style="padding-left: 22px; margin: 8px 0; color: rgba(255,255,255,0.95);">
+      <li style="padding: 6px 0;">El correo que vas a usar como administradora del panel de moderación (para mintear el claim).</li>
+      <li style="padding: 6px 0;">La lista actualizada de destinos para Travel Match.</li>
+    </ol>
+    <p>
+      Con eso esta semana cerramos el bloque del panel y dejamos los
+      destinos definitivos. El resto del orden lo seguimos juntas conforme
+      avanzamos.
+    </p>
+    <div class="sig">
+      <strong>Quedo atento a tus comentarios.</strong>
+      Si quieres ajustar el orden o hay algún punto que prefieras
+      acelerar, lo reordeno sin problema.
+    </div>
+  </section>
+
+  <div class="footer-note">
+    Reporte preparado por Gabriel — Affinity · 25 de abril, 2026
+  </div>
+
+</div>
+</body>
+</html>
