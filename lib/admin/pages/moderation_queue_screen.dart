@@ -165,7 +165,7 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Cola de verificación',
+                'Cola de verificación · v2',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
