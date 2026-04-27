@@ -1,72 +1,57 @@
 # Mensaje final — paquete completo de la semana
 
-> Mensaje único de envío para WhatsApp. Cubre TODO lo que pidió la
-> cliente esta semana ("avances sobre el panel web de admin" + "revisar
-> el documento de CONDICIONES GENERALES punto por punto") más los
-> documentos que destraban las dependencias externas (cuentas de
-> desarrollador, equipo creativo).
+> Mensaje único de envío para WhatsApp. Cubre lo que pidió la cliente
+> esta semana (avances del panel web de admin + revisar el documento
+> de Condiciones Generales punto por punto) más los documentos que
+> destraban las dependencias externas.
 >
-> Tono: cierra dos solicitudes concretas + abre cuatro frentes
-> paralelos sin presionar ninguno. Termina con cuatro pedidos livianos.
->
-> Se acompaña de:
->   📄 affinity_status_report.html  → PDF
->   📄 client_apple_developer_quickstart_es.md  → PDF
->   📄 client_creative_assets_spec_es.md  → PDF
-> Y dentro del cuerpo: el URL en vivo del panel.
->
-> NOTA: el walkthrough HTML del panel (admin_panel_walkthrough.html)
-> ya NO se incluye porque la cliente puede abrir el panel real
-> directamente — un mockup es redundante cuando hay producto vivo.
+> Acompaña:
+>   - Reporte de estado (PDF de affinity_status_report.html)
+>   - Guía Apple Developer (PDF de client_apple_developer_quickstart_es.md)
+>   - Spec de assets (PDF de client_creative_assets_spec_es.md)
 
 ---
 
 Hola Alejandra,
 
-Te paso el paquete completo de la semana, con todo lo que mencionamos y un par de extras para que tu equipo pueda avanzar en paralelo.
+Te paso lo de la semana.
 
-## 🟢 1. Panel de moderación — ya en línea
+**Panel de moderación**
 
-Quedó desplegado, rediseñado con la línea visual oscura y moderna que va con Affinity, y funcionando contra el entorno de pruebas. Lo puedes abrir directamente:
+Quedó listo y desplegado. Le di una pasada visual oscura para que vaya con la línea de Affinity. Lo puedes abrir directo:
 
-**https://affinity-admin-test.web.app**
+https://affinity-admin-test.web.app
 
-Si abriste el panel hace unos días y se ve la versión vieja, probablemente sea caché del navegador. En una pestaña de incógnito, o con Ctrl+Shift+R, ya carga la nueva versión.
+Si lo abriste hace unos días y se ve la versión vieja, es caché del navegador. Con Ctrl+Shift+R, o en una pestaña de incógnito, ya carga la nueva.
 
-Sobre los videos y fotos que aparecen como "no disponibles" dentro del panel, es esperado: el entorno de pruebas está en el plan gratuito de Firebase, que tiene Cloud Storage desactivado. Cuando una pareja envía su perfil acá, el archivo no llega a guardarse, y por eso el panel muestra esas tarjetas informativas. **Toda esa parte se enciende sola** al pasar a tu Firebase de producción — el código ya maneja los cuatro escenarios (archivo presente, cargando, con error, ausente).
+Sobre los videos y las fotos que aparecen como "no disponibles" dentro del panel, es lo esperado en este entorno. La versión de prueba está en el plan gratuito de Firebase, que tiene Cloud Storage desactivado, así que cuando una pareja envía su perfil acá los archivos no se guardan. En tu Firebase de producción esa parte se enciende sola al activarlo, sin tocar código.
 
-Para que puedas entrar al panel, necesito **el correo que vas a usar como administradora**. Con eso te doy permiso de moderadora en 30 segundos y entras directo.
+Para que puedas entrar al panel necesito el correo que vas a usar como administradora. Con eso te doy permiso de moderadora y entras directo.
 
-## 📄 2. Reporte punto por punto del documento de Condiciones Generales
+**Reporte punto por punto del documento**
 
-PDF adjunto. Mapeé los **14 puntos del documento** uno por uno con su estado actual: qué está hecho, qué está en curso, qué depende de pasos externos, y el orden propuesto para los próximos pasos. Está pensado para que lo revisemos juntas y ajustemos lo que quieras.
+Te adjunto un PDF con los 14 puntos del documento mapeados uno por uno: qué está hecho, qué está en curso, y qué depende de pasos externos. Es para que lo revises y me digas si quieres reordenar algo.
 
-Resumen rápido: **17 de 18 sub-puntos completados a nivel de código**. Lo único que queda son activaciones que dependen de pasos que no son técnicos (cuentas de desarrollador, integración con la fase 2 de la agencia, assets visuales finales, revisión legal).
+Casi todo lo del documento ya está cerrado a nivel de código. Lo que queda no es desarrollo, es activación: cuentas de desarrollador, integración con la fase 2 de la agencia, assets visuales finales, revisión legal de las páginas.
 
-## 🚀 3. Para destrabar el camino al lanzamiento
+**Para destrabar lo del lanzamiento**
 
-Te dejo dos guías para que tu equipo pueda avanzar **en paralelo a lo que cierro yo**, sin que nada dependa de mi tiempo:
+Te adjunto otros dos PDFs cortos para que tu equipo pueda avanzar conmigo en paralelo:
 
-### 📄 Guía rápida — Apple Developer + Google Play Console (PDF adjunto)
+- *Guía rápida — Apple Developer + Google Play Console.* Paso a paso del trámite. La parte de Apple toma entre 3 y 10 días por la verificación, así que arrancarla esta semana evita que nos atore al final.
 
-Te explica paso a paso cómo enrolar las dos cuentas. La de Apple toma entre 3 y 10 días por la verificación (D-U-N-S si vas como empresa). Arrancarla esta semana significa que cuando lleguemos a publicación, la cuenta ya está aprobada y no nos detiene nada.
+- *Spec de assets para el equipo creativo.* La lista exacta de archivos visuales que vamos a necesitar (ícono, splash, capturas en sus tamaños, feature graphic), con sus formatos. Tu equipo creativo puede arrancar con esto sin necesidad de consultarme nada.
 
-### 📄 Spec de assets para tu equipo creativo (PDF adjunto)
+**Lo que necesito de tu lado**
 
-Lista exacta de los archivos que necesitamos: ícono, splash screen, capturas en español e inglés en sus tamaños de App Store y Google Play, feature graphic. Cada archivo con su tamaño y formato. Tu equipo creativo puede arrancar con esto sin necesidad de consultarme nada.
+Cuatro cositas, ninguna urgente:
 
-## 🎯 4. Lo que necesito de tu lado
+1. El correo que vas a usar como administradora del panel.
+2. La lista actualizada de destinos para Travel Match.
+3. Decidir si te enrolas en Apple como individuo o como empresa, y arrancar el trámite.
+4. Pasarle el spec de assets a tu equipo creativo.
 
-Cuatro cosas livianas, ninguna urgente, pero arrancarlas ahora hace que el lanzamiento se acerque varias semanas:
-
-1. **El correo que vas a usar como administradora del panel** — para asignarte permiso de moderadora ahora mismo (30 segundos de mi lado).
-2. **La lista actualizada de destinos para Travel Match** — la reemplazo en minutos.
-3. **Decidir cómo te enrolas en Apple Developer** (individual o empresa) y empezar el trámite — guía adjunta.
-4. **Pasarle el spec de assets a tu equipo creativo** — para que arranquen el ícono esta semana.
-
----
-
-Sin prisa con ninguna. Cualquier duda con el reporte de estado, con el panel en línea, o con cualquiera de las guías, mándame WhatsApp y respondo en el momento.
+Sin prisa con nada de lo anterior. Cualquier duda con el panel o con cualquiera de los PDFs, me avisas.
 
 Saludos,
 Gabriel
