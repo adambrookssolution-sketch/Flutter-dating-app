@@ -182,13 +182,19 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
             .where((p) => p.uid != profile.uid)
             .toList();
       });
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Blocked ${profile.hisName} & ${profile.herName}')),
+        SnackBar(
+          content: Text(
+            l10n.blockedCouple(profile.hisName, profile.herName),
+          ),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not block: $e')),
+        SnackBar(content: Text(l10n.couldNotBlock(e.toString()))),
       );
     }
   }
@@ -200,10 +206,9 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     // panel to take over. The sticky notification gives the user
     // immediate feedback.
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Thanks — the report will be reviewed by our team.'),
-      ),
+      SnackBar(content: Text(l10n.reportSubmittedThanks)),
     );
   }
 
@@ -235,9 +240,10 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     // Hide the card once a Request has been sent (avoid re-selecting the
     // same couple while in cooldown / pending window).
     setState(() => _profiles?.remove(profile));
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Request sent to $displayName'),
+        content: Text(l10n.requestSentTo(displayName)),
         backgroundColor: const Color(0xFFB31637),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -314,6 +320,7 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
   Widget build(BuildContext context) {
     // Reactively re-apply whenever the filter state changes.
     final filters = ref.watch(filtersProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     if (_loading) {
       return const Center(
@@ -328,14 +335,14 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
           children: [
             const Icon(Icons.error_outline, color: Colors.black38, size: 48),
             const SizedBox(height: 12),
-            Text(
+            const Text(
               'Could not load profiles',
-              style: const TextStyle(color: Colors.black45, fontSize: 15),
+              style: TextStyle(color: Colors.black45, fontSize: 15),
             ),
             const SizedBox(height: 16),
             TextButton(
               onPressed: _loadProfiles,
-              child: const Text('Retry'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -343,8 +350,6 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     }
 
     final profiles = _applyFilters(_profiles ?? const [], filters);
-
-    final l10n = AppLocalizations.of(context)!;
 
     if (profiles.isEmpty) {
       return RefreshIndicator(

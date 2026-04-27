@@ -631,6 +631,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We\'ve been looking for a couple like you 🙌'**
   String get chatSuggestion6;
+
+  /// No description provided for @blockedCouple.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked {him} & {her}'**
+  String blockedCouple(String him, String her);
+
+  /// No description provided for @couldNotBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not block: {error}'**
+  String couldNotBlock(String error);
+
+  /// No description provided for @reportSubmittedThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks — the report will be reviewed by our team.'**
+  String get reportSubmittedThanks;
+
+  /// No description provided for @requestSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to {name}'**
+  String requestSentTo(String name);
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @filtersReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get filtersReset;
+
+  /// No description provided for @filtersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filtersTitle;
+
+  /// No description provided for @filtersDistanceMin5km.
+  ///
+  /// In en, this message translates to:
+  /// **'Min 5 km'**
+  String get filtersDistanceMin5km;
+
+  /// No description provided for @filtersAgeMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Min {n}'**
+  String filtersAgeMin(int n);
+
+  /// No description provided for @filtersAgeMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Max {n}'**
+  String filtersAgeMax(int n);
+
+  /// No description provided for @selectResortOrCruise.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Resort or Cruise'**
+  String get selectResortOrCruise;
+
+  /// No description provided for @anyDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'Any destination'**
+  String get anyDestination;
+
+  /// No description provided for @messageRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Message request'**
+  String get messageRequestTitle;
+
+  /// No description provided for @messageRequestDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get messageRequestDismiss;
+
+  /// No description provided for @senderProfileUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Sender profile unavailable'**
+  String get senderProfileUnavailable;
+
+  /// No description provided for @reportCouple.
+  ///
+  /// In en, this message translates to:
+  /// **'Report couple'**
+  String get reportCouple;
+
+  /// No description provided for @couldNotLoadCoupleProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load couple profile'**
+  String get couldNotLoadCoupleProfile;
+
+  /// No description provided for @imagePickerGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get imagePickerGallery;
+
+  /// No description provided for @imagePickerCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get imagePickerCamera;
+
+  /// No description provided for @photoMain.
+  ///
+  /// In en, this message translates to:
+  /// **'Main'**
+  String get photoMain;
 }
 
 class _AppLocalizationsDelegate

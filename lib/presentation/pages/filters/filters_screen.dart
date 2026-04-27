@@ -5,6 +5,7 @@ import 'package:app/data/datasource/destinations_datasource.dart';
 import 'package:app/data/datasource/tags_datasource.dart';
 import 'package:app/data/models/destination.dart';
 import 'package:app/data/models/tag.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/providers/filters_provider.dart';
 
 /// Filters panel — matches the client's design mockup with the
@@ -74,6 +75,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
   Widget build(BuildContext context) {
     final filters = ref.watch(filtersProvider);
     final notifier = ref.read(filtersProvider.notifier);
+    final l10n = AppLocalizations.of(context)!;
 
     // One-shot init of the slider UI from persisted state
     if (!_ageRangeInitialised &&
@@ -117,11 +119,11 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                 Row(
                   children: [
                     const SizedBox(width: 48), // balance Reset button width
-                    const Expanded(
+                    Expanded(
                       child: Center(
                         child: Text(
-                          'Filters',
-                          style: TextStyle(
+                          l10n.filtersTitle,
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -136,8 +138,8 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                           _ageRangeInitialised = false;
                         });
                       },
-                      child: const Text('Reset',
-                          style: TextStyle(color: Color(0xFFB31637))),
+                      child: Text(l10n.filtersReset,
+                          style: const TextStyle(color: Color(0xFFB31637))),
                     ),
                   ],
                 ),
@@ -146,7 +148,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
           )
         else
           AppBar(
-            title: const Text('Filters'),
+            title: Text(l10n.filtersTitle),
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             elevation: 0,
@@ -159,8 +161,8 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                     _ageRangeInitialised = false;
                   });
                 },
-                child: const Text('Reset',
-                    style: TextStyle(color: Color(0xFFB31637))),
+                child: Text(l10n.filtersReset,
+                    style: const TextStyle(color: Color(0xFFB31637))),
               ),
             ],
           ),
@@ -183,8 +185,8 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Min 5 km',
-                  style: TextStyle(color: Color(0xFFA4A4AA))),
+              Text(l10n.filtersDistanceMin5km,
+                  style: const TextStyle(color: Color(0xFFA4A4AA))),
               Text('${filters.radiusKm.round()} km',
                   style: const TextStyle(
                       color: Color(0xFFB31637),
@@ -209,9 +211,9 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Min ${_ageRange.start.round()}',
+              Text(l10n.filtersAgeMin(_ageRange.start.round()),
                   style: const TextStyle(color: Color(0xFFA4A4AA))),
-              Text('Max ${_ageRange.end.round()}',
+              Text(l10n.filtersAgeMax(_ageRange.end.round()),
                   style: const TextStyle(color: Color(0xFFA4A4AA))),
             ],
           ),
@@ -541,7 +543,7 @@ class _TravelMatchSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          _destinationDropdown(),
+          _destinationDropdown(context),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -577,8 +579,9 @@ class _TravelMatchSection extends StatelessWidget {
     );
   }
 
-  Widget _destinationDropdown() {
+  Widget _destinationDropdown(BuildContext context) {
     final items = destinations ?? const <Destination>[];
+    final l10n = AppLocalizations.of(context)!;
     return DropdownButtonFormField<String>(
       initialValue: selectedDestinationId,
       isExpanded: true,
@@ -589,11 +592,11 @@ class _TravelMatchSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
       ),
-      hint: const Text('Select Resort or Cruise'),
+      hint: Text(l10n.selectResortOrCruise),
       items: [
-        const DropdownMenuItem<String>(
+        DropdownMenuItem<String>(
           value: null,
-          child: Text('Any destination'),
+          child: Text(l10n.anyDestination),
         ),
         ...items.map(
           (d) => DropdownMenuItem<String>(value: d.id, child: Text(d.name)),

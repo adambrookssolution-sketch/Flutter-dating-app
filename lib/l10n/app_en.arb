@@ -111,5 +111,44 @@
   "chatSuggestion3": "What are you two up to this weekend? 🎉",
   "chatSuggestion4": "Your vibe is everything ✨ we had to match!",
   "chatSuggestion5": "How about a double date? ☕🍷",
-  "chatSuggestion6": "We've been looking for a couple like you 🙌"
+  "chatSuggestion6": "We've been looking for a couple like you 🙌",
+
+  "blockedCouple": "Blocked {him} & {her}",
+  "@blockedCouple": {
+    "placeholders": {
+      "him": { "type": "String" },
+      "her": { "type": "String" }
+    }
+  },
+  "couldNotBlock": "Could not block: {error}",
+  "@couldNotBlock": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "reportSubmittedThanks": "Thanks — the report will be reviewed by our team.",
+  "requestSentTo": "Request sent to {name}",
+  "@requestSentTo": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "retry": "Retry",
+  "filtersReset": "Reset",
+  "filtersTitle": "Filters",
+  "filtersDistanceMin5km": "Min 5 km",
+  "filtersAgeMin": "Min {n}",
+  "@filtersAgeMin": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "filtersAgeMax": "Max {n}",
+  "@filtersAgeMax": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "selectResortOrCruise": "Select Resort or Cruise",
+  "anyDestination": "Any destination",
+  "messageRequestTitle": "Message request",
+  "messageRequestDismiss": "Dismiss",
+  "senderProfileUnavailable": "Sender profile unavailable",
+  "reportCouple": "Report couple",
+  "couldNotLoadCoupleProfile": "Could not load couple profile",
+  "imagePickerGallery": "Gallery",
+  "imagePickerCamera": "Camera",
+  "photoMain": "Main"
 }

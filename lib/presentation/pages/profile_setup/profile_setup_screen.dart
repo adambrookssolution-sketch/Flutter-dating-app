@@ -411,8 +411,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       color: const Color(0xFFB31637),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text('Main',
-                        style: TextStyle(
+                    child: Text(AppLocalizations.of(context)!.photoMain,
+                        style: const TextStyle(
                             color: Colors.white,
                             fontSize: 9,
                             fontWeight: FontWeight.bold)),

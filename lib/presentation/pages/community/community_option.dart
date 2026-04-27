@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
+import 'package:app/l10n/app_localizations.dart';
+
 // ── Models ────────────────────────────────────────────────────────────────────
 
 class CommentModel {
@@ -784,6 +786,7 @@ class _FloatingComposerState extends State<_FloatingComposer> {
   }
 
   Future<void> _pickImage() async {
+    final l10n = AppLocalizations.of(context)!;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.white,
@@ -805,12 +808,12 @@ class _FloatingComposerState extends State<_FloatingComposer> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Gallery'),
+              title: Text(l10n.imagePickerGallery),
               onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
-              title: const Text('Camera'),
+              title: Text(l10n.imagePickerCamera),
               onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
             ),
             const SizedBox(height: 8),

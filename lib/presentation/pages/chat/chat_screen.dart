@@ -294,10 +294,10 @@ class _ChatScreenState extends State<ChatScreen> {
           onSelected: (value) async {
             if (value == 'report') await _openReport();
           },
-          itemBuilder: (_) => const [
+          itemBuilder: (ctx) => [
             PopupMenuItem(
               value: 'report',
-              child: Text('Report couple'),
+              child: Text(AppLocalizations.of(ctx)!.reportCouple),
             ),
           ],
         ),
@@ -324,8 +324,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final other = await CouplesDatasource.getCouple(otherId);
     if (!mounted) return;
     if (other == null) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not load couple profile')),
+        SnackBar(content: Text(l10n.couldNotLoadCoupleProfile)),
       );
       return;
     }

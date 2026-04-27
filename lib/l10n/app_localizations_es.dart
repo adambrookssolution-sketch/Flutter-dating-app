@@ -292,4 +292,76 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chatSuggestion6 => 'Buscábamos una pareja como ustedes 🙌';
+
+  @override
+  String blockedCouple(String him, String her) {
+    return 'Bloqueaste a $him y $her';
+  }
+
+  @override
+  String couldNotBlock(String error) {
+    return 'No se pudo bloquear: $error';
+  }
+
+  @override
+  String get reportSubmittedThanks =>
+      'Gracias — nuestro equipo revisará el reporte.';
+
+  @override
+  String requestSentTo(String name) {
+    return 'Solicitud enviada a $name';
+  }
+
+  @override
+  String get retry => 'Reintentar';
+
+  @override
+  String get filtersReset => 'Restablecer';
+
+  @override
+  String get filtersTitle => 'Filtros';
+
+  @override
+  String get filtersDistanceMin5km => 'Mín 5 km';
+
+  @override
+  String filtersAgeMin(int n) {
+    return 'Mín $n';
+  }
+
+  @override
+  String filtersAgeMax(int n) {
+    return 'Máx $n';
+  }
+
+  @override
+  String get selectResortOrCruise => 'Selecciona un resort o crucero';
+
+  @override
+  String get anyDestination => 'Cualquier destino';
+
+  @override
+  String get messageRequestTitle => 'Solicitud de mensaje';
+
+  @override
+  String get messageRequestDismiss => 'Descartar';
+
+  @override
+  String get senderProfileUnavailable => 'Perfil del remitente no disponible';
+
+  @override
+  String get reportCouple => 'Reportar pareja';
+
+  @override
+  String get couldNotLoadCoupleProfile =>
+      'No se pudo cargar el perfil de la pareja';
+
+  @override
+  String get imagePickerGallery => 'Galería';
+
+  @override
+  String get imagePickerCamera => 'Cámara';
+
+  @override
+  String get photoMain => 'Principal';
 }

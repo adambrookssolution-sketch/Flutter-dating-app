@@ -283,4 +283,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatSuggestion6 => 'We\'ve been looking for a couple like you 🙌';
+
+  @override
+  String blockedCouple(String him, String her) {
+    return 'Blocked $him & $her';
+  }
+
+  @override
+  String couldNotBlock(String error) {
+    return 'Could not block: $error';
+  }
+
+  @override
+  String get reportSubmittedThanks =>
+      'Thanks — the report will be reviewed by our team.';
+
+  @override
+  String requestSentTo(String name) {
+    return 'Request sent to $name';
+  }
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get filtersReset => 'Reset';
+
+  @override
+  String get filtersTitle => 'Filters';
+
+  @override
+  String get filtersDistanceMin5km => 'Min 5 km';
+
+  @override
+  String filtersAgeMin(int n) {
+    return 'Min $n';
+  }
+
+  @override
+  String filtersAgeMax(int n) {
+    return 'Max $n';
+  }
+
+  @override
+  String get selectResortOrCruise => 'Select Resort or Cruise';
+
+  @override
+  String get anyDestination => 'Any destination';
+
+  @override
+  String get messageRequestTitle => 'Message request';
+
+  @override
+  String get messageRequestDismiss => 'Dismiss';
+
+  @override
+  String get senderProfileUnavailable => 'Sender profile unavailable';
+
+  @override
+  String get reportCouple => 'Report couple';
+
+  @override
+  String get couldNotLoadCoupleProfile => 'Could not load couple profile';
+
+  @override
+  String get imagePickerGallery => 'Gallery';
+
+  @override
+  String get imagePickerCamera => 'Camera';
+
+  @override
+  String get photoMain => 'Main';
 }

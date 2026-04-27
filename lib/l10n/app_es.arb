@@ -70,5 +70,44 @@
   "chatSuggestion3": "¿Qué planes tienen este fin de semana? 🎉",
   "chatSuggestion4": "Su vibe es todo ✨ teníamos que conectar",
   "chatSuggestion5": "¿Qué tal una cita doble? ☕🍷",
-  "chatSuggestion6": "Buscábamos una pareja como ustedes 🙌"
+  "chatSuggestion6": "Buscábamos una pareja como ustedes 🙌",
+
+  "blockedCouple": "Bloqueaste a {him} y {her}",
+  "@blockedCouple": {
+    "placeholders": {
+      "him": { "type": "String" },
+      "her": { "type": "String" }
+    }
+  },
+  "couldNotBlock": "No se pudo bloquear: {error}",
+  "@couldNotBlock": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "reportSubmittedThanks": "Gracias — nuestro equipo revisará el reporte.",
+  "requestSentTo": "Solicitud enviada a {name}",
+  "@requestSentTo": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "retry": "Reintentar",
+  "filtersReset": "Restablecer",
+  "filtersTitle": "Filtros",
+  "filtersDistanceMin5km": "Mín 5 km",
+  "filtersAgeMin": "Mín {n}",
+  "@filtersAgeMin": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "filtersAgeMax": "Máx {n}",
+  "@filtersAgeMax": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "selectResortOrCruise": "Selecciona un resort o crucero",
+  "anyDestination": "Cualquier destino",
+  "messageRequestTitle": "Solicitud de mensaje",
+  "messageRequestDismiss": "Descartar",
+  "senderProfileUnavailable": "Perfil del remitente no disponible",
+  "reportCouple": "Reportar pareja",
+  "couldNotLoadCoupleProfile": "No se pudo cargar el perfil de la pareja",
+  "imagePickerGallery": "Galería",
+  "imagePickerCamera": "Cámara",
+  "photoMain": "Principal"
 }

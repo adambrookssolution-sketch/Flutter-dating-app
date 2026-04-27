@@ -5,6 +5,7 @@ import 'package:app/data/datasource/conversation_datasource.dart';
 import 'package:app/data/datasource/message_requests_datasource.dart';
 import 'package:app/data/models/couple.dart';
 import 'package:app/data/models/message_request.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/widgets/secure_view.dart';
 
 /// Receiver-side preview of a [MessageRequest].
@@ -85,13 +86,14 @@ class _MessageRequestPreviewScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final sender = widget.sender;
     final photo =
         sender.photos.isNotEmpty ? sender.photos.first : null;
     return SecureView(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Message request'),
+          title: Text(l10n.messageRequestTitle),
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 0,
@@ -175,7 +177,7 @@ class _MessageRequestPreviewScreenState
                           borderRadius: BorderRadius.circular(250),
                         ),
                       ),
-                      child: const Text('Dismiss'),
+                      child: Text(l10n.messageRequestDismiss),
                     ),
                   ),
                   const SizedBox(width: 12),

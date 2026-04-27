@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
 import 'package:app/data/datasource/message_requests_datasource.dart';
 import 'package:app/data/models/message_request.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/inbox/message_request_preview_screen.dart';
 
 /// Sliver-shaped section that lists incoming pending [MessageRequest]s.
@@ -89,8 +90,9 @@ class _RequestRow extends StatelessWidget {
     final sender = await CouplesDatasource.getCouple(request.parejaEmisora);
     if (!context.mounted) return;
     if (sender == null) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sender profile unavailable')),
+        SnackBar(content: Text(l10n.senderProfileUnavailable)),
       );
       return;
     }
