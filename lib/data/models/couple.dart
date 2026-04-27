@@ -96,6 +96,18 @@ class Couple {
         'updated_at': FieldValue.serverTimestamp(),
       };
 
+  /// Adapter that accepts BOTH the new schema and the legacy / agency
+  /// shape so a single read path works regardless of which collection
+  /// the document was written by:
+  ///
+  ///   • `interests`     — array (new) OR CSV string (legacy)
+  ///   • `photos`        — array (new) OR `photos_urls` array (legacy)
+  ///   • `verification`  — map (new) OR flat `verification_video_url`
+  ///                       + `verification_status` (legacy)
+  ///
+  /// Unknown / missing fields fall back to safe defaults — never throws.
+  /// This is the safety net described in INTEGRATION_GUIDE.md so that
+  /// the merge with the agency's phase 2 doesn't blow up the read path.
   factory Couple.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final m = doc.data() ?? const <String, dynamic>{};
     return Couple(
@@ -109,21 +121,62 @@ class Couple {
       lng: (m['lng'] as num?)?.toDouble(),
       geohash: m['geohash'] as String?,
       description: (m['description'] as String?) ?? '',
-      photos: List<String>.from(m['photos'] as List? ?? []),
+      photos: _readPhotos(m),
       dynamics: List<String>.from(m['dynamics'] as List? ?? []),
       experiencePreferences:
           List<String>.from(m['experience_preferences'] as List? ?? []),
-      interests: List<String>.from(m['interests'] as List? ?? []),
+      interests: _readInterests(m),
       status: CoupleStatus.fromString(m['status'] as String?),
-      verification: m['verification'] == null
-          ? null
-          : Verification.fromMap(m['verification'] as Map<String, dynamic>),
+      verification: _readVerification(m),
       ageRange: AgeRange.fromMap(m['age_range'] as Map<String, dynamic>?),
       deletionRequestedAt:
           (m['deletion_requested_at'] as Timestamp?)?.toDate(),
       createdAt: (m['created_at'] as Timestamp?)?.toDate(),
       updatedAt: (m['updated_at'] as Timestamp?)?.toDate(),
     );
+  }
+
+  /// Photos array — accepts new `photos` OR legacy `photos_urls`.
+  /// Filters out null and empty strings defensively.
+  static List<String> _readPhotos(Map<String, dynamic> m) {
+    final raw = (m['photos'] ?? m['photos_urls']) as List?;
+    if (raw == null) return const [];
+    return raw
+        .whereType<String>()
+        .where((s) => s.trim().isNotEmpty)
+        .toList(growable: false);
+  }
+
+  /// Interests array — accepts the new array OR a legacy CSV string.
+  /// Splitting on comma matches what the migration script does so the
+  /// in-memory read is consistent with the eventual migrated shape.
+  static List<String> _readInterests(Map<String, dynamic> m) {
+    final v = m['interests'];
+    if (v is List) return List<String>.from(v);
+    if (v is String) {
+      return v
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList(growable: false);
+    }
+    return const [];
+  }
+
+  /// Verification — accepts a structured map OR the legacy flat fields.
+  static Verification? _readVerification(Map<String, dynamic> m) {
+    final structured = m['verification'];
+    if (structured is Map<String, dynamic>) {
+      return Verification.fromMap(structured);
+    }
+    // Legacy flat fields fallback.
+    final flatUrl = m['verification_video_url'] as String?;
+    final flatStatus = m['verification_status'] as String?;
+    if (flatUrl == null && flatStatus == null) return null;
+    return Verification.fromMap({
+      'video_url': flatUrl,
+      'status': flatStatus,
+    });
   }
 
   Couple copyWith({
