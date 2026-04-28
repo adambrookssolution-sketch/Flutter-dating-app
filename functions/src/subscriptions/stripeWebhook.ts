@@ -1,29 +1,29 @@
 /**
- * Stripe webhook receiver.
+ * Stripe webhook receiver — production-grade.
  *
- * Subscription events flow in here from Stripe → we translate them into
+ * Stripe events flow in here from Stripe → we translate them into
  * Firestore mutations on `subscriptions/{coupleId}`. Stripe is the
  * single source of truth; Firestore is a read-optimised mirror.
  *
  * Security:
  * - Signature verification using STRIPE_WEBHOOK_SECRET (Firebase Secret
  *   Manager). Any request without a valid signature is rejected 400.
- * - Idempotency: each event is recorded under `subscription_events/
- *   {stripe_event_id}` before side effects. Replays are cheap no-ops.
+ * - Idempotency: each event is recorded under
+ *   `subscription_events/{stripe_event_id}` before side effects. Replays
+ *   are cheap no-ops.
  *
- * Scope (skeleton for Entrega 1):
- *   - Verify signature + reject bad requests.
- *   - Persist raw event with idempotency guard.
- *   - Dispatch handler stubs per event type (bodies filled once Stripe
- *     account + test mode are live).
- *
- * Not yet wired into `index.ts` — it stays dark until the client
- * approves the module.
+ * The handler is deliberately defensive — every Stripe object access
+ * either has a sensible fallback or fails silently with a logger
+ * warning. We never throw inside a handler unless we want Stripe to
+ * retry the delivery; for resolvable issues (missing metadata,
+ * unrecognised type) we log and return 200 so Stripe stops retrying.
  */
 import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import { logger } from "firebase-functions";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import StripeCtor from "stripe";
+import type { Stripe } from "stripe/cjs/stripe.core.js";
 
 import { db } from "../common/firestore";
 import {
@@ -34,23 +34,14 @@ import {
   planFromLookupKey,
 } from "./types";
 
-// Stripe library is intentionally NOT imported here yet — it's a peer
-// dependency we'll add to functions/package.json in Entrega 1. The
-// skeleton below uses structural types so TypeScript stays happy
-// without pulling the SDK in.
-interface StripeEventShape {
-  id: string;
-  type: string;
-  data: { object: Record<string, unknown> };
-}
-
+const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 
 export const stripeWebhook = onRequest(
   {
     region: "us-central1",
     memory: "512MiB",
-    secrets: [STRIPE_WEBHOOK_SECRET],
+    secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET],
     // Stripe POSTs the raw body; we need it unparsed for HMAC verification.
     cors: false,
   },
@@ -67,25 +58,24 @@ export const stripeWebhook = onRequest(
       return;
     }
 
-    // ─── Signature verification (wired in Entrega 1) ───────────────────
-    //
-    // const Stripe = (await import("stripe")).default;
-    // const stripe = new Stripe(STRIPE_API_KEY.value(), { apiVersion: "2024-06-20" });
-    // let event: Stripe.Event;
-    // try {
-    //   event = stripe.webhooks.constructEvent(
-    //     req.rawBody,
-    //     signature,
-    //     STRIPE_WEBHOOK_SECRET.value()
-    //   );
-    // } catch (err) {
-    //   logger.warn("stripeWebhook: bad signature", err);
-    //   res.status(400).send("Bad signature");
-    //   return;
-    // }
-    //
-    // For the skeleton, pretend the event arrived pre-parsed.
-    const event = req.body as StripeEventShape;
+    const stripe = new StripeCtor(STRIPE_SECRET_KEY.value(), {
+      apiVersion: "2026-04-22.dahlia",
+    });
+
+    // ─── Signature verification ────────────────────────────────────────
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.rawBody,
+        signature,
+        STRIPE_WEBHOOK_SECRET.value(),
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.warn(`stripeWebhook: bad signature — ${msg}`);
+      res.status(400).send("Bad signature");
+      return;
+    }
 
     // ─── Idempotency guard ─────────────────────────────────────────────
     const eventsRef = db().collection(SUBSCRIPTION_EVENTS_COLLECTION);
@@ -100,24 +90,32 @@ export const stripeWebhook = onRequest(
     try {
       switch (event.type) {
         case "checkout.session.completed":
-          await handleCheckoutCompleted(event);
+          await handleCheckoutCompleted(
+            event.data.object as Stripe.Checkout.Session,
+          );
           break;
 
         case "customer.subscription.created":
         case "customer.subscription.updated":
-          await handleSubscriptionChange(event);
+          await handleSubscriptionChange(
+            event.data.object as Stripe.Subscription,
+          );
           break;
 
         case "customer.subscription.deleted":
-          await handleSubscriptionDeleted(event);
+          await handleSubscriptionDeleted(
+            event.data.object as Stripe.Subscription,
+          );
           break;
 
         case "invoice.payment_succeeded":
-          await handlePaymentSucceeded(event);
+          await handlePaymentSucceeded(
+            event.data.object as Stripe.Invoice,
+          );
           break;
 
         case "invoice.payment_failed":
-          await handlePaymentFailed(event);
+          await handlePaymentFailed(event.data.object as Stripe.Invoice);
           break;
 
         default:
@@ -128,7 +126,7 @@ export const stripeWebhook = onRequest(
       await eventsRef.doc(event.id).set({
         type: event.type,
         stripe_event_id: event.id,
-        payload: event.data.object,
+        payload: event.data.object as unknown as Record<string, unknown>,
         processed_at: FieldValue.serverTimestamp(),
       });
 
@@ -143,12 +141,9 @@ export const stripeWebhook = onRequest(
 
 // ── Handlers ─────────────────────────────────────────────────────────────
 
-async function handleCheckoutCompleted(event: StripeEventShape): Promise<void> {
-  const session = event.data.object as {
-    metadata?: { couple_id?: string };
-    customer?: string;
-    subscription?: string;
-  };
+async function handleCheckoutCompleted(
+  session: Stripe.Checkout.Session,
+): Promise<void> {
   const coupleId = session.metadata?.couple_id;
   if (!coupleId) {
     logger.warn(
@@ -162,25 +157,18 @@ async function handleCheckoutCompleted(event: StripeEventShape): Promise<void> {
   // and subscription IDs here; plan/status are filled in by
   // handleSubscriptionChange so we don't rely on a specific event order.
   await upsertSubscription(coupleId, {
-    stripe_customer_id: session.customer ?? null,
-    stripe_subscription_id: session.subscription ?? null,
+    stripe_customer_id:
+      typeof session.customer === "string" ? session.customer : null,
+    stripe_subscription_id:
+      typeof session.subscription === "string"
+        ? session.subscription
+        : null,
   });
 }
 
 async function handleSubscriptionChange(
-  event: StripeEventShape,
+  sub: Stripe.Subscription,
 ): Promise<void> {
-  const sub = event.data.object as {
-    id: string;
-    status: string;
-    customer: string;
-    cancel_at_period_end?: boolean;
-    current_period_start?: number;
-    current_period_end?: number;
-    metadata?: { couple_id?: string };
-    items?: { data?: Array<{ price?: { id?: string; lookup_key?: string } }> };
-  };
-
   const coupleId = sub.metadata?.couple_id;
   if (!coupleId) {
     logger.warn(
@@ -189,31 +177,35 @@ async function handleSubscriptionChange(
     return;
   }
 
-  const lookupKey = sub.items?.data?.[0]?.price?.lookup_key ?? "";
-  const priceId = sub.items?.data?.[0]?.price?.id ?? null;
+  // Stripe API 2026-04 moved current_period_* off Subscription onto each
+  // item. We only ever sell single-item subscriptions (one Gold OR one
+  // Black, not bundles) so reading item[0] is correct for our model.
+  const item = sub.items.data[0];
+  const lookupKey = item?.price?.lookup_key ?? "";
+  const priceId = item?.price?.id ?? null;
+  const periodStart = item?.current_period_start;
+  const periodEnd = item?.current_period_end;
 
   await upsertSubscription(coupleId, {
     plan: planFromLookupKey(lookupKey),
     status: normalizeStatus(sub.status),
-    stripe_customer_id: sub.customer,
+    stripe_customer_id:
+      typeof sub.customer === "string" ? sub.customer : null,
     stripe_subscription_id: sub.id,
     price_id: priceId,
     cancel_at_period_end: sub.cancel_at_period_end ?? false,
-    current_period_start: sub.current_period_start
-      ? Timestamp.fromMillis(sub.current_period_start * 1000)
+    current_period_start: periodStart
+      ? Timestamp.fromMillis(periodStart * 1000)
       : null,
-    current_period_end: sub.current_period_end
-      ? Timestamp.fromMillis(sub.current_period_end * 1000)
+    current_period_end: periodEnd
+      ? Timestamp.fromMillis(periodEnd * 1000)
       : null,
   });
 }
 
 async function handleSubscriptionDeleted(
-  event: StripeEventShape,
+  sub: Stripe.Subscription,
 ): Promise<void> {
-  const sub = event.data.object as {
-    metadata?: { couple_id?: string };
-  };
   const coupleId = sub.metadata?.couple_id;
   if (!coupleId) return;
 
@@ -231,29 +223,50 @@ async function handleSubscriptionDeleted(
 }
 
 async function handlePaymentSucceeded(
-  _event: StripeEventShape,
+  _invoice: Stripe.Invoice,
 ): Promise<void> {
   // The subscription.updated event fires alongside payment_succeeded and
   // already carries the new current_period_end. Keeping this handler as a
   // placeholder for analytics (MRR computation) in Entrega 3.
 }
 
-async function handlePaymentFailed(event: StripeEventShape): Promise<void> {
-  const invoice = event.data.object as {
-    subscription_details?: { metadata?: { couple_id?: string } };
-    customer?: string;
-  };
-  const coupleId = invoice.subscription_details?.metadata?.couple_id;
-  if (!coupleId) return;
+async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+  // Stripe API 2026-04 moved invoice.subscription under
+  // invoice.parent.subscription_details.subscription.
+  const parent = invoice.parent;
+  const subRefRaw =
+    parent?.type === "subscription_details"
+      ? parent.subscription_details?.subscription
+      : null;
+  const subscriptionRef =
+    typeof subRefRaw === "string" ? subRefRaw : subRefRaw?.id ?? null;
+  if (!subscriptionRef) return;
 
-  await upsertSubscription(coupleId, {
-    status: "past_due",
-  });
+  // We don't load the subscription object here — the customer.subscription.
+  // updated event that follows a payment failure already carries the new
+  // status. This handler just optimistically marks past_due for faster UI
+  // reaction; the subscription handler will overwrite if Stripe says
+  // otherwise.
+  // To find the couple_id we read the related subscription's metadata via
+  // its stripe_subscription_id from Firestore.
+  const matching = await db()
+    .collection(SUBSCRIPTIONS_COLLECTION)
+    .where("stripe_subscription_id", "==", subscriptionRef)
+    .limit(1)
+    .get();
+  const doc = matching.docs[0];
+  if (!doc) {
+    logger.warn(
+      `handlePaymentFailed: no Firestore doc for subscription ${subscriptionRef}`,
+    );
+    return;
+  }
+  await upsertSubscription(doc.id, { status: "past_due" });
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
-function normalizeStatus(raw: string): SubscriptionStatus {
+function normalizeStatus(raw: Stripe.Subscription.Status): SubscriptionStatus {
   switch (raw) {
     case "active":
     case "trialing":

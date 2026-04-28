@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:app/core/subscription/subscription_plan.dart';
+import 'package:app/data/datasource/subscription_datasource.dart';
 import 'package:app/providers/subscription_provider.dart';
 
 /// Paywall comparison screen — shown when a Free user hits a gated
@@ -316,15 +318,67 @@ class _PlanCard extends StatelessWidget {
     );
   }
 
-  void _openWebCheckout(BuildContext context, SubscriptionPlan tier) {
-    // Wired in Entrega 2: fetches a Checkout URL via
-    // SubscriptionDatasource.createCheckoutUrl and opens it with
-    // url_launcher. Kept as a placeholder here so the skeleton stays
-    // store-compliant (no price UI, no in-app purchase hint).
+  /// Maps a tier card to the monthly Stripe price lookup key. Annual
+  /// pricing is intentionally not exposed from the paywall — a small
+  /// "switch to annual" toggle lands in Entrega 3 once monthly conversion
+  /// data exists.
+  String? _lookupKeyForTier(SubscriptionPlan tier) {
+    switch (tier) {
+      case SubscriptionPlan.gold:
+        return PriceLookupKeys.goldMonthly;
+      case SubscriptionPlan.black:
+        return PriceLookupKeys.blackMonthly;
+      case SubscriptionPlan.free:
+        return null;
+    }
+  }
+
+  Future<void> _openWebCheckout(
+    BuildContext context,
+    SubscriptionPlan tier,
+  ) async {
+    final lookupKey = _lookupKeyForTier(tier);
+    if (lookupKey == null) return;
+
+    // Stripe redirects back to these URLs after the user finishes (or
+    // bails out of) the hosted checkout. The deep links are configured
+    // in [main.dart] / iOS associated-domains; if the deep link fails
+    // we still land on a marketing page that explains "your plan is
+    // active, open the app".
+    const successUrl =
+        'https://affinitysocialclub.com/subscribe/success?couple_id={CHECKOUT_SESSION_ID}';
+    const cancelUrl = 'https://affinitysocialclub.com/subscribe/cancel';
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Abrirá el checkout seguro en tu navegador.'),
         duration: Duration(seconds: 2),
+      ),
+    );
+
+    try {
+      final url = await SubscriptionDatasource.createCheckoutUrl(
+        lookupKey: lookupKey,
+        successUrl: successUrl,
+        cancelUrl: cancelUrl,
+      );
+      final uri = Uri.tryParse(url);
+      if (uri == null) throw const FormatException('Invalid checkout URL');
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!ok && context.mounted) {
+        _showCheckoutFailure(context);
+      }
+    } catch (_) {
+      if (context.mounted) _showCheckoutFailure(context);
+    }
+  }
+
+  void _showCheckoutFailure(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'No pudimos abrir el checkout en este momento. Inténtalo de nuevo en unos segundos.',
+        ),
       ),
     );
   }

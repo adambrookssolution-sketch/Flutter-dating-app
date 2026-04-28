@@ -73,6 +73,11 @@ sa-key.json
 *.key.json
 sa-key-*.json
 
+# Functions secrets for the emulator (real keys live in Secret Manager,
+# never on disk in production)
+functions/.secret.local
+functions/.runtimeconfig.json
+
 # One-off build logs (each run produces fresh ones)
 build_log.txt
 web_build_log*.txt

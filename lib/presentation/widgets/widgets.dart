@@ -27,6 +27,9 @@ export 'package:app/presentation/widgets/no_cache_image.dart';
 export 'package:app/presentation/widgets/secure_view.dart';
 export 'package:app/presentation/widgets/watermarked_image.dart';
 
+// ── Subscription gating ──────────────────────────────────────────────────
+export 'package:app/presentation/widgets/subscription_gate.dart';
+
 // ── Form fields + dialogs ────────────────────────────────────────────────
 export 'package:app/presentation/widgets/places_autocomplete_field.dart';
 export 'package:app/presentation/widgets/recovery_attempts_dialog.dart';

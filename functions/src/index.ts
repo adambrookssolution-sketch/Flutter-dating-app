@@ -38,3 +38,12 @@ export { findMatches } from "./travel/findMatches";
 export { onTripCreated } from "./travel/onTripCreated";
 export { tripReminder } from "./travel/tripReminder";
 export { expireRequests } from "./requests/expireRequests";
+
+// Subscriptions module — Entrega 1 wiring (Stripe + Firestore mirror).
+// All four functions are dormant in production until the Stripe secrets
+// are populated, but exporting them here lets us deploy + smoke-test
+// against the test environment with Stripe test mode.
+export { stripeWebhook } from "./subscriptions/stripeWebhook";
+export { createCheckoutSession } from "./subscriptions/createCheckoutSession";
+export { cancelSubscription } from "./subscriptions/cancelSubscription";
+export { onCoupleCreatedSeedSubscription } from "./subscriptions/onCoupleCreated";

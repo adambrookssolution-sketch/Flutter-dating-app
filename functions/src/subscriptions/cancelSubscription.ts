@@ -11,6 +11,7 @@
  */
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
+import StripeCtor from "stripe";
 
 import { db } from "../common/firestore";
 import { SUBSCRIPTIONS_COLLECTION, SubscriptionDoc } from "./types";
@@ -41,10 +42,8 @@ export const cancelSubscription = onCall(
       );
     }
 
-    // @ts-expect-error — stripe is a peer dep added in Entrega 1
-    const { default: Stripe } = await import("stripe");
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2024-06-20",
+    const stripe = new StripeCtor(STRIPE_SECRET_KEY.value(), {
+      apiVersion: "2026-04-22.dahlia",
     });
 
     await stripe.subscriptions.update(sub.stripe_subscription_id, {

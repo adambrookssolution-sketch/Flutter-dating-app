@@ -232,6 +232,25 @@ service cloud.firestore {
       allow write: if false; // Cloud Functions only
     }
 
+    // ── Subscriptions (Stripe-mirrored, read-only on client) ─────────────────
+    // The doc is written exclusively by the stripeWebhook Cloud Function
+    // and the onCoupleCreatedSeedSubscription trigger. Clients can only
+    // read their own row (so the paywall + "Tu plan" screens know what to
+    // show). They never write — paying changes flow through Stripe Checkout
+    // → webhook → Firestore, not from the app.
+    match /subscriptions/{coupleId} {
+      allow read: if isOwner(coupleId);
+      allow write: if false;
+    }
+
+    // ── Subscription event audit log (Cloud Functions only) ──────────────────
+    // Holds the raw Stripe event payloads for idempotency + back-office.
+    // Clients have no business reading this collection — they get the
+    // already-distilled state from /subscriptions/{coupleId}.
+    match /subscription_events/{eventId} {
+      allow read, write: if false;
+    }
+
     // ── Default deny ─────────────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;

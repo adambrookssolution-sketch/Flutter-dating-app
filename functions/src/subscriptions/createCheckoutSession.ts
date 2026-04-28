@@ -8,14 +8,11 @@
  *      webhook can map the event back to our Firestore doc.
  *   4. Returns `{ url }` — the client opens it via `url_launcher`
  *      (external browser; Apple compliance requirement).
- *
- * Stability: the Stripe SDK is dynamically imported so the skeleton
- * compiles without the dependency. Entrega 1 adds `stripe` to
- * functions/package.json and removes the `// @ts-expect-error` shims.
  */
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import { logger } from "firebase-functions";
+import StripeCtor from "stripe";
 
 import { db, COLLECTIONS } from "../common/firestore";
 import {
@@ -47,7 +44,10 @@ export const createCheckoutSession = onCall<CreateCheckoutPayload>(
     const coupleId = req.auth.uid;
 
     const lookupKey = req.data.lookupKey;
-    if (!lookupKey || !Object.values(PRICE_LOOKUP_KEYS).includes(lookupKey)) {
+    if (
+      !lookupKey ||
+      !(Object.values(PRICE_LOOKUP_KEYS) as string[]).includes(lookupKey)
+    ) {
       throw new HttpsError("invalid-argument", "Unknown plan");
     }
     const successUrl = req.data.successUrl;
@@ -74,7 +74,10 @@ export const createCheckoutSession = onCall<CreateCheckoutPayload>(
         "Couple must be approved before upgrading",
       );
     }
-    const email = coupleSnap.get("contact_email") ?? req.auth.token.email ?? "";
+    const email =
+      (coupleSnap.get("contact_email") as string | undefined) ??
+      req.auth.token.email ??
+      undefined;
 
     // ─── Resolve / create Stripe customer ──────────────────────────────
     const subRef = db().collection(SUBSCRIPTIONS_COLLECTION).doc(coupleId);
@@ -82,16 +85,13 @@ export const createCheckoutSession = onCall<CreateCheckoutPayload>(
     const existing = subSnap.exists ? (subSnap.data() as SubscriptionDoc) : null;
     let customerId = existing?.stripe_customer_id ?? null;
 
-    // Dynamic import so the module compiles without `stripe` installed.
-    // @ts-expect-error — stripe is a peer dep added in Entrega 1
-    const { default: Stripe } = await import("stripe");
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), {
-      apiVersion: "2024-06-20",
+    const stripe = new StripeCtor(STRIPE_SECRET_KEY.value(), {
+      apiVersion: "2026-04-22.dahlia",
     });
 
     if (!customerId) {
       const customer = await stripe.customers.create({
-        email,
+        ...(email ? { email } : {}),
         metadata: { couple_id: coupleId },
       });
       customerId = customer.id;
