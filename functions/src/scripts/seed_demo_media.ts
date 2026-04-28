@@ -41,44 +41,54 @@ const db = admin.firestore();
 // ── Sample asset library ─────────────────────────────────────────────────────
 
 /**
- * Public sample video URLs. Big Buck Bunny + similar Creative-Commons
- * test videos hosted by sample-videos.com — small files, MP4, no DRM.
- * If any of these go offline, swap them for fresh URLs from
- * https://sample-videos.com or https://gtv-videos-bucket.storage.googleapis.com.
+ * Public sample video URLs hosted on Cloudinary's demo bucket and
+ * archive.org. Both serve `Access-Control-Allow-Origin: *` so the
+ * browser-based moderation panel can play them without CORS errors.
+ *
+ * Earlier draft used sample-videos.com but that host went down for
+ * direct hot-linking; we also tried Google's gtv-videos-bucket which
+ * now returns 403. Cloudinary + archive.org are the surviving
+ * stable options as of 2026-04-28.
  */
 const SAMPLE_VIDEOS = [
-  "https://sample-videos.com/video321/mp4/240/big_buck_bunny_240p_1mb.mp4",
-  "https://sample-videos.com/video321/mp4/360/big_buck_bunny_360p_1mb.mp4",
-  "https://sample-videos.com/video321/mp4/480/big_buck_bunny_480p_1mb.mp4",
-  "https://sample-videos.com/video321/mp4/240/big_buck_bunny_240p_2mb.mp4",
+  "https://res.cloudinary.com/demo/video/upload/dog.mp4",
+  "https://res.cloudinary.com/demo/video/upload/elephants.mp4",
+  "https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4",
+  "https://res.cloudinary.com/demo/video/upload/sea_turtle.mp4",
 ];
 
 /**
- * Public sample photo URLs from Unsplash's source service. Stable,
- * royalty-free, and the URL parameters keep the response small.
+ * Public sample photo URLs. Each URL is verified live (HTTP 200) at
+ * the time of writing. If Unsplash deprecates one of these, the
+ * panel renders a graceful "broken image" tile instead of crashing
+ * — see the errorBuilder on Image.network in the photo grid.
+ *
+ * Picsum.photos is used as a fallback because it generates a fresh
+ * image for any seed, never 404s, and is purpose-built as a
+ * placeholder service.
  */
 const SAMPLE_PHOTO_SETS = [
   [
     "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400",
-    "https://images.unsplash.com/photo-1529635343929-37b34e9ee1eb?w=400",
     "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=400",
-    "https://images.unsplash.com/photo-1521798552670-c4ea1ea53c2a?w=400",
+    "https://images.unsplash.com/photo-1502635385003-ee1e6a1a742d?w=400",
+    "https://picsum.photos/seed/affinity-couple-1a/400/400",
   ],
   [
     "https://images.unsplash.com/photo-1604881991720-f91add269bed?w=400",
-    "https://images.unsplash.com/photo-1583341655423-094bc6a0f74c?w=400",
-    "https://images.unsplash.com/photo-1583341612089-2bd5b3d29c70?w=400",
+    "https://images.unsplash.com/photo-1521577352947-9bb58764b69a?w=400",
+    "https://picsum.photos/seed/affinity-couple-2a/400/400",
   ],
   [
-    "https://images.unsplash.com/photo-1502635385003-ee1e6a1a742d?w=400",
-    "https://images.unsplash.com/photo-1521577352947-9bb58764b69a?w=400",
     "https://images.unsplash.com/photo-1517438476312-10d79c077509?w=400",
     "https://images.unsplash.com/photo-1494774157365-9e04c6720e47?w=400",
+    "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400",
+    "https://picsum.photos/seed/affinity-couple-3a/400/400",
   ],
   [
-    "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400",
     "https://images.unsplash.com/photo-1503516459261-40c66117780a?w=400",
     "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400",
+    "https://picsum.photos/seed/affinity-couple-4a/400/400",
   ],
 ];
 
