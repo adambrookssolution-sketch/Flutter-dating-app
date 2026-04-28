@@ -58,6 +58,24 @@
       ]
     },
     {
+      "collectionGroup": "message_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "estado", "order": "ASCENDING" },
+        { "fieldPath": "pareja_emisora", "order": "ASCENDING" },
+        { "fieldPath": "pareja_receptora", "order": "ASCENDING" },
+        { "fieldPath": "fecha_envio", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "blocks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pareja_que_bloquea", "order": "ASCENDING" },
+        { "fieldPath": "fecha", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "reports",
       "queryScope": "COLLECTION",
       "fields": [

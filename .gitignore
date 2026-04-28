@@ -66,6 +66,20 @@ functions/.eslintcache
 .firebase/
 firebase-debug.log*
 firestore-debug.log*
-ui-debug.log*sa-key.json
+ui-debug.log*
+
+# Service-account credentials — never commit
+sa-key.json
 *.key.json
 sa-key-*.json
+
+# One-off build logs (each run produces fresh ones)
+build_log.txt
+web_build_log*.txt
+
+# Old APK + screenshots from before the current panel + tone-pass
+# rounds. Kept locally for reference, never pushed.
+"new version/"
+
+# Random downloads that landed in the repo root by accident
+tratamiento_*.png

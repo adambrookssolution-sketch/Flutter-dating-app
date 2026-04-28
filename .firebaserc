@@ -4,6 +4,14 @@
     "dev": "affinity-test-f4c84",
     "production": "affinity-dating-app-cf807"
   },
-  "targets": {},
+  "targets": {
+    "affinity-test-f4c84": {
+      "hosting": {
+        "admin": [
+          "affinity-admin-test"
+        ]
+      }
+    }
+  },
   "etags": {}
 }
