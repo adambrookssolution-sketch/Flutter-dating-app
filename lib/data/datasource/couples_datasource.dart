@@ -10,33 +10,32 @@ import 'package:app/data/models/couple.dart';
 import 'package:app/data/models/couple_status.dart';
 
 /// Filter parameters for the discovery feed query. All fields are optional;
-/// the datasource applies them progressively (cheap server-side filters first,
-/// then in-memory refinements for things Firestore can't express natively).
+/// the datasource applies them progressively (cheap server-side filters
+/// first, then in-memory refinements for things Firestore can't express
+/// natively).
+///
+/// [openToUnicorn] / [openToBull] are tri-state: null = no filter, true =
+/// require the same flag on the couple. False is intentionally not
+/// supported.
 class CoupleFilters {
   final double? centerLat;
   final double? centerLng;
   final double radiusKm;
-  final List<String> dynamics; // strict — at least one must match
-  final List<String> experiencePreferences; // strict — at least one must match
-  final List<String> interests; // 50% threshold
-  final double interestThreshold; // 0.5 default; configurable per DECISIONS_LOG
-  final String? country;
-  final String? city;
+  final List<String> interests; // matching: at least one common element
   final int? minAge;
   final int? maxAge;
+  final bool? openToUnicorn;
+  final bool? openToBull;
 
   const CoupleFilters({
     this.centerLat,
     this.centerLng,
     this.radiusKm = 200,
-    this.dynamics = const [],
-    this.experiencePreferences = const [],
     this.interests = const [],
-    this.interestThreshold = 0.5,
-    this.country,
-    this.city,
     this.minAge,
     this.maxAge,
+    this.openToUnicorn,
+    this.openToBull,
   });
 
   bool get hasGeo => centerLat != null && centerLng != null;
@@ -160,11 +159,13 @@ class CouplesDatasource {
         .collection('couples')
         .where('status', isEqualTo: CoupleStatus.approved.value);
 
-    if (filters.country != null && filters.country!.isNotEmpty) {
-      q = q.where('country', isEqualTo: filters.country);
+    // Server-side narrowing for the boolean openness filters when set —
+    // these are cheap composite-index queries with high selectivity.
+    if (filters.openToUnicorn == true) {
+      q = q.where('open_to_unicorn', isEqualTo: true);
     }
-    if (filters.city != null && filters.city!.isNotEmpty) {
-      q = q.where('city', isEqualTo: filters.city);
+    if (filters.openToBull == true) {
+      q = q.where('open_to_bull', isEqualTo: true);
     }
 
     // Geohash ordering enables proximity-based pagination when geo is set.
@@ -183,8 +184,6 @@ class CouplesDatasource {
 
     final filtered = raw.where((c) {
       if (excludedIds.contains(c.id)) return false;
-      if (!_passesDynamics(c, filters)) return false;
-      if (!_passesExperience(c, filters)) return false;
       if (!_passesInterests(c, filters)) return false;
       if (!_passesAge(c, filters)) return false;
       if (!_passesDistance(c, filters)) return false;
@@ -208,21 +207,10 @@ class CouplesDatasource {
 
   // ── Filter predicates (private) ─────────────────────────────────────────
 
-  static bool _passesDynamics(Couple c, CoupleFilters f) {
-    if (f.dynamics.isEmpty) return true;
-    return c.dynamics.any(f.dynamics.contains);
-  }
-
-  static bool _passesExperience(Couple c, CoupleFilters f) {
-    if (f.experiencePreferences.isEmpty) return true;
-    return c.experiencePreferences.any(f.experiencePreferences.contains);
-  }
-
+  /// Set intersection — the candidate must share at least one interest.
   static bool _passesInterests(Couple c, CoupleFilters f) {
     if (f.interests.isEmpty) return true;
-    final overlap = c.interests.where(f.interests.contains).length;
-    final required = (f.interests.length * f.interestThreshold).ceil();
-    return overlap >= required;
+    return c.interests.any(f.interests.contains);
   }
 
   static bool _passesAge(Couple c, CoupleFilters f) {
@@ -300,10 +288,10 @@ class CouplesDatasource {
     return raw.where((c) {
       if (c.status != CoupleStatus.approved) return false;
       if (excludedIds.contains(c.id)) return false;
-      if (!_passesDynamics(c, filters)) return false;
-      if (!_passesExperience(c, filters)) return false;
       if (!_passesInterests(c, filters)) return false;
       if (!_passesAge(c, filters)) return false;
+      if (filters.openToUnicorn == true && !c.openToUnicorn) return false;
+      if (filters.openToBull == true && !c.openToBull) return false;
       return true;
     }).toList()
       ..sort((a, b) {

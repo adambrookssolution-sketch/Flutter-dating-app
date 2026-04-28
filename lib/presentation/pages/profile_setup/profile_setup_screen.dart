@@ -1,9 +1,9 @@
 import 'dart:io';
 
+import 'package:app/core/interests/interest_groups.dart';
 import 'package:app/data/datasource/auth_datasource.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
-import 'package:app/data/datasource/tags_datasource.dart';
 import 'package:app/data/models/age_range.dart';
 import 'package:app/data/models/couple.dart';
 import 'package:app/data/models/couple_status.dart';
@@ -68,10 +68,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   List<_Photo> _photos = [];
   String? _photoError;
 
-  // Tags
-  List<String> _availableTags = [];
+  // Single flat tag pool; visual blocks come from [InterestGroups].
   Set<String> _selectedTags = {};
-  bool _loadingTags = true;
+
+  bool _openToUnicorn = false;
+  bool _openToBull = false;
 
   bool _isLoading = false;
 
@@ -85,7 +86,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   void initState() {
     super.initState();
     if (_isEditing) _populate(widget.existingProfile!);
-    _loadTags();
   }
 
   @override
@@ -104,63 +104,27 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     super.dispose();
   }
 
-  // ── Tags ─────────────────────────────────────────────────────────────────────
+  // ── Interests ────────────────────────────────────────────────────────────────
 
-  Future<void> _loadTags() async {
-    final tags = await TagsDatasource.getTags();
-    if (mounted) setState(() { _availableTags = tags; _loadingTags = false; });
-  }
-
-  void _toggleTag(String tag) {
+  void _toggleInterest(String chip) {
     setState(() {
-      if (_selectedTags.contains(tag)) {
-        _selectedTags.remove(tag);
+      if (_selectedTags.contains(chip)) {
+        _selectedTags.remove(chip);
       } else {
-        _selectedTags.add(tag);
+        _selectedTags.add(chip);
       }
+      if (_selectedTags.isNotEmpty) _errors['tags'] = null;
     });
   }
 
-  Future<void> _addCustomTag(AppLocalizations l10n) async {
-    final controller = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.addTagTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: InputDecoration(hintText: l10n.addTagHint),
-          onSubmitted: (v) => Navigator.of(ctx).pop(v.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-            child: Text(l10n.addTag),
-          ),
-        ],
-      ),
-    );
-    if (result != null && result.isNotEmpty) {
-      setState(() => _selectedTags.add(result));
-    }
-  }
-
-  Widget _buildTagsSection(AppLocalizations l10n) {
-    // Custom tags: selected but not in the predefined list
-    final customTags = _selectedTags.where((t) => !_availableTags.contains(t));
+  Widget _buildInterestsSection() {
     final hasError = _errors['tags'] != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          l10n.addYourTags,
+          'Intereses de la pareja',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -168,65 +132,166 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           ),
         ),
         const SizedBox(height: 6),
-        Text(
-          l10n.tagsDescription,
-          style: const TextStyle(fontSize: 13, color: Color(0xFF888888), height: 1.4),
+        const Text(
+          'Seleccionen los intereses que mejor los representan y cómo prefieren interactuar con otras parejas.',
+          style: TextStyle(fontSize: 13, color: Color(0xFF888888), height: 1.4),
         ),
         const SizedBox(height: 14),
-        if (_loadingTags)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          )
-        else
-          Container(
-            padding: hasError ? const EdgeInsets.all(8) : null,
-            decoration: hasError
-                ? BoxDecoration(
-                    border: Border.all(color: Colors.red),
-                    borderRadius: BorderRadius.circular(10),
-                  )
-                : null,
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                // Predefined tags from Firestore
-                ..._availableTags.map(
-                  (tag) => _TagChip(
-                    label: tag,
-                    selected: _selectedTags.contains(tag),
-                    onTap: () {
-                      _toggleTag(tag);
-                      if (_selectedTags.isNotEmpty) {
-                        setState(() => _errors['tags'] = null);
-                      }
-                    },
-                  ),
-                ),
-                // Custom tags (selected, not in the predefined list)
-                ...customTags.map(
-                  (tag) => _TagChip(
-                    label: tag,
-                    selected: true,
-                    onTap: () {
-                      setState(() => _selectedTags.remove(tag));
-                      if (_selectedTags.isEmpty) {
-                        setState(() => _errors['tags'] = '');
-                      }
-                    },
-                  ),
-                ),
-                // "Add" chip
-                _AddTagChip(
-                  label: l10n.addTag,
-                  onTap: () => _addCustomTag(l10n),
-                ),
-              ],
-            ),
+        Container(
+          padding: hasError ? const EdgeInsets.all(8) : null,
+          decoration: hasError
+              ? BoxDecoration(
+                  border: Border.all(color: Colors.red),
+                  borderRadius: BorderRadius.circular(10),
+                )
+              : null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _interestGroupBlock(
+                title: 'Tipo de interacción',
+                chips: InterestGroups.tipoDeInteraccion,
+              ),
+              const SizedBox(height: 14),
+              _interestGroupBlock(
+                title: 'Forma de experiencia',
+                chips: InterestGroups.formaDeExperiencia,
+              ),
+              const SizedBox(height: 14),
+              _interestGroupBlock(
+                title: 'Intereses',
+                chips: InterestGroups.intereses,
+              ),
+            ],
           ),
+        ),
         const SizedBox(height: 20),
       ],
+    );
+  }
+
+  Widget _interestGroupBlock({
+    required String title,
+    required List<String> chips,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.4,
+            color: Color(0xFF555555),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: chips
+              .map(
+                (chip) => _TagChip(
+                  label: chip,
+                  selected: _selectedTags.contains(chip),
+                  onTap: () => _toggleInterest(chip),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOpennessSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Apertura de la pareja',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF222222),
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Indiquen si están abiertos a interactuar individualmente con terceros.',
+          style: TextStyle(fontSize: 13, color: Color(0xFF888888), height: 1.4),
+        ),
+        const SizedBox(height: 14),
+        _opennessRow(
+          label: 'Open to Unicorn',
+          sublabel: 'ella',
+          value: _openToUnicorn,
+          onChanged: (v) => setState(() => _openToUnicorn = v),
+        ),
+        const SizedBox(height: 8),
+        _opennessRow(
+          label: 'Open to Bull',
+          sublabel: 'él',
+          value: _openToBull,
+          onChanged: (v) => setState(() => _openToBull = v),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _opennessRow({
+    required String label,
+    required String sublabel,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return InkWell(
+      onTap: () => onChanged(!value),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: value
+                ? const Color(0xFFB31637)
+                : const Color(0xFFE6E6EA),
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1B1B1F),
+                    ),
+                  ),
+                  Text(
+                    '($sublabel)',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF8A8A93),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: Colors.white,
+              activeTrackColor: const Color(0xFFB31637),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -255,6 +320,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     _selectedTags = p.interests.isNotEmpty
         ? p.interests.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toSet()
         : {};
+    // Openness flags live on the couple doc, not on UserProfile.
+    _loadOpennessFromCouple();
     _parseHeight(
       p.herHeight,
       cmCtrl: _herHeightCmController,
@@ -269,6 +336,19 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       inchesCtrl: _hisInchesController,
       setIsCm: (v) => _hisHeightIsCm = v,
     );
+  }
+
+  Future<void> _loadOpennessFromCouple() async {
+    try {
+      final couple = await CouplesDatasource.getCouple(widget.uid);
+      if (!mounted || couple == null) return;
+      setState(() {
+        _openToUnicorn = couple.openToUnicorn;
+        _openToBull = couple.openToBull;
+      });
+    } catch (_) {
+      // Defaults stay false; user can re-toggle.
+    }
   }
 
   void _parseHeight(
@@ -694,6 +774,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               description: profile.description,
               photos: profile.photos,
               interests: _selectedTags.toList(),
+              openToUnicorn: _openToUnicorn,
+              openToBull: _openToBull,
               status: CoupleStatus.pendingReview,
               ageRange: AgeRange.fromBirths(profile.herBirth, profile.hisBirth),
             ),
@@ -702,13 +784,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           // ignore: avoid_print
           print('COUPLE_CREATE_SKIPPED: $e');
         }
-      } else if (_selectedPlace != null && _selectedPlace!.lat != 0) {
-        // Edit mode dual-write: only geo fields into the existing couple doc.
+      } else {
+        // Edit mode: patch interests, openness, and any new geo fields.
+        final patch = <String, dynamic>{
+          'interests': _selectedTags.toList(),
+          'open_to_unicorn': _openToUnicorn,
+          'open_to_bull': _openToBull,
+        };
+        if (_selectedPlace != null && _selectedPlace!.lat != 0) {
+          patch.addAll(_selectedPlace!.toCoupleFields());
+        }
         try {
-          await CouplesDatasource.updateCouple(
-            widget.uid,
-            _selectedPlace!.toCoupleFields(),
-          );
+          await CouplesDatasource.updateCouple(widget.uid, patch);
         } catch (_) {
           // Non-fatal — the legacy write already succeeded.
         }
@@ -863,7 +950,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               errorText: _errorFor('description'),
             ),
             const SizedBox(height: 4),
-            _buildTagsSection(l10n),
+            _buildInterestsSection(),
+            _buildOpennessSection(),
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 30),
@@ -939,46 +1027,6 @@ class _TagChip extends StatelessWidget {
                 color: selected ? Colors.white : const Color(0xFF555555),
                 fontSize: 13,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AddTagChip extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _AddTagChip({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFFB31637),
-            style: BorderStyle.solid,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.add, size: 14, color: Color(0xFFB31637)),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFFB31637),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],

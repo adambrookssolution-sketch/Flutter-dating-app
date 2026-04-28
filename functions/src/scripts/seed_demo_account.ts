@@ -86,9 +86,9 @@ async function main() {
       "Adventurous couple excited to meet like-minded couples — travel, " +
       "food, and new friendships.",
     photos: [],
-    dynamics: ["Parallel Play"],
-    experience_preferences: ["Same Room"],
-    interests: ["Travel", "Foodies", "Adventure"],
+    interests: ["Parallel Play", "Same Room"],
+    open_to_unicorn: false,
+    open_to_bull: false,
     status: "approved",
     verification: null,
     age_range: { min: 33, max: 35 },

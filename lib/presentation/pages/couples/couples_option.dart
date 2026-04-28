@@ -267,14 +267,14 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
   ///   • interests    — ≥ 50 % of the user's selected interests must
   ///                    appear in the profile's CSV string
   ///
-  /// Travel Match is only checkable once the feed source moves to the
-  /// `couples` collection (trips live under `couples/{uid}/trips`); it's
-  /// currently a no-op so users with a travel filter don't see an empty
-  /// feed.
+  /// Applies filters to legacy [UserProfile] rows. Interests match by
+  /// set intersection on the CSV-tokenised tag list (≥1 common value).
+  /// Open to Unicorn / Bull aren't on UserProfile, so unmigrated rows
+  /// pass those filters; the new flags apply via CouplesDatasource once
+  /// the feed source flips to the `couples` collection.
   List<UserProfile> _applyFilters(List<UserProfile> input, FiltersState f) {
     if (f.isEmpty) return input;
 
-    // Pre-tokenise every profile's CSV interests string once.
     List<String> tokenise(String csv) => csv
         .split(',')
         .map((s) => s.trim().toLowerCase())
@@ -291,25 +291,10 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         if (f.minAge != null && older < f.minAge!) return false;
       }
 
-      final profileTags = tokenise(p.interests);
-
-      // Dynamics — any selected dynamic must appear in the profile's tags.
-      if (f.dynamics.isNotEmpty) {
-        final wants = f.dynamics.map((s) => s.toLowerCase());
-        if (!wants.any(profileTags.contains)) return false;
-      }
-      // Experience preferences — same rule.
-      if (f.experiencePreferences.isNotEmpty) {
-        final wants = f.experiencePreferences.map((s) => s.toLowerCase());
-        if (!wants.any(profileTags.contains)) return false;
-      }
-      // Interests — fuzzy match with a configurable threshold (50 % by
-      // default). Rounds down, so 1/2 selections passes.
       if (f.interests.isNotEmpty) {
-        final wants = f.interests.map((s) => s.toLowerCase()).toList();
-        final overlap =
-            wants.where(profileTags.contains).length / wants.length;
-        if (overlap < f.interestThreshold) return false;
+        final profileTags = tokenise(p.interests);
+        final wants = f.interests.map((s) => s.toLowerCase());
+        if (!wants.any(profileTags.contains)) return false;
       }
 
       return true;

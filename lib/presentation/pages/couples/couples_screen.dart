@@ -42,12 +42,13 @@ class _CouplesScreenState extends ConsumerState<CouplesScreen> {
     );
   }
 
+  /// Count for the pineapple badge.
   int _countActive(FiltersState f) =>
       (f.centerLat != null ? 1 : 0) +
       (f.minAge != null || f.maxAge != null ? 1 : 0) +
-      f.dynamics.length +
-      f.experiencePreferences.length +
       f.interests.length +
+      (f.openToUnicorn == true ? 1 : 0) +
+      (f.openToBull == true ? 1 : 0) +
       (f.travelDestinationId != null ? 1 : 0);
 
   @override

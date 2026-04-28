@@ -55,8 +55,6 @@ async function main() {
       geohash: "9g3w9",
       description: p.description ?? "",
       photos: p.photos ?? [],
-      dynamics: [],
-      experience_preferences: [],
       interests:
         typeof p.interests === "string"
           ? p.interests
@@ -64,6 +62,8 @@ async function main() {
               .map((s: string) => s.trim())
               .filter((s: string) => s.length > 0)
           : [],
+      open_to_unicorn: false,
+      open_to_bull: false,
       status: "approved",
       verification: null,
       age_range: { min: 28, max: 38 },

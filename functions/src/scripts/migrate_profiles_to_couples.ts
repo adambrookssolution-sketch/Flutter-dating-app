@@ -244,9 +244,10 @@ async function migrate(): Promise<MigrationStats> {
         geohash,
         description: legacy.description ?? "",
         photos: legacy.photos ?? [],
-        dynamics: [], // unknown from legacy — user fills on next edit
-        experience_preferences: [], // unknown from legacy
         interests: splitCsvInterests(legacy.interests),
+        // No legacy equivalent — user sets these on next profile edit.
+        open_to_unicorn: false,
+        open_to_bull: false,
         status: "approved", // grandfather existing users
         verification: null, // existing users grandfathered out of verification
         age_range: { min: Math.min(ageA, ageB), max: Math.max(ageA, ageB) },

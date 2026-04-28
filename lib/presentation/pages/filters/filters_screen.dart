@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:app/core/interests/interest_groups.dart';
 import 'package:app/data/datasource/destinations_datasource.dart';
-import 'package:app/data/datasource/tags_datasource.dart';
 import 'package:app/data/models/destination.dart';
-import 'package:app/data/models/tag.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/providers/filters_provider.dart';
 
@@ -39,30 +38,12 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
   RangeValues _ageRange = const RangeValues(_minAge, 65);
   bool _ageRangeInitialised = false;
 
-  List<Tag>? _dynamicTags;
-  List<Tag>? _experienceTags;
-  List<Tag>? _interestTags;
   List<Destination>? _destinations;
 
   @override
   void initState() {
     super.initState();
-    _loadTags();
     _loadDestinations();
-  }
-
-  Future<void> _loadTags() async {
-    final results = await Future.wait([
-      TagsDatasource.getByCategory(TagCategory.dynamics),
-      TagsDatasource.getByCategory(TagCategory.experience),
-      TagsDatasource.getByCategory(TagCategory.interests),
-    ]);
-    if (!mounted) return;
-    setState(() {
-      _dynamicTags = results[0];
-      _experienceTags = results[1];
-      _interestTags = results[2];
-    });
   }
 
   Future<void> _loadDestinations() async {
@@ -217,25 +198,42 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                   style: const TextStyle(color: Color(0xFFA4A4AA))),
             ],
           ),
-          _sectionTitle('Dynamics'),
+          // Three visual blocks, one shared `interests` set.
+          _sectionTitle('Tipo de interacción'),
           _chipSection(
-            tags: _dynamicTags,
-            selected: filters.dynamics,
-            onToggle: notifier.toggleDynamic,
-          ),
-          _sectionTitle('Experience preferences'),
-          _chipSection(
-            tags: _experienceTags,
-            selected: filters.experiencePreferences,
-            onToggle: notifier.toggleExperience,
-          ),
-          _sectionTitle('Interests'),
-          _hintLine(
-              'Matches when at least 50% of your selections overlap theirs.'),
-          _chipSection(
-            tags: _interestTags,
+            chips: InterestGroups.tipoDeInteraccion,
             selected: filters.interests,
             onToggle: notifier.toggleInterest,
+          ),
+          _sectionTitle('Forma de experiencia'),
+          _chipSection(
+            chips: InterestGroups.formaDeExperiencia,
+            selected: filters.interests,
+            onToggle: notifier.toggleInterest,
+          ),
+          _sectionTitle('Intereses'),
+          _chipSection(
+            chips: InterestGroups.intereses,
+            selected: filters.interests,
+            onToggle: notifier.toggleInterest,
+          ),
+          const SizedBox(height: 22),
+
+          _sectionTitle('Apertura de la pareja'),
+          _hintLine(
+              'Indiquen si están abiertos a interactuar individualmente con terceros.'),
+          _OpennessToggle(
+            label: 'Open to Unicorn',
+            sublabel: 'ella',
+            value: filters.openToUnicorn == true,
+            onChanged: notifier.setOpenToUnicorn,
+          ),
+          const SizedBox(height: 8),
+          _OpennessToggle(
+            label: 'Open to Bull',
+            sublabel: 'él',
+            value: filters.openToBull == true,
+            onChanged: notifier.setOpenToBull,
           ),
           const SizedBox(height: 16),
           // Travel Match block (client 2026-04-20 mock): lives inside the
@@ -312,30 +310,23 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
         ),
       );
 
+  /// Renders a wrap of FilterChips for one of the three interest blocks.
+  /// All three blocks share the same selected set + the same toggle
+  /// handler — visual grouping is decided here, not in the data layer.
   Widget _chipSection({
-    required List<Tag>? tags,
+    required List<String> chips,
     required Set<String> selected,
     required void Function(String) onToggle,
   }) {
-    if (tags == null) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        child: SizedBox(
-          height: 20,
-          width: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      );
-    }
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: tags.map((t) {
-        final isSelected = selected.contains(t.name);
+      children: chips.map((label) {
+        final isSelected = selected.contains(label);
         return FilterChip(
-          label: Text(t.name),
+          label: Text(label),
           selected: isSelected,
-          onSelected: (_) => onToggle(t.name),
+          onSelected: (_) => onToggle(label),
           selectedColor: const Color(0xFFB31637),
           checkmarkColor: Colors.white,
           labelStyle: TextStyle(
@@ -349,6 +340,73 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
           backgroundColor: Colors.white,
         );
       }).toList(),
+    );
+  }
+}
+
+// ── Openness toggle ──────────────────────────────────────────────────────────
+
+class _OpennessToggle extends StatelessWidget {
+  const _OpennessToggle({
+    required this.label,
+    required this.sublabel,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String sublabel;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => onChanged(!value),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: value
+                ? const Color(0xFFB31637)
+                : const Color(0xFFE6E6EA),
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1B1B1F),
+                    ),
+                  ),
+                  Text(
+                    '($sublabel)',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF8A8A93),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: Colors.white,
+              activeTrackColor: const Color(0xFFB31637),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

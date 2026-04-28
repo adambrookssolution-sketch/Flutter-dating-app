@@ -12,9 +12,10 @@ import 'verification.dart';
 /// client decision). Will eventually decouple from Auth UID in Phase 2 if
 /// per-partner login is added.
 ///
-/// Filter strategy:
-/// - [dynamics] and [experiencePreferences] use STRICT match (set intersection >= 1)
-/// - [interests] uses 50% threshold (configurable, see DECISIONS_LOG Point 4)
+/// All matching tags live in a single flat `interests` array. The
+/// three visual blocks come from [InterestGroups] at render time.
+/// "Apertura de la pareja" is two independent booleans
+/// ([openToUnicorn], [openToBull]) so they can be queried directly.
 class Couple {
   final String id;
   final Partner partnerA;
@@ -32,10 +33,13 @@ class Couple {
   final String description;
   final List<String> photos;
 
-  // Filter dimensions (three independent arrays)
-  final List<String> dynamics;
-  final List<String> experiencePreferences;
   final List<String> interests;
+
+  /// Open to interacting with a single woman as a third party.
+  final bool openToUnicorn;
+
+  /// Open to interacting with a single man as a third party.
+  final bool openToBull;
 
   // Lifecycle
   final CoupleStatus status;
@@ -59,9 +63,9 @@ class Couple {
     this.geohash,
     this.description = '',
     this.photos = const [],
-    this.dynamics = const [],
-    this.experiencePreferences = const [],
     this.interests = const [],
+    this.openToUnicorn = false,
+    this.openToBull = false,
     this.status = CoupleStatus.pendingReview,
     this.verification,
     this.ageRange = const AgeRange(min: 0, max: 0),
@@ -81,9 +85,9 @@ class Couple {
         'geohash': geohash,
         'description': description,
         'photos': photos,
-        'dynamics': dynamics,
-        'experience_preferences': experiencePreferences,
         'interests': interests,
+        'open_to_unicorn': openToUnicorn,
+        'open_to_bull': openToBull,
         'status': status.value,
         'verification': verification?.toMap(),
         'age_range': ageRange.toMap(),
@@ -96,18 +100,13 @@ class Couple {
         'updated_at': FieldValue.serverTimestamp(),
       };
 
-  /// Adapter that accepts BOTH the new schema and the legacy / agency
-  /// shape so a single read path works regardless of which collection
-  /// the document was written by:
-  ///
-  ///   • `interests`     — array (new) OR CSV string (legacy)
-  ///   • `photos`        — array (new) OR `photos_urls` array (legacy)
-  ///   • `verification`  — map (new) OR flat `verification_video_url`
-  ///                       + `verification_status` (legacy)
-  ///
-  /// Unknown / missing fields fall back to safe defaults — never throws.
-  /// This is the safety net described in INTEGRATION_GUIDE.md so that
-  /// the merge with the agency's phase 2 doesn't blow up the read path.
+  /// Reads new and legacy shapes:
+  ///   - `interests`: array, CSV string, or split `dynamics +
+  ///     experience_preferences + interests` arrays
+  ///   - `photos`: `photos` or `photos_urls`
+  ///   - `verification`: map, or flat `verification_video_url` +
+  ///     `verification_status`
+  ///   - `open_to_unicorn` / `open_to_bull` default to false when absent
   factory Couple.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final m = doc.data() ?? const <String, dynamic>{};
     return Couple(
@@ -122,10 +121,9 @@ class Couple {
       geohash: m['geohash'] as String?,
       description: (m['description'] as String?) ?? '',
       photos: _readPhotos(m),
-      dynamics: List<String>.from(m['dynamics'] as List? ?? []),
-      experiencePreferences:
-          List<String>.from(m['experience_preferences'] as List? ?? []),
       interests: _readInterests(m),
+      openToUnicorn: m['open_to_unicorn'] as bool? ?? false,
+      openToBull: m['open_to_bull'] as bool? ?? false,
       status: CoupleStatus.fromString(m['status'] as String?),
       verification: _readVerification(m),
       ageRange: AgeRange.fromMap(m['age_range'] as Map<String, dynamic>?),
@@ -136,8 +134,6 @@ class Couple {
     );
   }
 
-  /// Photos array — accepts new `photos` OR legacy `photos_urls`.
-  /// Filters out null and empty strings defensively.
   static List<String> _readPhotos(Map<String, dynamic> m) {
     final raw = (m['photos'] ?? m['photos_urls']) as List?;
     if (raw == null) return const [];
@@ -147,23 +143,31 @@ class Couple {
         .toList(growable: false);
   }
 
-  /// Interests array — accepts the new array OR a legacy CSV string.
-  /// Splitting on comma matches what the migration script does so the
-  /// in-memory read is consistent with the eventual migrated shape.
+  /// Reads `interests` as array, CSV string, or — for pre-2026-04-29
+  /// docs — concatenates the legacy `dynamics` and
+  /// `experience_preferences` arrays.
   static List<String> _readInterests(Map<String, dynamic> m) {
     final v = m['interests'];
-    if (v is List) return List<String>.from(v);
-    if (v is String) {
+    if (v is List && v.isNotEmpty) {
+      return v.whereType<String>().toList(growable: false);
+    }
+    if (v is String && v.trim().isNotEmpty) {
       return v
           .split(',')
           .map((s) => s.trim())
           .where((s) => s.isNotEmpty)
           .toList(growable: false);
     }
+    final dynamics = (m['dynamics'] as List?)?.whereType<String>() ?? const [];
+    final experience =
+        (m['experience_preferences'] as List?)?.whereType<String>() ??
+            const [];
+    if (dynamics.isNotEmpty || experience.isNotEmpty) {
+      return [...dynamics, ...experience].toList(growable: false);
+    }
     return const [];
   }
 
-  /// Verification — accepts a structured map OR the legacy flat fields.
   static Verification? _readVerification(Map<String, dynamic> m) {
     final structured = m['verification'];
     if (structured is Map<String, dynamic>) {
@@ -190,9 +194,9 @@ class Couple {
     String? geohash,
     String? description,
     List<String>? photos,
-    List<String>? dynamics,
-    List<String>? experiencePreferences,
     List<String>? interests,
+    bool? openToUnicorn,
+    bool? openToBull,
     CoupleStatus? status,
     Verification? verification,
     AgeRange? ageRange,
@@ -211,10 +215,9 @@ class Couple {
         geohash: geohash ?? this.geohash,
         description: description ?? this.description,
         photos: photos ?? this.photos,
-        dynamics: dynamics ?? this.dynamics,
-        experiencePreferences:
-            experiencePreferences ?? this.experiencePreferences,
         interests: interests ?? this.interests,
+        openToUnicorn: openToUnicorn ?? this.openToUnicorn,
+        openToBull: openToBull ?? this.openToBull,
         status: status ?? this.status,
         verification: verification ?? this.verification,
         ageRange: ageRange ?? this.ageRange,

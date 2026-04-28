@@ -54,9 +54,9 @@ interface SeedCouple {
   lng: number;
   geohash: string;
   description: string;
-  dynamics: string[];
-  experience_preferences: string[];
   interests: string[];
+  open_to_unicorn: boolean;
+  open_to_bull: boolean;
   status: string;
 }
 
@@ -76,9 +76,13 @@ const couples: SeedCouple[] = [
     description:
       "Pareja aventurera mexicana — viajeros, foodies y curiosos. " +
       "Buscamos parejas con mente abierta para conocernos.",
-    dynamics: ["Parallel Play", "Soft Swap"],
-    experience_preferences: ["Same Room", "Voyeur Couple"],
-    interests: ["Travel", "Foodies", "Adventure", "Voyeur"],
+    interests: [
+      "Parallel Play", "Soft Swap",
+      "Same Room", "Voyeur Couple",
+      "Voyeur",
+    ],
+    open_to_unicorn: true,
+    open_to_bull: false,
     status: "approved",
   },
   {
@@ -96,9 +100,13 @@ const couples: SeedCouple[] = [
     description:
       "Disfrutamos las cenas largas, los hoteles bonitos y conversar " +
       "con parejas que también disfrutan la vida lifestyle con respeto.",
-    dynamics: ["Full Swap"],
-    experience_preferences: ["Same Room", "Exhibition Couple"],
-    interests: ["Foodies", "Night Life", "Exhibitionist", "Kinky"],
+    interests: [
+      "Full Swap",
+      "Same Room", "Exhibition Couple",
+      "Exhibitionist",
+    ],
+    open_to_unicorn: false,
+    open_to_bull: true,
     status: "approved",
   },
   {
@@ -116,9 +124,13 @@ const couples: SeedCouple[] = [
     description:
       "Pareja porteña curiosa — recién entrando al lifestyle. Queremos " +
       "amistad primero, lo demás se da o no se da.",
-    dynamics: ["Parallel Play"],
-    experience_preferences: ["Separate Rooms"],
-    interests: ["Curious", "Travel", "Night Life"],
+    interests: [
+      "Parallel Play",
+      "Separate Rooms",
+      "Curious",
+    ],
+    open_to_unicorn: false,
+    open_to_bull: false,
     status: "approved",
   },
   {
@@ -136,9 +148,12 @@ const couples: SeedCouple[] = [
     description:
       "Bogotanos viajeros. Vamos seguido a Cancún y Cartagena. Si tienen " +
       "viaje planeado escribinos!",
-    dynamics: ["Soft Swap", "Full Swap"],
-    experience_preferences: ["Same Room", "Voyeur Couple"],
-    interests: ["Travel", "Adventure", "Hot Wife"],
+    interests: [
+      "Soft Swap", "Full Swap",
+      "Same Room", "Voyeur Couple",
+    ],
+    open_to_unicorn: true,
+    open_to_bull: true,
     status: "approved",
   },
   {
@@ -156,9 +171,9 @@ const couples: SeedCouple[] = [
     description:
       "Pareja peruana en proceso de verificación — para probar el flujo " +
       "de moderación.",
-    dynamics: [],
-    experience_preferences: [],
     interests: ["Curious"],
+    open_to_unicorn: false,
+    open_to_bull: false,
     status: "pending_review",
   },
 ];
@@ -179,9 +194,9 @@ async function seedCouples() {
       geohash: c.geohash,
       description: c.description,
       photos: [],
-      dynamics: c.dynamics,
-      experience_preferences: c.experience_preferences,
       interests: c.interests,
+      open_to_unicorn: c.open_to_unicorn,
+      open_to_bull: c.open_to_bull,
       status: c.status,
       verification:
         c.status === "pending_review"

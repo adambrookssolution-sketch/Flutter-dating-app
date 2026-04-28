@@ -15,6 +15,11 @@ import 'package:app/data/datasource/couples_datasource.dart';
 /// favour of pure geolocation-by-radius. The [centerLat] / [centerLng]
 /// come from the device's current location (resolved by the feed screen)
 /// and [radiusKm] is the only location knob the user sees.
+///
+/// As of the 2026-04-29 unification, [interests] is a single flat set
+/// shared with registration and profile; visual grouping happens via
+/// [InterestGroups]. [openToUnicorn] / [openToBull] are tri-state —
+/// null means the filter is off.
 class FiltersState {
   /// Hard floor for the geolocation radius — client spec 2026-04-20
   /// requires the feed to never return a window tighter than 5 km so
@@ -26,10 +31,14 @@ class FiltersState {
   final double radiusKm;
   final int? minAge;
   final int? maxAge;
-  final Set<String> dynamics;
-  final Set<String> experiencePreferences;
+
   final Set<String> interests;
-  final double interestThreshold;
+
+  /// Tri-state: null = off, true = require the same flag on the couple.
+  /// We don't expose `false` because there's no use case for "show me
+  /// couples NOT open to X".
+  final bool? openToUnicorn;
+  final bool? openToBull;
 
   // Travel Match constraints — picked from inside the filters panel per the
   // 2026-04-21 brief ("Travel Match dentro de los filtros").
@@ -47,10 +56,9 @@ class FiltersState {
     double radiusKm = 200,
     this.minAge,
     this.maxAge,
-    this.dynamics = const {},
-    this.experiencePreferences = const {},
     this.interests = const {},
-    this.interestThreshold = 0.5,
+    this.openToUnicorn,
+    this.openToBull,
     this.travelDestinationId,
     this.travelFrom,
     this.travelTo,
@@ -62,15 +70,16 @@ class FiltersState {
     double? radiusKm,
     int? minAge,
     int? maxAge,
-    Set<String>? dynamics,
-    Set<String>? experiencePreferences,
     Set<String>? interests,
-    double? interestThreshold,
+    bool? openToUnicorn,
+    bool? openToBull,
     String? travelDestinationId,
     DateTime? travelFrom,
     DateTime? travelTo,
     bool clearAgeRange = false,
     bool clearTravel = false,
+    bool clearOpenToUnicorn = false,
+    bool clearOpenToBull = false,
   }) {
     return FiltersState(
       centerLat: centerLat ?? this.centerLat,
@@ -78,11 +87,11 @@ class FiltersState {
       radiusKm: radiusKm ?? this.radiusKm,
       minAge: clearAgeRange ? null : (minAge ?? this.minAge),
       maxAge: clearAgeRange ? null : (maxAge ?? this.maxAge),
-      dynamics: dynamics ?? this.dynamics,
-      experiencePreferences:
-          experiencePreferences ?? this.experiencePreferences,
       interests: interests ?? this.interests,
-      interestThreshold: interestThreshold ?? this.interestThreshold,
+      openToUnicorn:
+          clearOpenToUnicorn ? null : (openToUnicorn ?? this.openToUnicorn),
+      openToBull:
+          clearOpenToBull ? null : (openToBull ?? this.openToBull),
       travelDestinationId: clearTravel
           ? null
           : (travelDestinationId ?? this.travelDestinationId),
@@ -96,9 +105,9 @@ class FiltersState {
   bool get isEmpty =>
       minAge == null &&
       maxAge == null &&
-      dynamics.isEmpty &&
-      experiencePreferences.isEmpty &&
       interests.isEmpty &&
+      openToUnicorn == null &&
+      openToBull == null &&
       centerLat == null &&
       travelDestinationId == null;
 
@@ -106,12 +115,11 @@ class FiltersState {
         centerLat: centerLat,
         centerLng: centerLng,
         radiusKm: radiusKm,
-        dynamics: dynamics.toList(),
-        experiencePreferences: experiencePreferences.toList(),
         interests: interests.toList(),
-        interestThreshold: interestThreshold,
         minAge: minAge,
         maxAge: maxAge,
+        openToUnicorn: openToUnicorn,
+        openToBull: openToBull,
       );
 }
 
@@ -165,26 +173,35 @@ class FiltersNotifier extends StateNotifier<FiltersState> {
 
   void clearTravelMatch() => state = state.copyWith(clearTravel: true);
 
-  void toggleDynamic(String tag) => _toggle(tag, 'dynamics');
-  void toggleExperience(String tag) => _toggle(tag, 'experience');
-  void toggleInterest(String tag) => _toggle(tag, 'interests');
-
-  void _toggle(String tag, String bucket) {
-    Set<String> current;
-    switch (bucket) {
-      case 'dynamics':
-        current = {...state.dynamics};
-        current.contains(tag) ? current.remove(tag) : current.add(tag);
-        state = state.copyWith(dynamics: current);
-      case 'experience':
-        current = {...state.experiencePreferences};
-        current.contains(tag) ? current.remove(tag) : current.add(tag);
-        state = state.copyWith(experiencePreferences: current);
-      case 'interests':
-        current = {...state.interests};
-        current.contains(tag) ? current.remove(tag) : current.add(tag);
-        state = state.copyWith(interests: current);
+  /// Toggle a single interest chip on or off. Same call site is used for
+  /// chips from any of the three visual groups — there is no separate
+  /// state per group anymore.
+  void toggleInterest(String tag) {
+    final next = {...state.interests};
+    if (next.contains(tag)) {
+      next.remove(tag);
+    } else {
+      next.add(tag);
     }
+    state = state.copyWith(interests: next);
+  }
+
+  /// Set or clear the "Open to Unicorn" filter. `value` of true keeps the
+  /// filter on, `false` means we have no opinion and want every couple
+  /// regardless of their flag — represented internally as null so we
+  /// don't accidentally narrow the feed by toggling off.
+  void setOpenToUnicorn(bool value) {
+    state = state.copyWith(
+      openToUnicorn: value ? true : null,
+      clearOpenToUnicorn: !value,
+    );
+  }
+
+  void setOpenToBull(bool value) {
+    state = state.copyWith(
+      openToBull: value ? true : null,
+      clearOpenToBull: !value,
+    );
   }
 
   void reset() => state = const FiltersState();
