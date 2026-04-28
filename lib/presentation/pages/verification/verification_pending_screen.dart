@@ -5,6 +5,7 @@ import 'package:app/data/datasource/auth_datasource.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
 import 'package:app/data/models/couple.dart';
 import 'package:app/data/models/couple_status.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/auth/auth_screen.dart';
 import 'package:app/presentation/pages/couples/couples_screen.dart';
 import 'package:app/presentation/pages/verification/verification_intro_screen.dart';
@@ -158,7 +159,7 @@ class StartVerificationButton extends StatelessWidget {
               VerificationIntroScreen(attemptNumber: attemptNumber),
         ),
       ),
-      child: const Text('Start verification'),
+      child: Text(AppLocalizations.of(context)!.startVerification),
     );
   }
 }

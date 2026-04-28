@@ -1003,6 +1003,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not submit: {error}'**
   String reportCouldNotSubmit(String error);
+
+  /// No description provided for @couldNotAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not accept: {error}'**
+  String couldNotAccept(String error);
+
+  /// No description provided for @couldNotDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not dismiss: {error}'**
+  String couldNotDismiss(String error);
+
+  /// No description provided for @couldNotCancelDeletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not cancel deletion: {error}'**
+  String couldNotCancelDeletion(String error);
+
+  /// No description provided for @keepDeletionScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep deletion scheduled'**
+  String get keepDeletionScheduled;
+
+  /// No description provided for @couldNotRequestDeletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not request deletion: {error}'**
+  String couldNotRequestDeletion(String error);
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @addTripTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add trip'**
+  String get addTripTitle;
+
+  /// No description provided for @destinationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Destination'**
+  String get destinationLabel;
+
+  /// No description provided for @datesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get datesLabel;
+
+  /// No description provided for @travelMatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel match'**
+  String get travelMatchTitle;
+
+  /// No description provided for @startVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Start verification'**
+  String get startVerification;
+
+  /// No description provided for @retake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get retake;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettings;
+
+  /// No description provided for @goBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back'**
+  String get goBack;
+
+  /// No description provided for @blockThisCouple.
+  ///
+  /// In en, this message translates to:
+  /// **'Block this couple'**
+  String get blockThisCouple;
+
+  /// No description provided for @reportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get reportAction;
 }
 
 class _AppLocalizationsDelegate

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:app/data/datasource/auth_datasource.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
 import 'package:app/data/models/couple.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/auth/auth_screen.dart';
 import 'package:app/presentation/pages/couples/couples_screen.dart';
 
@@ -41,8 +42,9 @@ class _CancelDeletionScreenState extends State<CancelDeletionScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isCancelling = false);
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not cancel deletion: $e')),
+        SnackBar(content: Text(l10n.couldNotCancelDeletion(e.toString()))),
       );
     }
   }
@@ -131,7 +133,7 @@ class _CancelDeletionScreenState extends State<CancelDeletionScreen> {
                       borderRadius: BorderRadius.circular(250),
                     ),
                   ),
-                  child: const Text('Keep deletion scheduled'),
+                  child: Text(AppLocalizations.of(context)!.keepDeletionScheduled),
                 ),
               ),
             ],

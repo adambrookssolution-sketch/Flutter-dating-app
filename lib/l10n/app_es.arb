@@ -173,5 +173,34 @@
   "reportCouldNotSubmit": "No se pudo enviar: {error}",
   "@reportCouldNotSubmit": {
     "placeholders": { "error": { "type": "String" } }
-  }
+  },
+
+  "couldNotAccept": "No se pudo aceptar: {error}",
+  "@couldNotAccept": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "couldNotDismiss": "No se pudo descartar: {error}",
+  "@couldNotDismiss": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "couldNotCancelDeletion": "No se pudo cancelar la eliminación: {error}",
+  "@couldNotCancelDeletion": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "keepDeletionScheduled": "Mantener eliminación programada",
+  "couldNotRequestDeletion": "No se pudo solicitar la eliminación: {error}",
+  "@couldNotRequestDeletion": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "deleteAccountTitle": "Eliminar cuenta",
+  "addTripTitle": "Añadir viaje",
+  "destinationLabel": "Destino",
+  "datesLabel": "Fechas",
+  "travelMatchTitle": "Travel match",
+  "startVerification": "Iniciar verificación",
+  "retake": "Repetir",
+  "openSettings": "Abrir ajustes",
+  "goBack": "Volver",
+  "blockThisCouple": "Bloquear a esta pareja",
+  "reportAction": "Reportar"
 }

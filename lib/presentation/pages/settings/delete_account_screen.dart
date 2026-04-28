@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:app/data/datasource/auth_datasource.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/auth/auth_screen.dart';
 
 /// Mandatory Apple-policy screen: explains what deletion means, requires
@@ -41,17 +42,19 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not request deletion: $e')),
+        SnackBar(content: Text(l10n.couldNotRequestDeletion(e.toString()))),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Delete account'),
+        title: Text(l10n.deleteAccountTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -150,7 +153,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                     borderRadius: BorderRadius.circular(250),
                   ),
                 ),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
             ),
           ],

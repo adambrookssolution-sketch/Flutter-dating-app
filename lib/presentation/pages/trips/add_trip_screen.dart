@@ -6,6 +6,7 @@ import 'package:app/data/datasource/destinations_datasource.dart';
 import 'package:app/data/datasource/trips_datasource.dart';
 import 'package:app/data/models/destination.dart';
 import 'package:app/data/models/trip.dart';
+import 'package:app/l10n/app_localizations.dart';
 
 /// Adds a new trip to `couples/{coupleId}/trips`. UI:
 ///   - Destination picker (modal sheet sourced from `destinations/*` or
@@ -143,9 +144,10 @@ class _AddTripScreenState extends State<AddTripScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add trip'),
+        title: Text(l10n.addTripTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -155,9 +157,9 @@ class _AddTripScreenState extends State<AddTripScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Destination',
-                style:
-                    TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+            Text(l10n.destinationLabel,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: 15)),
             const SizedBox(height: 8),
             InkWell(
               onTap: _pickDestination,
@@ -188,9 +190,9 @@ class _AddTripScreenState extends State<AddTripScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text('Dates',
-                style:
-                    TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+            Text(l10n.datesLabel,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: 15)),
             const SizedBox(height: 8),
             InkWell(
               onTap: _pickDates,

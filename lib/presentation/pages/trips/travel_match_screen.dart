@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:app/data/models/trip.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/widgets/secure_view.dart';
 
 /// Shows couples whose trips overlap with this one on the same destination.
@@ -48,10 +49,11 @@ class _TravelMatchScreenState extends State<TravelMatchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SecureView(
       child: Scaffold(
       appBar: AppBar(
-        title: const Text('Travel match'),
+        title: Text(l10n.travelMatchTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,

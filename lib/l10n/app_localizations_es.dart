@@ -508,4 +508,60 @@ class AppLocalizationsEs extends AppLocalizations {
   String reportCouldNotSubmit(String error) {
     return 'No se pudo enviar: $error';
   }
+
+  @override
+  String couldNotAccept(String error) {
+    return 'No se pudo aceptar: $error';
+  }
+
+  @override
+  String couldNotDismiss(String error) {
+    return 'No se pudo descartar: $error';
+  }
+
+  @override
+  String couldNotCancelDeletion(String error) {
+    return 'No se pudo cancelar la eliminación: $error';
+  }
+
+  @override
+  String get keepDeletionScheduled => 'Mantener eliminación programada';
+
+  @override
+  String couldNotRequestDeletion(String error) {
+    return 'No se pudo solicitar la eliminación: $error';
+  }
+
+  @override
+  String get deleteAccountTitle => 'Eliminar cuenta';
+
+  @override
+  String get addTripTitle => 'Añadir viaje';
+
+  @override
+  String get destinationLabel => 'Destino';
+
+  @override
+  String get datesLabel => 'Fechas';
+
+  @override
+  String get travelMatchTitle => 'Travel match';
+
+  @override
+  String get startVerification => 'Iniciar verificación';
+
+  @override
+  String get retake => 'Repetir';
+
+  @override
+  String get openSettings => 'Abrir ajustes';
+
+  @override
+  String get goBack => 'Volver';
+
+  @override
+  String get blockThisCouple => 'Bloquear a esta pareja';
+
+  @override
+  String get reportAction => 'Reportar';
 }

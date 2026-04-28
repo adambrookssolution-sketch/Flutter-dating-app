@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:app/data/datasource/verification_datasource.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/verification/verification_pending_screen.dart';
 
 /// Video recorder for couple identity verification.
@@ -441,8 +442,8 @@ class _VideoRecordScreenState extends State<VideoRecordScreen> {
                         ),
                       ),
                       onPressed: _isUploading ? null : _retake,
-                      child: const Text('Retake',
-                          style: TextStyle(color: Colors.white)),
+                      child: Text(AppLocalizations.of(context)!.retake,
+                          style: const TextStyle(color: Colors.white)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -513,7 +514,7 @@ class _PermissionDeniedView extends StatelessWidget {
                     ),
                   ),
                   onPressed: onRetry,
-                  child: const Text('Open Settings'),
+                  child: Text(AppLocalizations.of(context)!.openSettings),
                 ),
               ),
               const SizedBox(height: 12),
@@ -527,7 +528,7 @@ class _PermissionDeniedView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(250),
                     ),
                   ),
-                  child: const Text('Go back'),
+                  child: Text(AppLocalizations.of(context)!.goBack),
                 ),
               ),
             ],

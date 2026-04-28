@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:app/l10n/app_localizations.dart';
+
 /// Data passed into a [CoupleCard] — kept deliberately flat so the card
 /// widget has no dependency on the Firestore models and can be reused
 /// in previews / storybook / admin screens.
@@ -228,26 +230,30 @@ class _CoupleCardState extends State<CoupleCard> {
             widget.onReport?.call();
         }
       },
-      itemBuilder: (_) => [
-        if (widget.onBlock != null)
-          const PopupMenuItem<String>(
-            value: 'block',
-            child: Row(children: [
-              Icon(Icons.block, color: Color(0xFFB31637), size: 18),
-              SizedBox(width: 10),
-              Text('Block this couple'),
-            ]),
-          ),
-        if (widget.onReport != null)
-          const PopupMenuItem<String>(
-            value: 'report',
-            child: Row(children: [
-              Icon(Icons.flag_outlined, color: Color(0xFFB31637), size: 18),
-              SizedBox(width: 10),
-              Text('Report'),
-            ]),
-          ),
-      ],
+      itemBuilder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        return [
+          if (widget.onBlock != null)
+            PopupMenuItem<String>(
+              value: 'block',
+              child: Row(children: [
+                const Icon(Icons.block, color: Color(0xFFB31637), size: 18),
+                const SizedBox(width: 10),
+                Text(l10n.blockThisCouple),
+              ]),
+            ),
+          if (widget.onReport != null)
+            PopupMenuItem<String>(
+              value: 'report',
+              child: Row(children: [
+                const Icon(Icons.flag_outlined,
+                    color: Color(0xFFB31637), size: 18),
+                const SizedBox(width: 10),
+                Text(l10n.reportAction),
+              ]),
+            ),
+        ];
+      },
     );
   }
 

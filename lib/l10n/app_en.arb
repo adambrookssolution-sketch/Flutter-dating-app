@@ -214,5 +214,34 @@
   "reportCouldNotSubmit": "Could not submit: {error}",
   "@reportCouldNotSubmit": {
     "placeholders": { "error": { "type": "String" } }
-  }
+  },
+
+  "couldNotAccept": "Could not accept: {error}",
+  "@couldNotAccept": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "couldNotDismiss": "Could not dismiss: {error}",
+  "@couldNotDismiss": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "couldNotCancelDeletion": "Could not cancel deletion: {error}",
+  "@couldNotCancelDeletion": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "keepDeletionScheduled": "Keep deletion scheduled",
+  "couldNotRequestDeletion": "Could not request deletion: {error}",
+  "@couldNotRequestDeletion": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "deleteAccountTitle": "Delete account",
+  "addTripTitle": "Add trip",
+  "destinationLabel": "Destination",
+  "datesLabel": "Dates",
+  "travelMatchTitle": "Travel match",
+  "startVerification": "Start verification",
+  "retake": "Retake",
+  "openSettings": "Open Settings",
+  "goBack": "Go back",
+  "blockThisCouple": "Block this couple",
+  "reportAction": "Report"
 }

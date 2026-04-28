@@ -497,4 +497,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String reportCouldNotSubmit(String error) {
     return 'Could not submit: $error';
   }
+
+  @override
+  String couldNotAccept(String error) {
+    return 'Could not accept: $error';
+  }
+
+  @override
+  String couldNotDismiss(String error) {
+    return 'Could not dismiss: $error';
+  }
+
+  @override
+  String couldNotCancelDeletion(String error) {
+    return 'Could not cancel deletion: $error';
+  }
+
+  @override
+  String get keepDeletionScheduled => 'Keep deletion scheduled';
+
+  @override
+  String couldNotRequestDeletion(String error) {
+    return 'Could not request deletion: $error';
+  }
+
+  @override
+  String get deleteAccountTitle => 'Delete account';
+
+  @override
+  String get addTripTitle => 'Add trip';
+
+  @override
+  String get destinationLabel => 'Destination';
+
+  @override
+  String get datesLabel => 'Dates';
+
+  @override
+  String get travelMatchTitle => 'Travel match';
+
+  @override
+  String get startVerification => 'Start verification';
+
+  @override
+  String get retake => 'Retake';
+
+  @override
+  String get openSettings => 'Open Settings';
+
+  @override
+  String get goBack => 'Go back';
+
+  @override
+  String get blockThisCouple => 'Block this couple';
+
+  @override
+  String get reportAction => 'Report';
 }
