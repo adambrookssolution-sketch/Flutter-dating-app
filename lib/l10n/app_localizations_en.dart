@@ -354,4 +354,147 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get photoMain => 'Main';
+
+  @override
+  String get notSignedIn => 'Not signed in';
+
+  @override
+  String get securityTitle => 'Security';
+
+  @override
+  String couldNotLoadError(String error) {
+    return 'Could not load: $error';
+  }
+
+  @override
+  String unblockFailed(String error) {
+    return 'Unblock failed: $error';
+  }
+
+  @override
+  String get unblockAction => 'Unblock';
+
+  @override
+  String get accountSettingsTitle => 'Account settings';
+
+  @override
+  String get changePassword => 'Change password';
+
+  @override
+  String get comingSoon => 'Coming soon';
+
+  @override
+  String get reportSubmitted => 'Report submitted';
+
+  @override
+  String get reportCoupleTitle => 'Report couple';
+
+  @override
+  String get blockThisCoupleToo => 'Block this couple too';
+
+  @override
+  String get manageTripsTitle => 'Manage trips';
+
+  @override
+  String get addTrip => 'Add trip';
+
+  @override
+  String get exploreMoreTrips => 'Explore More Trips';
+
+  @override
+  String get noTripsYet =>
+      'No trips yet.\nTap \"Add trip\" to get your first match.';
+
+  @override
+  String get couldNotOpenPartnerSite => 'Couldn\'t open partner travel site.';
+
+  @override
+  String get deleteTripTitle => 'Delete trip?';
+
+  @override
+  String deleteTripBody(String destination) {
+    return 'Cancels notifications to couples matched on \"$destination\".';
+  }
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get noBlockedCouples => 'You have not blocked anyone.';
+
+  @override
+  String blockedOn(String date) {
+    return 'Blocked on $date';
+  }
+
+  @override
+  String get blockOriginViaReport => '(via report)';
+
+  @override
+  String get blockOriginAuto => '(auto)';
+
+  @override
+  String get changeEmail => 'Change email';
+
+  @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get reportCategoryFakeProfile => 'Fake profile';
+
+  @override
+  String get reportCategoryHarassment => 'Harassment';
+
+  @override
+  String get reportCategoryNonConsensual => 'Non-consensual content';
+
+  @override
+  String get reportCategoryMinor => 'Suspected minor';
+
+  @override
+  String get reportCategorySpam => 'Spam';
+
+  @override
+  String get reportCategoryOther => 'Other';
+
+  @override
+  String reportingCouple(String names) {
+    return 'Reporting $names';
+  }
+
+  @override
+  String get reportCategoryLabel => 'Category';
+
+  @override
+  String get reportDescriptionRequired => 'Description (required)';
+
+  @override
+  String get reportDescriptionOptional => 'Description (optional)';
+
+  @override
+  String get reportDescriptionHint =>
+      'Share any context that would help moderators…';
+
+  @override
+  String get reportDescribeOther =>
+      'Please describe the issue when selecting \"Other\".';
+
+  @override
+  String get reportAlsoBlockSubtitle =>
+      'Both couples stop seeing each other immediately.';
+
+  @override
+  String get reportSubmit => 'Submit report';
+
+  @override
+  String get reportSubmitting => 'Submitting…';
+
+  @override
+  String get reportFooterConfidential =>
+      'Reports are confidential. The reported couple is never told who submitted the report.';
+
+  @override
+  String reportCouldNotSubmit(String error) {
+    return 'Could not submit: $error';
+  }
 }

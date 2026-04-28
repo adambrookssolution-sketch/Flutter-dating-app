@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/settings/delete_account_screen.dart';
 
 /// Settings hub. Currently contains the two privacy-critical entries
@@ -14,9 +15,10 @@ class AccountSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account settings'),
+        title: Text(l10n.accountSettingsTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -26,23 +28,23 @@ class AccountSettingsScreen extends StatelessWidget {
           const SizedBox(height: 8),
           ListTile(
             leading: const Icon(Icons.lock_outline),
-            title: const Text('Change password'),
-            subtitle: const Text('Coming soon'),
+            title: Text(l10n.changePassword),
+            subtitle: Text(l10n.comingSoon),
             enabled: false,
           ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.email_outlined),
-            title: const Text('Change email'),
-            subtitle: const Text('Coming soon'),
+            title: Text(l10n.changeEmail),
+            subtitle: Text(l10n.comingSoon),
             enabled: false,
           ),
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.delete_outline, color: Colors.red),
-            title: const Text(
-              'Delete account',
-              style: TextStyle(color: Colors.red),
+            title: Text(
+              l10n.deleteAccount,
+              style: const TextStyle(color: Colors.red),
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.push(

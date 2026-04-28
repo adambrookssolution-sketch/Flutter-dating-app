@@ -150,5 +150,69 @@
   "couldNotLoadCoupleProfile": "Could not load couple profile",
   "imagePickerGallery": "Gallery",
   "imagePickerCamera": "Camera",
-  "photoMain": "Main"
+  "photoMain": "Main",
+
+  "notSignedIn": "Not signed in",
+  "securityTitle": "Security",
+  "couldNotLoadError": "Could not load: {error}",
+  "@couldNotLoadError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "unblockFailed": "Unblock failed: {error}",
+  "@unblockFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "unblockAction": "Unblock",
+  "accountSettingsTitle": "Account settings",
+  "changePassword": "Change password",
+  "comingSoon": "Coming soon",
+  "reportSubmitted": "Report submitted",
+  "reportCoupleTitle": "Report couple",
+  "blockThisCoupleToo": "Block this couple too",
+  "manageTripsTitle": "Manage trips",
+  "addTrip": "Add trip",
+  "exploreMoreTrips": "Explore More Trips",
+  "noTripsYet": "No trips yet.\nTap \"Add trip\" to get your first match.",
+  "couldNotOpenPartnerSite": "Couldn't open partner travel site.",
+  "deleteTripTitle": "Delete trip?",
+  "deleteTripBody": "Cancels notifications to couples matched on \"{destination}\".",
+  "@deleteTripBody": {
+    "placeholders": { "destination": { "type": "String" } }
+  },
+  "delete": "Delete",
+
+  "noBlockedCouples": "You have not blocked anyone.",
+  "blockedOn": "Blocked on {date}",
+  "@blockedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "blockOriginViaReport": "(via report)",
+  "blockOriginAuto": "(auto)",
+
+  "changeEmail": "Change email",
+  "deleteAccount": "Delete account",
+
+  "reportCategoryFakeProfile": "Fake profile",
+  "reportCategoryHarassment": "Harassment",
+  "reportCategoryNonConsensual": "Non-consensual content",
+  "reportCategoryMinor": "Suspected minor",
+  "reportCategorySpam": "Spam",
+  "reportCategoryOther": "Other",
+  "reportingCouple": "Reporting {names}",
+  "@reportingCouple": {
+    "placeholders": { "names": { "type": "String" } }
+  },
+  "reportCategoryLabel": "Category",
+  "reportDescriptionRequired": "Description (required)",
+  "reportDescriptionOptional": "Description (optional)",
+  "reportDescriptionHint": "Share any context that would help moderators…",
+  "reportDescribeOther": "Please describe the issue when selecting \"Other\".",
+  "reportAlsoBlockSubtitle": "Both couples stop seeing each other immediately.",
+  "reportSubmit": "Submit report",
+  "reportSubmitting": "Submitting…",
+  "reportFooterConfidential": "Reports are confidential. The reported couple is never told who submitted the report.",
+  "reportCouldNotSubmit": "Could not submit: {error}",
+  "@reportCouldNotSubmit": {
+    "placeholders": { "error": { "type": "String" } }
+  }
 }

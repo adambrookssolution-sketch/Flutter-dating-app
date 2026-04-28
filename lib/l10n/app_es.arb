@@ -109,5 +109,69 @@
   "couldNotLoadCoupleProfile": "No se pudo cargar el perfil de la pareja",
   "imagePickerGallery": "Galería",
   "imagePickerCamera": "Cámara",
-  "photoMain": "Principal"
+  "photoMain": "Principal",
+
+  "notSignedIn": "Sesión no iniciada",
+  "securityTitle": "Seguridad",
+  "couldNotLoadError": "No se pudo cargar: {error}",
+  "@couldNotLoadError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "unblockFailed": "Desbloqueo fallido: {error}",
+  "@unblockFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "unblockAction": "Desbloquear",
+  "accountSettingsTitle": "Ajustes de cuenta",
+  "changePassword": "Cambiar contraseña",
+  "comingSoon": "Próximamente",
+  "reportSubmitted": "Reporte enviado",
+  "reportCoupleTitle": "Reportar pareja",
+  "blockThisCoupleToo": "Bloquear también a esta pareja",
+  "manageTripsTitle": "Gestionar viajes",
+  "addTrip": "Añadir viaje",
+  "exploreMoreTrips": "Explorar más viajes",
+  "noTripsYet": "Todavía no hay viajes.\nToca \"Añadir viaje\" para obtener tu primera coincidencia.",
+  "couldNotOpenPartnerSite": "No se pudo abrir el sitio del partner de viajes.",
+  "deleteTripTitle": "¿Eliminar viaje?",
+  "deleteTripBody": "Cancela las notificaciones a las parejas con coincidencia en \"{destination}\".",
+  "@deleteTripBody": {
+    "placeholders": { "destination": { "type": "String" } }
+  },
+  "delete": "Eliminar",
+
+  "noBlockedCouples": "No has bloqueado a nadie.",
+  "blockedOn": "Bloqueado el {date}",
+  "@blockedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "blockOriginViaReport": "(vía reporte)",
+  "blockOriginAuto": "(automático)",
+
+  "changeEmail": "Cambiar correo",
+  "deleteAccount": "Eliminar cuenta",
+
+  "reportCategoryFakeProfile": "Perfil falso",
+  "reportCategoryHarassment": "Acoso",
+  "reportCategoryNonConsensual": "Contenido no consensuado",
+  "reportCategoryMinor": "Sospecha de menor de edad",
+  "reportCategorySpam": "Spam",
+  "reportCategoryOther": "Otro",
+  "reportingCouple": "Reportando a {names}",
+  "@reportingCouple": {
+    "placeholders": { "names": { "type": "String" } }
+  },
+  "reportCategoryLabel": "Categoría",
+  "reportDescriptionRequired": "Descripción (obligatoria)",
+  "reportDescriptionOptional": "Descripción (opcional)",
+  "reportDescriptionHint": "Comparte el contexto que pueda ayudar a los moderadores…",
+  "reportDescribeOther": "Por favor describe el problema cuando selecciones \"Otro\".",
+  "reportAlsoBlockSubtitle": "Ambas parejas dejan de verse al instante.",
+  "reportSubmit": "Enviar reporte",
+  "reportSubmitting": "Enviando…",
+  "reportFooterConfidential": "Los reportes son confidenciales. La pareja reportada nunca sabe quién envió el reporte.",
+  "reportCouldNotSubmit": "No se pudo enviar: {error}",
+  "@reportCouldNotSubmit": {
+    "placeholders": { "error": { "type": "String" } }
+  }
 }

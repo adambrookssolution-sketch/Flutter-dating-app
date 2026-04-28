@@ -751,6 +751,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Main'**
   String get photoMain;
+
+  /// No description provided for @notSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Not signed in'**
+  String get notSignedIn;
+
+  /// No description provided for @securityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get securityTitle;
+
+  /// No description provided for @couldNotLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load: {error}'**
+  String couldNotLoadError(String error);
+
+  /// No description provided for @unblockFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock failed: {error}'**
+  String unblockFailed(String error);
+
+  /// No description provided for @unblockAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get unblockAction;
+
+  /// No description provided for @accountSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account settings'**
+  String get accountSettingsTitle;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get changePassword;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
+
+  /// No description provided for @reportSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Report submitted'**
+  String get reportSubmitted;
+
+  /// No description provided for @reportCoupleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report couple'**
+  String get reportCoupleTitle;
+
+  /// No description provided for @blockThisCoupleToo.
+  ///
+  /// In en, this message translates to:
+  /// **'Block this couple too'**
+  String get blockThisCoupleToo;
+
+  /// No description provided for @manageTripsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage trips'**
+  String get manageTripsTitle;
+
+  /// No description provided for @addTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add trip'**
+  String get addTrip;
+
+  /// No description provided for @exploreMoreTrips.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore More Trips'**
+  String get exploreMoreTrips;
+
+  /// No description provided for @noTripsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No trips yet.\nTap \"Add trip\" to get your first match.'**
+  String get noTripsYet;
+
+  /// No description provided for @couldNotOpenPartnerSite.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open partner travel site.'**
+  String get couldNotOpenPartnerSite;
+
+  /// No description provided for @deleteTripTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete trip?'**
+  String get deleteTripTitle;
+
+  /// No description provided for @deleteTripBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancels notifications to couples matched on \"{destination}\".'**
+  String deleteTripBody(String destination);
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @noBlockedCouples.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not blocked anyone.'**
+  String get noBlockedCouples;
+
+  /// No description provided for @blockedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked on {date}'**
+  String blockedOn(String date);
+
+  /// No description provided for @blockOriginViaReport.
+  ///
+  /// In en, this message translates to:
+  /// **'(via report)'**
+  String get blockOriginViaReport;
+
+  /// No description provided for @blockOriginAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'(auto)'**
+  String get blockOriginAuto;
+
+  /// No description provided for @changeEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Change email'**
+  String get changeEmail;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @reportCategoryFakeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Fake profile'**
+  String get reportCategoryFakeProfile;
+
+  /// No description provided for @reportCategoryHarassment.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment'**
+  String get reportCategoryHarassment;
+
+  /// No description provided for @reportCategoryNonConsensual.
+  ///
+  /// In en, this message translates to:
+  /// **'Non-consensual content'**
+  String get reportCategoryNonConsensual;
+
+  /// No description provided for @reportCategoryMinor.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspected minor'**
+  String get reportCategoryMinor;
+
+  /// No description provided for @reportCategorySpam.
+  ///
+  /// In en, this message translates to:
+  /// **'Spam'**
+  String get reportCategorySpam;
+
+  /// No description provided for @reportCategoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get reportCategoryOther;
+
+  /// No description provided for @reportingCouple.
+  ///
+  /// In en, this message translates to:
+  /// **'Reporting {names}'**
+  String reportingCouple(String names);
+
+  /// No description provided for @reportCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get reportCategoryLabel;
+
+  /// No description provided for @reportDescriptionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (required)'**
+  String get reportDescriptionRequired;
+
+  /// No description provided for @reportDescriptionOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get reportDescriptionOptional;
+
+  /// No description provided for @reportDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Share any context that would help moderators…'**
+  String get reportDescriptionHint;
+
+  /// No description provided for @reportDescribeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Please describe the issue when selecting \"Other\".'**
+  String get reportDescribeOther;
+
+  /// No description provided for @reportAlsoBlockSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Both couples stop seeing each other immediately.'**
+  String get reportAlsoBlockSubtitle;
+
+  /// No description provided for @reportSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit report'**
+  String get reportSubmit;
+
+  /// No description provided for @reportSubmitting.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting…'**
+  String get reportSubmitting;
+
+  /// No description provided for @reportFooterConfidential.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports are confidential. The reported couple is never told who submitted the report.'**
+  String get reportFooterConfidential;
+
+  /// No description provided for @reportCouldNotSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not submit: {error}'**
+  String reportCouldNotSubmit(String error);
 }
 
 class _AppLocalizationsDelegate

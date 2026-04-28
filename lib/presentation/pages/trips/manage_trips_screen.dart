@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:app/data/datasource/trips_datasource.dart';
 import 'package:app/data/models/trip.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/trips/add_trip_screen.dart';
 import 'package:app/presentation/pages/trips/travel_match_screen.dart';
 
@@ -33,14 +34,15 @@ class ManageTripsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
-      return const Scaffold(body: Center(child: Text('Not signed in')));
+      return Scaffold(body: Center(child: Text(l10n.notSignedIn)));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage trips'),
+        title: Text(l10n.manageTripsTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -49,7 +51,9 @@ class ManageTripsScreen extends StatelessWidget {
         stream: TripsDatasource.streamTrips(uid),
         builder: (context, snap) {
           if (snap.hasError) {
-            return Center(child: Text('Could not load: ${snap.error}'));
+            return Center(
+              child: Text(l10n.couldNotLoadError(snap.error.toString())),
+            );
           }
           if (!snap.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -59,7 +63,7 @@ class ManageTripsScreen extends StatelessWidget {
           final upcoming = all.where((t) => t.endDate.isAfter(today)).toList();
 
           final listChild = upcoming.isEmpty
-              ? const _EmptyTripsState()
+              ? _EmptyTripsState(message: l10n.noTripsYet)
               : ListView.separated(
                   itemCount: upcoming.length,
                   separatorBuilder: (_, __) => const Divider(height: 1),
@@ -111,6 +115,8 @@ class ManageTripsScreen extends StatelessWidget {
             children: [
               Expanded(child: listChild),
               _TripsBottomBar(
+                addTripLabel: l10n.addTrip,
+                exploreMoreLabel: l10n.exploreMoreTrips,
                 onAddTrip: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -133,32 +139,30 @@ class ManageTripsScreen extends StatelessWidget {
     if (uri == null) return;
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Couldn't open partner travel site."),
-        ),
+        SnackBar(content: Text(l10n.couldNotOpenPartnerSite)),
       );
     }
   }
 
   Future<void> _confirmDelete(
       BuildContext context, String uid, Trip trip) async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete trip?'),
-        content: Text(
-          'Cancels notifications to couples matched on "${trip.destination}".',
-        ),
+        title: Text(l10n.deleteTripTitle),
+        content: Text(l10n.deleteTripBody(trip.destination)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -170,23 +174,25 @@ class ManageTripsScreen extends StatelessWidget {
 }
 
 class _EmptyTripsState extends StatelessWidget {
-  const _EmptyTripsState();
+  const _EmptyTripsState({required this.message});
+
+  final String message;
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.flight_takeoff,
+            const Icon(Icons.flight_takeoff,
                 size: 48, color: Color(0xFFA4A4AA)),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
-              'No trips yet.\nTap "Add trip" to get your first match.',
+              message,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFA4A4AA)),
+              style: const TextStyle(color: Color(0xFFA4A4AA)),
             ),
           ],
         ),
@@ -205,10 +211,14 @@ class _TripsBottomBar extends StatelessWidget {
   const _TripsBottomBar({
     required this.onAddTrip,
     required this.onExploreMore,
+    required this.addTripLabel,
+    required this.exploreMoreLabel,
   });
 
   final VoidCallback onAddTrip;
   final VoidCallback onExploreMore;
+  final String addTripLabel;
+  final String exploreMoreLabel;
 
   static const Color _burgundy = Color(0xFFB31637);
 
@@ -233,9 +243,9 @@ class _TripsBottomBar extends StatelessWidget {
                   onPressed: onExploreMore,
                   icon: const Icon(Icons.travel_explore,
                       color: _burgundy, size: 20),
-                  label: const Text(
-                    'Explore More Trips',
-                    style: TextStyle(
+                  label: Text(
+                    exploreMoreLabel,
+                    style: const TextStyle(
                       color: _burgundy,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -257,9 +267,9 @@ class _TripsBottomBar extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: onAddTrip,
                 icon: const Icon(Icons.add, size: 20),
-                label: const Text(
-                  'Add trip',
-                  style: TextStyle(
+                label: Text(
+                  addTripLabel,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),

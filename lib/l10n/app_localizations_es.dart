@@ -364,4 +364,148 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get photoMain => 'Principal';
+
+  @override
+  String get notSignedIn => 'Sesión no iniciada';
+
+  @override
+  String get securityTitle => 'Seguridad';
+
+  @override
+  String couldNotLoadError(String error) {
+    return 'No se pudo cargar: $error';
+  }
+
+  @override
+  String unblockFailed(String error) {
+    return 'Desbloqueo fallido: $error';
+  }
+
+  @override
+  String get unblockAction => 'Desbloquear';
+
+  @override
+  String get accountSettingsTitle => 'Ajustes de cuenta';
+
+  @override
+  String get changePassword => 'Cambiar contraseña';
+
+  @override
+  String get comingSoon => 'Próximamente';
+
+  @override
+  String get reportSubmitted => 'Reporte enviado';
+
+  @override
+  String get reportCoupleTitle => 'Reportar pareja';
+
+  @override
+  String get blockThisCoupleToo => 'Bloquear también a esta pareja';
+
+  @override
+  String get manageTripsTitle => 'Gestionar viajes';
+
+  @override
+  String get addTrip => 'Añadir viaje';
+
+  @override
+  String get exploreMoreTrips => 'Explorar más viajes';
+
+  @override
+  String get noTripsYet =>
+      'Todavía no hay viajes.\nToca \"Añadir viaje\" para obtener tu primera coincidencia.';
+
+  @override
+  String get couldNotOpenPartnerSite =>
+      'No se pudo abrir el sitio del partner de viajes.';
+
+  @override
+  String get deleteTripTitle => '¿Eliminar viaje?';
+
+  @override
+  String deleteTripBody(String destination) {
+    return 'Cancela las notificaciones a las parejas con coincidencia en \"$destination\".';
+  }
+
+  @override
+  String get delete => 'Eliminar';
+
+  @override
+  String get noBlockedCouples => 'No has bloqueado a nadie.';
+
+  @override
+  String blockedOn(String date) {
+    return 'Bloqueado el $date';
+  }
+
+  @override
+  String get blockOriginViaReport => '(vía reporte)';
+
+  @override
+  String get blockOriginAuto => '(automático)';
+
+  @override
+  String get changeEmail => 'Cambiar correo';
+
+  @override
+  String get deleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get reportCategoryFakeProfile => 'Perfil falso';
+
+  @override
+  String get reportCategoryHarassment => 'Acoso';
+
+  @override
+  String get reportCategoryNonConsensual => 'Contenido no consensuado';
+
+  @override
+  String get reportCategoryMinor => 'Sospecha de menor de edad';
+
+  @override
+  String get reportCategorySpam => 'Spam';
+
+  @override
+  String get reportCategoryOther => 'Otro';
+
+  @override
+  String reportingCouple(String names) {
+    return 'Reportando a $names';
+  }
+
+  @override
+  String get reportCategoryLabel => 'Categoría';
+
+  @override
+  String get reportDescriptionRequired => 'Descripción (obligatoria)';
+
+  @override
+  String get reportDescriptionOptional => 'Descripción (opcional)';
+
+  @override
+  String get reportDescriptionHint =>
+      'Comparte el contexto que pueda ayudar a los moderadores…';
+
+  @override
+  String get reportDescribeOther =>
+      'Por favor describe el problema cuando selecciones \"Otro\".';
+
+  @override
+  String get reportAlsoBlockSubtitle =>
+      'Ambas parejas dejan de verse al instante.';
+
+  @override
+  String get reportSubmit => 'Enviar reporte';
+
+  @override
+  String get reportSubmitting => 'Enviando…';
+
+  @override
+  String get reportFooterConfidential =>
+      'Los reportes son confidenciales. La pareja reportada nunca sabe quién envió el reporte.';
+
+  @override
+  String reportCouldNotSubmit(String error) {
+    return 'No se pudo enviar: $error';
+  }
 }

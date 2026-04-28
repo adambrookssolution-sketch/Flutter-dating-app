@@ -5,6 +5,7 @@ import 'package:app/data/datasource/blocks_datasource.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
 import 'package:app/data/models/block.dart';
 import 'package:app/data/models/couple.dart';
+import 'package:app/l10n/app_localizations.dart';
 
 /// Blocked-couples management screen. Apple App Store requires dating apps
 /// to expose this — DECISIONS_LOG Point 6 also mandates it.
@@ -17,16 +18,17 @@ class SecurityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
-      return const Scaffold(
-        body: Center(child: Text('Not signed in')),
+      return Scaffold(
+        body: Center(child: Text(l10n.notSignedIn)),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Security'),
+        title: Text(l10n.securityTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -36,7 +38,7 @@ class SecurityScreen extends StatelessWidget {
         builder: (context, snap) {
           if (snap.hasError) {
             return Center(
-              child: Text('Could not load: ${snap.error}'),
+              child: Text(l10n.couldNotLoadError(snap.error.toString())),
             );
           }
           if (!snap.hasData) {
@@ -44,13 +46,13 @@ class SecurityScreen extends StatelessWidget {
           }
           final blocks = snap.data!;
           if (blocks.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
+                padding: const EdgeInsets.all(32),
                 child: Text(
-                  'You have not blocked anyone.',
+                  l10n.noBlockedCouples,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFFA4A4AA)),
+                  style: const TextStyle(color: Color(0xFFA4A4AA)),
                 ),
               ),
             );
@@ -97,8 +99,9 @@ class _BlockRowState extends State<_BlockRow> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _unblocking = false);
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Unblock failed: $e')),
+        SnackBar(content: Text(l10n.unblockFailed(e.toString()))),
       );
     }
   }
@@ -111,6 +114,7 @@ class _BlockRowState extends State<_BlockRow> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<Couple?>(
       future: _couple,
       builder: (context, snap) {
@@ -120,6 +124,11 @@ class _BlockRowState extends State<_BlockRow> {
         final photo = (snap.data?.photos.isNotEmpty ?? false)
             ? snap.data!.photos.first
             : null;
+        final originSuffix = switch (widget.block.origen) {
+          BlockOrigin.viaReporte => ' ${l10n.blockOriginViaReport}',
+          BlockOrigin.autoPorSuspension => ' ${l10n.blockOriginAuto}',
+          _ => '',
+        };
         return ListTile(
           leading: CircleAvatar(
             backgroundImage: photo != null ? NetworkImage(photo) : null,
@@ -130,9 +139,7 @@ class _BlockRowState extends State<_BlockRow> {
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
-            'Blocked on ${_formatDate(widget.block.fecha)}'
-            '${widget.block.origen == BlockOrigin.viaReporte ? " (via report)" : ""}'
-            '${widget.block.origen == BlockOrigin.autoPorSuspension ? " (auto)" : ""}',
+            '${l10n.blockedOn(_formatDate(widget.block.fecha))}$originSuffix',
             style:
                 const TextStyle(fontSize: 12, color: Color(0xFFA4A4AA)),
           ),
@@ -144,7 +151,7 @@ class _BlockRowState extends State<_BlockRow> {
                 )
               : OutlinedButton(
                   onPressed: _unblock,
-                  child: const Text('Unblock'),
+                  child: Text(l10n.unblockAction),
                 ),
         );
       },
