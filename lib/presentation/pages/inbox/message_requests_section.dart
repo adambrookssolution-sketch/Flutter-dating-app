@@ -53,7 +53,7 @@ class MessageRequestsSection extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB31637),
+                      color: const Color(0xFFB01030),
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: Text(

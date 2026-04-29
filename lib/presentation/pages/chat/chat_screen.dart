@@ -37,7 +37,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  static const Color _myBubble = Color(0xFFB31637);
+  static const Color _myBubble = Color(0xFFB01030);
   static const Color _theirBubble = Color(0xFFF1F1F1);
   static const Color _inputBg = Color(0xFFF1F1F1);
 
@@ -212,7 +212,7 @@ class _ChatScreenState extends State<ChatScreen> {
       return const Center(
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          color: Color(0xFFB31637),
+          color: Color(0xFFB01030),
         ),
       );
     }
@@ -536,7 +536,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 child: const Icon(
                   Icons.arrow_forward_rounded,
-                  color: Color(0xFFB31637),
+                  color: Color(0xFFB01030),
                   size: 22,
                 ),
               ),

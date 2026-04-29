@@ -100,14 +100,14 @@ class _CustomSelectState<T> extends State<CustomSelect<T>> {
                     style: TextStyle(
                       fontSize: 15,
                       color: isSelected
-                          ? const Color(0xFFB31637)
+                          ? const Color(0xFFB01030)
                           : const Color(0xFF333333),
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
                   trailing: isSelected
-                      ? const Icon(Icons.check, color: Color(0xFFB31637))
+                      ? const Icon(Icons.check, color: Color(0xFFB01030))
                       : null,
                   onTap: () => Navigator.of(context).pop(option.value),
                 );

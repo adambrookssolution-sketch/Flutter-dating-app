@@ -116,7 +116,7 @@ class _DefaultLockedView extends StatelessWidget {
 
   final SubscriptionPlan required;
 
-  static const Color _burgundy = Color(0xFFB31637);
+  static const Color _burgundy = Color(0xFFB01030);
   static const Color _gold = Color(0xFFC9A24B);
 
   @override

@@ -213,14 +213,14 @@ class _InboxScreenState extends State<InboxScreen> {
   Widget _buildBody(AppLocalizations l10n) {
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFFB31637)),
+        child: CircularProgressIndicator(color: Color(0xFFB01030)),
       );
     }
 
     if (_error != null) {
       return RefreshIndicator(
         onRefresh: _refresh,
-        color: const Color(0xFFB31637),
+        color: const Color(0xFFB01030),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
@@ -247,7 +247,7 @@ class _InboxScreenState extends State<InboxScreen> {
     // empty case (no conversations + no pending requests).
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFFB31637),
+      color: const Color(0xFFB01030),
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -361,7 +361,7 @@ class _CollapsibleSectionHeader extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFFB31637),
+                color: const Color(0xFFB01030),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(

@@ -25,7 +25,7 @@ class StickyFeedActions extends StatelessWidget {
   /// callback is ignored — useful while a request is in flight.
   final bool enabled;
 
-  static const Color _burgundy = Color(0xFFB31637);
+  static const Color _burgundy = Color(0xFFB01030);
 
   @override
   Widget build(BuildContext context) {

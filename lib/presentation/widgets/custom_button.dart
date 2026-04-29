@@ -40,17 +40,17 @@ class _CustomButtonState extends State<CustomButton> {
         borderColor = Colors.white;
         textColor = Colors.white;
       case ButtonType.mainSystem:
-        backgroundColor = const Color(0xFFB31637);
+        backgroundColor = const Color(0xFFB01030);
         borderColor = Colors.transparent;
         textColor = Colors.white;
       case ButtonType.secondarySystem:
         backgroundColor = Colors.transparent;
-        borderColor = const Color(0xFFB31637);
-        textColor = const Color(0xFFB31637);
+        borderColor = const Color(0xFFB01030);
+        textColor = const Color(0xFFB01030);
       case ButtonType.link:
         backgroundColor = Colors.transparent;
         borderColor = Colors.transparent;
-        textColor = const Color(0xFFB31637);
+        textColor = const Color(0xFFB01030);
     }
 
     return GestureDetector(

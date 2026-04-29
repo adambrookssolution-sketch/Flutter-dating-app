@@ -71,7 +71,7 @@ class ManageTripsScreen extends StatelessWidget {
                     final t = upcoming[i];
                     return ListTile(
                       leading:
-                          const Icon(Icons.place, color: Color(0xFFB31637)),
+                          const Icon(Icons.place, color: Color(0xFFB01030)),
                       title: Text(t.destination,
                           style:
                               const TextStyle(fontWeight: FontWeight.w600)),
@@ -85,7 +85,7 @@ class ManageTripsScreen extends StatelessWidget {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.group,
-                                color: Color(0xFFB31637)),
+                                color: Color(0xFFB01030)),
                             tooltip: 'See matches',
                             onPressed: () => Navigator.push(
                               context,
@@ -220,7 +220,7 @@ class _TripsBottomBar extends StatelessWidget {
   final String addTripLabel;
   final String exploreMoreLabel;
 
-  static const Color _burgundy = Color(0xFFB31637);
+  static const Color _burgundy = Color(0xFFB01030);
 
   @override
   Widget build(BuildContext context) {

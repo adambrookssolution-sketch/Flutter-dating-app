@@ -27,7 +27,7 @@ import 'package:app/providers/subscription_provider.dart';
 class PaywallScreen extends ConsumerWidget {
   const PaywallScreen({super.key});
 
-  static const Color _burgundy = Color(0xFFB31637);
+  static const Color _burgundy = Color(0xFFB01030);
   static const Color _purple = Color(0xFF5B1280);
   static const Color _gold = Color(0xFFC9A24B);
   static const Color _inkSoft = Color(0xFF4A4A52);
@@ -185,7 +185,7 @@ class _PlanCard extends StatelessWidget {
   final String? badgeText;
   final bool dark;
 
-  static const Color _burgundy = Color(0xFFB31637);
+  static const Color _burgundy = Color(0xFFB01030);
   static const Color _gold = Color(0xFFC9A24B);
 
   @override
@@ -402,7 +402,7 @@ class _CtaButton extends StatelessWidget {
         // just a neutral redirect hint. Apple's Guideline 3.1.3(b) OK.
         label: const Text('Continuar en el navegador'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: dark ? const Color(0xFFC9A24B) : const Color(0xFFB31637),
+          backgroundColor: dark ? const Color(0xFFC9A24B) : const Color(0xFFB01030),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),

@@ -65,7 +65,7 @@ class VerificationIntroScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Icon(Icons.check_circle_outline,
-                          color: Color(0xFFB31637), size: 20),
+                          color: Color(0xFFB01030), size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(s, style: const TextStyle(fontSize: 14)),
@@ -94,7 +94,7 @@ class VerificationIntroScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB31637),
+                    backgroundColor: const Color(0xFFB01030),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

@@ -303,7 +303,7 @@ class _PostCard extends StatelessWidget {
   });
 
   static const Color _grey = Color(0xFFB9B9B9);
-  static const Color _red = Color(0xFFB31637);
+  static const Color _red = Color(0xFFB01030);
 
   @override
   Widget build(BuildContext context) {
@@ -380,11 +380,11 @@ class _PostCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(Icons.delete_outline,
-                        color: Color(0xFFB31637), size: 20),
+                        color: Color(0xFFB01030), size: 20),
                     SizedBox(width: 10),
                     Text(
                       'Delete post',
-                      style: TextStyle(color: Color(0xFFB31637)),
+                      style: TextStyle(color: Color(0xFFB01030)),
                     ),
                   ],
                 ),
@@ -649,7 +649,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                       width: 40,
                       height: 40,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFB31637),
+                        color: Color(0xFFB01030),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -845,7 +845,7 @@ class _FloatingComposerState extends State<_FloatingComposer> {
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFFB31637),
+            color: const Color(0xFFB01030),
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(

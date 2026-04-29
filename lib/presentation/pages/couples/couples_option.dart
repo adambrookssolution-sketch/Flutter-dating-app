@@ -244,7 +244,7 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.requestSentTo(displayName)),
-        backgroundColor: const Color(0xFFB31637),
+        backgroundColor: const Color(0xFFB01030),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         duration: const Duration(seconds: 3),
@@ -309,7 +309,7 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
 
     if (_loading) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFFB31637)),
+        child: CircularProgressIndicator(color: Color(0xFFB01030)),
       );
     }
 
@@ -339,7 +339,7 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     if (profiles.isEmpty) {
       return RefreshIndicator(
         onRefresh: _loadProfiles,
-        color: const Color(0xFFB31637),
+        color: const Color(0xFFB01030),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: const [
@@ -363,7 +363,7 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         Expanded(
           child: RefreshIndicator(
             onRefresh: _loadProfiles,
-            color: const Color(0xFFB31637),
+            color: const Color(0xFFB01030),
             child: PageView.builder(
               controller: _pageController,
               scrollDirection: Axis.vertical,

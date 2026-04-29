@@ -26,7 +26,7 @@ class AdminApp extends StatelessWidget {
   static const Color line = Color(0xFF2A2638);
   static const Color textPrimary = Color(0xFFF6F3FA);
   static const Color textMuted = Color(0xFF9C95B0);
-  static const Color burgundy = Color(0xFFB31637);
+  static const Color burgundy = Color(0xFFB01030);
   static const Color burgundyLight = Color(0xFFE63757);
   static const Color purple = Color(0xFF5B1280);
   static const Color gold = Color(0xFFC9A24B);

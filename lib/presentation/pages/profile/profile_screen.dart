@@ -22,7 +22,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  static const Color _headerTop = Color(0xFFB31637);
+  static const Color _headerTop = Color(0xFFB01030);
   static const Color _headerBottom = Color(0xFF4D0918);
 
   UserProfile? _profile;

@@ -254,7 +254,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         decoration: BoxDecoration(
           border: Border.all(
             color: value
-                ? const Color(0xFFB31637)
+                ? const Color(0xFFB01030)
                 : const Color(0xFFE6E6EA),
           ),
           borderRadius: BorderRadius.circular(12),
@@ -287,7 +287,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               value: value,
               onChanged: onChanged,
               activeThumbColor: Colors.white,
-              activeTrackColor: const Color(0xFFB31637),
+              activeTrackColor: const Color(0xFFB01030),
             ),
           ],
         ),
@@ -402,17 +402,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isDragTarget ? const Color(0xFFB31637) : const Color(0xFFDDDDDD),
+          color: isDragTarget ? const Color(0xFFB01030) : const Color(0xFFDDDDDD),
           width: isDragTarget ? 2 : 1,
         ),
         color: isDragTarget
-            ? const Color(0xFFB31637).withValues(alpha: 0.06)
+            ? const Color(0xFFB01030).withValues(alpha: 0.06)
             : const Color(0xFFF5F5F5),
       ),
       child: isAdd
           ? const Center(
               child: Icon(Icons.add_photo_alternate_outlined,
-                  color: Color(0xFFB31637), size: 30),
+                  color: Color(0xFFB01030), size: 30),
             )
           : null,
     );
@@ -458,7 +458,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: isTargeted ? const Color(0xFFB31637) : Colors.transparent,
+                    color: isTargeted ? const Color(0xFFB01030) : Colors.transparent,
                     width: 2,
                   ),
                 ),
@@ -488,7 +488,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB31637),
+                      color: const Color(0xFFB01030),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(AppLocalizations.of(context)!.photoMain,
@@ -1008,10 +1008,10 @@ class _TagChip extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFB31637) : Colors.white,
+          color: selected ? const Color(0xFFB01030) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? const Color(0xFFB31637) : const Color(0xFFDDDDDD),
+            color: selected ? const Color(0xFFB01030) : const Color(0xFFDDDDDD),
           ),
         ),
         child: Row(
@@ -1169,10 +1169,10 @@ class _Toggle extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFB31637) : Colors.transparent,
+          color: selected ? const Color(0xFFB01030) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: selected ? const Color(0xFFB31637) : const Color(0xFFA4A4AA),
+            color: selected ? const Color(0xFFB01030) : const Color(0xFFA4A4AA),
           ),
         ),
         child: Text(

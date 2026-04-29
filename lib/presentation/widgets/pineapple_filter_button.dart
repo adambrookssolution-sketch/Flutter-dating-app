@@ -112,7 +112,7 @@ class PineappleFilterButton extends StatelessWidget {
                   vertical: 2,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFB31637),
+                  color: const Color(0xFFB01030),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.white, width: 1.5),
                 ),

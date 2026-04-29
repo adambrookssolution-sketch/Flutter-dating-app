@@ -44,7 +44,7 @@ class ConversationRow extends StatelessWidget {
     [Color(0xFF9C27B0), Color(0xFF3F51B5)],
   ];
 
-  static const Color _badgeColor = Color(0xFFB31637);
+  static const Color _badgeColor = Color(0xFFB01030);
   static const double _avatarSize = 54.0;
 
   String _formatTime(DateTime time) {

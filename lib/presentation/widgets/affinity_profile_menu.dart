@@ -33,7 +33,7 @@ import 'package:app/presentation/pages/trips/manage_trips_screen.dart';
 class AffinityProfileMenu extends StatelessWidget {
   const AffinityProfileMenu({
     super.key,
-    this.iconColor = const Color(0xFFB31637),
+    this.iconColor = const Color(0xFFB01030),
     this.iconBackground = const Color(0xFFFCE7EC),
   });
 

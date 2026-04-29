@@ -134,7 +134,7 @@ class _MatchOverlayState extends State<MatchOverlay>
     final rng = Random(42);
     const colors = [
       Color(0xFFE24696),
-      Color(0xFFB31637),
+      Color(0xFFB01030),
       Color(0xFFFF6B9D),
       Color(0xFFFFD700),
       Colors.white,
@@ -269,7 +269,7 @@ class _MatchOverlayState extends State<MatchOverlay>
             child: _Avatar(
               size: avatarSize,
               gradient: const LinearGradient(
-                colors: [Color(0xFF331837), Color(0xFFB31637)],
+                colors: [Color(0xFF580818), Color(0xFFB01030)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -290,11 +290,11 @@ class _MatchOverlayState extends State<MatchOverlay>
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFB31637),
+                color: const Color(0xFFB01030),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFB31637).withValues(alpha: 0.65),
+                    color: const Color(0xFFB01030).withValues(alpha: 0.65),
                     blurRadius: 18,
                     spreadRadius: 3,
                   ),
@@ -370,7 +370,7 @@ class _MatchOverlayState extends State<MatchOverlay>
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFB31637),
+                    backgroundColor: const Color(0xFFB01030),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),

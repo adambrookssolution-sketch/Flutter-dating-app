@@ -32,7 +32,7 @@ class MySubscriptionScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFFAF8F5),
       body: asyncSub.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFB31637)),
+          child: CircularProgressIndicator(color: Color(0xFFB01030)),
         ),
         error: (_, __) => const _ErrorState(),
         data: (sub) => _Body(sub: sub),
@@ -266,7 +266,7 @@ class _BenefitsSection extends StatelessWidget {
               fontSize: 13,
               letterSpacing: 1.1,
               fontWeight: FontWeight.w800,
-              color: Color(0xFFB31637),
+              color: Color(0xFFB01030),
             ),
           ),
           const SizedBox(height: 10),
@@ -276,7 +276,7 @@ class _BenefitsSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(Icons.check_circle_rounded,
-                        color: Color(0xFFB31637), size: 18),
+                        color: Color(0xFFB01030), size: 18),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -316,7 +316,7 @@ class _ActionsBlock extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const PaywallScreen()),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFB31637),
+                backgroundColor: const Color(0xFFB01030),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
@@ -347,8 +347,8 @@ class _ActionsBlock extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const PaywallScreen()),
               ),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFB31637), width: 1.5),
-                foregroundColor: const Color(0xFFB31637),
+                side: const BorderSide(color: Color(0xFFB01030), width: 1.5),
+                foregroundColor: const Color(0xFFB01030),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),

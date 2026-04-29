@@ -450,7 +450,7 @@ class _VideoRecordScreenState extends State<VideoRecordScreen> {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFB31637),
+                        backgroundColor: const Color(0xFFB01030),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -486,7 +486,7 @@ class _PermissionDeniedView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.videocam_off,
-                  size: 64, color: Color(0xFFB31637)),
+                  size: 64, color: Color(0xFFB01030)),
               const SizedBox(height: 24),
               const Text(
                 'Camera and microphone access required',
@@ -506,7 +506,7 @@ class _PermissionDeniedView extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB31637),
+                    backgroundColor: const Color(0xFFB01030),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

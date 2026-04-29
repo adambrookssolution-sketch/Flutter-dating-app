@@ -72,7 +72,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
                   for (final d in (_options ?? const <Destination>[]))
                     ListTile(
                       leading: Icon(_iconFor(d.kind),
-                          color: const Color(0xFFB31637)),
+                          color: const Color(0xFFB01030)),
                       title: Text(d.name),
                       subtitle: Text(
                         d.country,
@@ -234,7 +234,7 @@ class _AddTripScreenState extends State<AddTripScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB31637),
+                  backgroundColor: const Color(0xFFB01030),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(

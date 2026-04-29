@@ -76,7 +76,7 @@ class CoupleCard extends StatefulWidget {
 }
 
 class _CoupleCardState extends State<CoupleCard> {
-  static const Color _burgundy = Color(0xFFB31637);
+  static const Color _burgundy = Color(0xFFB01030);
 
   bool _isFavorite = false;
   // Photo index will be mutable once we re-introduce left/right tap
@@ -237,7 +237,7 @@ class _CoupleCardState extends State<CoupleCard> {
             PopupMenuItem<String>(
               value: 'block',
               child: Row(children: [
-                const Icon(Icons.block, color: Color(0xFFB31637), size: 18),
+                const Icon(Icons.block, color: Color(0xFFB01030), size: 18),
                 const SizedBox(width: 10),
                 Text(l10n.blockThisCouple),
               ]),
@@ -247,7 +247,7 @@ class _CoupleCardState extends State<CoupleCard> {
               value: 'report',
               child: Row(children: [
                 const Icon(Icons.flag_outlined,
-                    color: Color(0xFFB31637), size: 18),
+                    color: Color(0xFFB01030), size: 18),
                 const SizedBox(width: 10),
                 Text(l10n.reportAction),
               ]),
@@ -274,7 +274,7 @@ class _CoupleCardState extends State<CoupleCard> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Block',
-                style: TextStyle(color: Color(0xFFB31637))),
+                style: TextStyle(color: Color(0xFFB01030))),
           ),
         ],
       ),

@@ -73,7 +73,7 @@ class VerificationPendingScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.hourglass_top,
-                      size: 64, color: Color(0xFFB31637)),
+                      size: 64, color: Color(0xFFB01030)),
                   const SizedBox(height: 24),
                   const Text(
                     'Verification in review',
@@ -121,7 +121,7 @@ class VerificationPendingScreen extends StatelessWidget {
                     },
                     child: const Text(
                       'Sign out',
-                      style: TextStyle(color: Color(0xFFB31637)),
+                      style: TextStyle(color: Color(0xFFB01030)),
                     ),
                   ),
                 ],
@@ -145,7 +145,7 @@ class StartVerificationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFB31637),
+        backgroundColor: const Color(0xFFB01030),
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         shape: RoundedRectangleBorder(

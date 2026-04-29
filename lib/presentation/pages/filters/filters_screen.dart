@@ -91,7 +91,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                     width: 44,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFB31637).withValues(alpha: 0.3),
+                      color: const Color(0xFFB01030).withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -120,7 +120,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                         });
                       },
                       child: Text(l10n.filtersReset,
-                          style: const TextStyle(color: Color(0xFFB31637))),
+                          style: const TextStyle(color: Color(0xFFB01030))),
                     ),
                   ],
                 ),
@@ -143,7 +143,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                   });
                 },
                 child: Text(l10n.filtersReset,
-                    style: const TextStyle(color: Color(0xFFB31637))),
+                    style: const TextStyle(color: Color(0xFFB01030))),
               ),
             ],
           ),
@@ -170,7 +170,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                   style: const TextStyle(color: Color(0xFFA4A4AA))),
               Text('${filters.radiusKm.round()} km',
                   style: const TextStyle(
-                      color: Color(0xFFB31637),
+                      color: Color(0xFFB01030),
                       fontWeight: FontWeight.w600)),
             ],
           ),
@@ -266,7 +266,7 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                 child: Ink(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFB31637), Color(0xFF5B1280)],
+                      colors: [Color(0xFFB01030), Color(0xFF5B1280)],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
@@ -327,14 +327,14 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
           label: Text(label),
           selected: isSelected,
           onSelected: (_) => onToggle(label),
-          selectedColor: const Color(0xFFB31637),
+          selectedColor: const Color(0xFFB01030),
           checkmarkColor: Colors.white,
           labelStyle: TextStyle(
             color: isSelected ? Colors.white : const Color(0xFF555555),
           ),
           side: BorderSide(
             color: isSelected
-                ? const Color(0xFFB31637)
+                ? const Color(0xFFB01030)
                 : const Color(0xFFA4A4AA),
           ),
           backgroundColor: Colors.white,
@@ -369,7 +369,7 @@ class _OpennessToggle extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
             color: value
-                ? const Color(0xFFB31637)
+                ? const Color(0xFFB01030)
                 : const Color(0xFFE6E6EA),
           ),
           borderRadius: BorderRadius.circular(12),
@@ -402,7 +402,7 @@ class _OpennessToggle extends StatelessWidget {
               value: value,
               onChanged: onChanged,
               activeThumbColor: Colors.white,
-              activeTrackColor: const Color(0xFFB31637),
+              activeTrackColor: const Color(0xFFB01030),
             ),
           ],
         ),
@@ -447,7 +447,7 @@ class _GradientAgeSlider extends StatelessWidget {
               height: 10,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFB31637), Color(0xFF5B1280)],
+                  colors: [Color(0xFFB01030), Color(0xFF5B1280)],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
@@ -468,7 +468,7 @@ class _GradientAgeSlider extends StatelessWidget {
               overlayShape: SliderComponentShape.noOverlay,
               rangeValueIndicatorShape:
                   const PaddleRangeSliderValueIndicatorShape(),
-              valueIndicatorColor: const Color(0xFFB31637),
+              valueIndicatorColor: const Color(0xFFB01030),
               valueIndicatorTextStyle: const TextStyle(color: Colors.white),
             ),
             child: RangeSlider(
@@ -515,11 +515,11 @@ class _DistanceSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
-        activeTrackColor: const Color(0xFFB31637),
-        inactiveTrackColor: const Color(0xFFB31637).withValues(alpha: 0.2),
-        thumbColor: const Color(0xFFB31637),
-        overlayColor: const Color(0xFFB31637).withValues(alpha: 0.1),
-        valueIndicatorColor: const Color(0xFFB31637),
+        activeTrackColor: const Color(0xFFB01030),
+        inactiveTrackColor: const Color(0xFFB01030).withValues(alpha: 0.2),
+        thumbColor: const Color(0xFFB01030),
+        overlayColor: const Color(0xFFB01030).withValues(alpha: 0.1),
+        valueIndicatorColor: const Color(0xFFB01030),
         valueIndicatorTextStyle: const TextStyle(color: Colors.white),
       ),
       child: Slider(
@@ -561,7 +561,7 @@ class _TravelMatchSection extends StatelessWidget {
   }) onChanged;
   final VoidCallback onClear;
 
-  static const _burgundy = Color(0xFFB31637);
+  static const _burgundy = Color(0xFFB01030);
 
   @override
   Widget build(BuildContext context) {

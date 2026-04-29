@@ -28,7 +28,7 @@ RAW = ROOT / "assets" / "branding" / "source" / "raw"
 OUT = ROOT / "assets" / "branding"
 SCREENS = OUT / "screenshots"
 
-BURGUNDY = (90, 19, 46, 255)  # approx Affinity primary; sampled from splash gradient bottom
+BURGUNDY = (0xB0, 0x10, 0x30, 255)  # Affinity primary, sampled exact from Figma file
 
 
 def fit_letterbox(img: Image.Image, target_w: int, target_h: int, bg=(255, 255, 255, 0)) -> Image.Image:
@@ -94,13 +94,27 @@ def _extract_heart(src: Image.Image) -> Image.Image:
     return img.crop((sq_left, sq_top, sq_left + side, sq_top + side))
 
 
+def _recolor(heart: Image.Image, fill=(255, 255, 255, 255)) -> Image.Image:
+    """Take the extracted heart (red on transparent) and recolour every visible
+    pixel to `fill`, preserving the alpha shape."""
+    out = heart.copy()
+    px = out.load()
+    w, h = out.size
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if a > 0:
+                px[x, y] = (fill[0], fill[1], fill[2], a)
+    return out
+
+
 def make_icon_master():
-    """1024x1024 icon: burgundy background + Affinity heart centered (no text — text
-    doesn't read at icon sizes and the original frame's black text doesn't survive
-    on a burgundy background)."""
+    """1024x1024 icon: burgundy background + WHITE heart centered. Matches the
+    Figma splash design (heart looks white-on-burgundy in the gradient frame).
+    Plain red-on-burgundy didn't have enough contrast — Figma never uses that
+    combination either."""
     src = Image.open(RAW / "8133_611_icon_white.png").convert("RGBA")
-    heart = _extract_heart(src)
-    # Place heart at ~70% of canvas size, centered, on burgundy.
+    heart = _recolor(_extract_heart(src), fill=(255, 255, 255))
     canvas = Image.new("RGBA", (1024, 1024), BURGUNDY)
     side = round(1024 * 0.70)
     h = heart.resize((side, side), Image.LANCZOS)
@@ -137,7 +151,7 @@ def make_feature_graphic():
     'Affinity' wordmark in white on the right."""
     from PIL import ImageDraw, ImageFont
     src = Image.open(RAW / "8133_611_icon_white.png").convert("RGBA")
-    heart = _extract_heart(src)
+    heart = _recolor(_extract_heart(src), fill=(255, 255, 255))
     canvas = Image.new("RGBA", (1024, 500), BURGUNDY)
     # Heart at ~80% of height, left-padded
     side = 380
