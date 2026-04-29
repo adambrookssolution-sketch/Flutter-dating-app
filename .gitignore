@@ -47,6 +47,12 @@ app.*.map.json
 .claude
 CLAUDE.md
 
+# Figma raw exports + thumbnails — work-in-progress only.
+# The processed master assets in assets/branding/*.png and
+# assets/branding/screenshots/{es,en}/ are committed; the raw
+# multi-MB Figma frames used to produce them are not.
+assets/branding/source/
+
 # Secrets — private repo, temporarily included for CI build
 # lib/core/config/api_keys.dart
 # android/app/google-services.json

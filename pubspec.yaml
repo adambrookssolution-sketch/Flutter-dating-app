@@ -99,14 +99,15 @@ flutter_launcher_icons:
   adaptive_icon_foreground: "assets/branding/icon_foreground.png"
   min_sdk_android: 23
 
-# Native splash screen (white + brand wordmark). Avoids Flutter's default
-# blue splash that briefly flashes on cold start.
+# Native splash screen (burgundy gradient + Affinity wordmark from Figma).
+# Background matches the splash PNG's bottom-edge burgundy so any letterbox
+# strip blends into the artwork.
 flutter_native_splash:
-  color: "#FFFFFF"
+  color: "#5A132E"
   image: "assets/branding/splash.png"
   android_12:
     image: "assets/branding/splash.png"
-    color: "#FFFFFF"
+    color: "#5A132E"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
