@@ -33,6 +33,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate launcher icons (Android mipmap + iOS appiconset)
+        run: dart run flutter_launcher_icons
+
+      - name: Generate native splash
+        run: dart run flutter_native_splash:create
+
       - name: Build debug APK
         run: flutter build apk --debug
 
