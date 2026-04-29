@@ -96,8 +96,24 @@ class _ModerationReviewScreenState extends State<ModerationReviewScreen> {
       Navigator.pop(context);
     } on FirebaseFunctionsException catch (e) {
       if (!mounted) return;
+      // The dev/test project runs on Firebase's free Spark tier, which does
+      // not deploy Cloud Functions. Calls land as "internal" or "not-found".
+      // Surface a friendly, non-technical message instead of the raw code so
+      // the client can keep exploring the panel until we migrate to the
+      // shared production project that has functions enabled.
+      final isMissingBackend = e.code == 'internal' ||
+          e.code == 'not-found' ||
+          e.code == 'unavailable';
+      final msg = isMissingBackend
+          ? 'Esta acción se activará al migrar al entorno de '
+              'producción (en este entorno de pruebas el backend de '
+              'moderación está desactivado).'
+          : '${e.code}: ${e.message}';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${e.code}: ${e.message}')),
+        SnackBar(
+          content: Text(msg),
+          duration: const Duration(seconds: 6),
+        ),
       );
       setState(() => _submitting = false);
     } catch (e) {
