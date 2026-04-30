@@ -36,25 +36,25 @@ class DefaultFirebaseOptions {
   // ─── Replace every placeholder value below with real values ───────────────
   // from the Firebase Console or by running: flutterfire configure
 
-  // Web config — points at the test Firebase project so the moderation
-  // panel deployed at affinity-admin-test.web.app can authenticate.
-  // When migrating to production, replace these values with the
-  // production project's web config (or run `flutterfire configure`).
+  // Production Firebase project — affinity-dating-app-cf807 (Blaze).
+  // Web config powers the admin moderation panel; Android + iOS run the
+  // mobile app. The previous test project (affinity-test-f4c84) is left
+  // intact as a rollback environment but is no longer the default target.
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDNdUkNvOS2sXx7ABvojd9qYJmeFLO7-Pw',
-    appId: '1:729691413850:web:0b964e85aa0060b64fe763',
-    messagingSenderId: '729691413850',
-    projectId: 'affinity-test-f4c84',
-    authDomain: 'affinity-test-f4c84.firebaseapp.com',
-    storageBucket: 'affinity-test-f4c84.firebasestorage.app',
+    apiKey: 'AIzaSyDp9IErChd0WuRK36Jjq3rvGTHO57SBkxU',
+    appId: '1:156489398688:web:9f20c5e7abfc20b3984cc5',
+    messagingSenderId: '156489398688',
+    projectId: 'affinity-dating-app-cf807',
+    authDomain: 'affinity-dating-app-cf807.firebaseapp.com',
+    storageBucket: 'affinity-dating-app-cf807.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBzolOsk58pg-H1BPxEqh1ojp4qN_yEJBY',
-    appId: '1:729691413850:android:91ac06f1269e43734fe763',
-    messagingSenderId: '729691413850',
-    projectId: 'affinity-test-f4c84',
-    storageBucket: 'affinity-test-f4c84.firebasestorage.app',
+    apiKey: 'AIzaSyAZ21D3vILE78y4gT8dmsz6SexHd_wcuZw',
+    appId: '1:156489398688:android:77e8ecdd2961c6ae984cc5',
+    messagingSenderId: '156489398688',
+    projectId: 'affinity-dating-app-cf807',
+    storageBucket: 'affinity-dating-app-cf807.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

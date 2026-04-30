@@ -3,16 +3,18 @@
     "platforms": {
       "android": {
         "default": {
-          "projectId": "affinity-test-f4c84",
-          "appId": "1:729691413850:android:91ac06f1269e43734fe763",
+          "projectId": "affinity-dating-app-cf807",
+          "appId": "1:156489398688:android:77e8ecdd2961c6ae984cc5",
           "fileOutput": "android/app/google-services.json"
         }
       },
       "dart": {
         "lib/firebase_options.dart": {
-          "projectId": "affinity-test-f4c84",
+          "projectId": "affinity-dating-app-cf807",
           "configurations": {
-            "android": "1:729691413850:android:91ac06f1269e43734fe763"
+            "android": "1:156489398688:android:77e8ecdd2961c6ae984cc5",
+            "ios": "1:156489398688:ios:62e161f83fe0eef9984cc5",
+            "web": "1:156489398688:web:9f20c5e7abfc20b3984cc5"
           }
         }
       }
