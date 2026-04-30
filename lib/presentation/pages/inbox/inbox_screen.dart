@@ -61,6 +61,12 @@ class _InboxScreenState extends State<InboxScreen> {
   bool _requestsExpanded = true;
   bool _chatsExpanded = true;
 
+  // Client request 2026-04-30 (#1): search bar across the conversation
+  // list so moderators / power users can quickly find a couple by name
+  // even when the inbox grows large.
+  String _searchQuery = '';
+  final TextEditingController _searchCtrl = TextEditingController();
+
   StreamSubscription<List<ChatConversation>>? _convSub;
   // Cache so we don't re-fetch profiles on every stream event
   final Map<String, UserProfile> _profileCache = {};
@@ -74,7 +80,19 @@ class _InboxScreenState extends State<InboxScreen> {
   @override
   void dispose() {
     _convSub?.cancel();
+    _searchCtrl.dispose();
     super.dispose();
+  }
+
+  bool _matchesQuery(_InboxItem item, String q) {
+    if (q.isEmpty) return true;
+    final ql = q.toLowerCase();
+    final p = item.otherProfile;
+    if (p.herName.toLowerCase().contains(ql)) return true;
+    if (p.hisName.toLowerCase().contains(ql)) return true;
+    final pair = '${p.hisName} & ${p.herName}'.toLowerCase();
+    if (pair.contains(ql)) return true;
+    return item.conversation.lastMessage.toLowerCase().contains(ql);
   }
 
   // ── Stream subscription ───────────────────────────────────────────────────
@@ -238,8 +256,10 @@ class _InboxScreenState extends State<InboxScreen> {
     }
 
     final items = _items ?? [];
-    final requests = items.where((i) => i.isRequest).toList();
-    final chats = items.where((i) => !i.isRequest).toList();
+    final filtered =
+        items.where((i) => _matchesQuery(i, _searchQuery)).toList();
+    final requests = filtered.where((i) => i.isRequest).toList();
+    final chats = filtered.where((i) => !i.isRequest).toList();
 
     // Note: empty state used to short-circuit here, but now that the
     // MessageRequestsSection can surface requests independently we always
@@ -251,6 +271,39 @@ class _InboxScreenState extends State<InboxScreen> {
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: TextField(
+                controller: _searchCtrl,
+                onChanged: (v) => setState(() => _searchQuery = v.trim()),
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: l10n.chatSearchHint,
+                  prefixIcon: const Icon(Icons.search,
+                      color: Color(0xFF888888)),
+                  suffixIcon: _searchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(Icons.clear,
+                              color: Color(0xFF888888)),
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        ),
+                  filled: true,
+                  fillColor: const Color(0xFFF4F4F6),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
           // ── NEW: Message Requests (from message_requests/*) ───────────────
           const MessageRequestsSection(),
 

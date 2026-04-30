@@ -440,6 +440,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteAccount => 'Delete account';
 
   @override
+  String get languageSettingTitle => 'Language';
+
+  @override
+  String get languageSettingSubtitleSystem => 'Follow device language';
+
+  @override
+  String get languageOptionSystem => 'System default';
+
+  @override
+  String get languageOptionEnglish => 'English';
+
+  @override
+  String get languageOptionSpanish => 'Español';
+
+  @override
+  String get chatSearchHint => 'Search couples or messages';
+
+  @override
+  String get feedCountryFilterTitle => 'Country';
+
+  @override
+  String get feedCountryFilterAll => 'All countries';
+
+  @override
+  String get explicitContentToggleLabel => 'Show explicit content';
+
+  @override
+  String get explicitContentToggleHelp =>
+      'Couples can mark posts as explicit. They are hidden by default and only appear when this is on.';
+
+  @override
+  String get explicitContentMarkLabel => 'Mark this post as explicit';
+
+  @override
   String get reportCategoryFakeProfile => 'Fake profile';
 
   @override

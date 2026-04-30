@@ -902,6 +902,39 @@ abstract class AppLocalizations {
   /// **'Delete account'**
   String get deleteAccount;
 
+  /// No description provided for @languageSettingTitle.
+  String get languageSettingTitle;
+
+  /// No description provided for @languageSettingSubtitleSystem.
+  String get languageSettingSubtitleSystem;
+
+  /// No description provided for @languageOptionSystem.
+  String get languageOptionSystem;
+
+  /// No description provided for @languageOptionEnglish.
+  String get languageOptionEnglish;
+
+  /// No description provided for @languageOptionSpanish.
+  String get languageOptionSpanish;
+
+  /// No description provided for @chatSearchHint.
+  String get chatSearchHint;
+
+  /// No description provided for @feedCountryFilterTitle.
+  String get feedCountryFilterTitle;
+
+  /// No description provided for @feedCountryFilterAll.
+  String get feedCountryFilterAll;
+
+  /// No description provided for @explicitContentToggleLabel.
+  String get explicitContentToggleLabel;
+
+  /// No description provided for @explicitContentToggleHelp.
+  String get explicitContentToggleHelp;
+
+  /// No description provided for @explicitContentMarkLabel.
+  String get explicitContentMarkLabel;
+
   /// No description provided for @reportCategoryFakeProfile.
   ///
   /// In en, this message translates to:

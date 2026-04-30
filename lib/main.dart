@@ -2,12 +2,14 @@ import 'package:app/presentation/pages/auth/auth_screen.dart';
 import 'package:app/presentation/pages/pages.dart';
 import 'package:app/presentation/router/app_routes.dart';
 import 'package:app/presentation/utils/navigate_after_sign_in.dart';
+import 'package:app/providers/locale_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -15,23 +17,31 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  final prefs = await SharedPreferences.getInstance();
 
   // currentUser is synchronously available after initializeApp when the
   // session was persisted from a previous run.
   final uid = FirebaseAuth.instance.currentUser?.uid;
 
-  runApp(ProviderScope(child: MyApp(startUid: uid)));
+  runApp(
+    ProviderScope(
+      overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+      child: MyApp(startUid: uid),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   final String? startUid;
 
   const MyApp({super.key, this.startUid});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
     return MaterialApp(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -40,7 +50,7 @@ class MyApp extends StatelessWidget {
       ],
       supportedLocales: const [Locale('en'), Locale('es')],
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFFB01030)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB01030)),
         scaffoldBackgroundColor: Colors.white,
       ),
       routes: AppRoutes.routes,

@@ -150,6 +150,17 @@
 
   "changeEmail": "Cambiar correo",
   "deleteAccount": "Eliminar cuenta",
+  "languageSettingTitle": "Idioma",
+  "languageSettingSubtitleSystem": "Usar idioma del dispositivo",
+  "languageOptionSystem": "Predeterminado del sistema",
+  "languageOptionEnglish": "English",
+  "languageOptionSpanish": "Español",
+  "chatSearchHint": "Buscar parejas o mensajes",
+  "feedCountryFilterTitle": "País",
+  "feedCountryFilterAll": "Todos los países",
+  "explicitContentToggleLabel": "Mostrar contenido explícito",
+  "explicitContentToggleHelp": "Las parejas pueden marcar publicaciones como explícitas. Están ocultas por defecto y solo aparecen al activar esta opción.",
+  "explicitContentMarkLabel": "Marcar esta publicación como explícita",
 
   "reportCategoryFakeProfile": "Perfil falso",
   "reportCategoryHarassment": "Acoso",

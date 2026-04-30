@@ -451,6 +451,40 @@ class AppLocalizationsEs extends AppLocalizations {
   String get deleteAccount => 'Eliminar cuenta';
 
   @override
+  String get languageSettingTitle => 'Idioma';
+
+  @override
+  String get languageSettingSubtitleSystem => 'Usar idioma del dispositivo';
+
+  @override
+  String get languageOptionSystem => 'Predeterminado del sistema';
+
+  @override
+  String get languageOptionEnglish => 'English';
+
+  @override
+  String get languageOptionSpanish => 'Español';
+
+  @override
+  String get chatSearchHint => 'Buscar parejas o mensajes';
+
+  @override
+  String get feedCountryFilterTitle => 'País';
+
+  @override
+  String get feedCountryFilterAll => 'Todos los países';
+
+  @override
+  String get explicitContentToggleLabel => 'Mostrar contenido explícito';
+
+  @override
+  String get explicitContentToggleHelp =>
+      'Las parejas pueden marcar publicaciones como explícitas. Están ocultas por defecto y solo aparecen al activar esta opción.';
+
+  @override
+  String get explicitContentMarkLabel => 'Marcar esta publicación como explícita';
+
+  @override
   String get reportCategoryFakeProfile => 'Perfil falso';
 
   @override

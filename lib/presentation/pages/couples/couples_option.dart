@@ -3,9 +3,12 @@ import 'dart:math' show Random;
 import 'package:app/data/datasource/blocks_datasource.dart';
 import 'package:app/data/datasource/conversation_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
+import 'package:app/data/models/couple.dart' as cm;
 import 'package:app/data/models/message_request.dart';
+import 'package:app/data/models/partner.dart' as pm;
 import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
+import 'package:app/presentation/pages/report/report_screen.dart';
 import 'package:app/presentation/widgets/couple_card.dart';
 import 'package:app/presentation/widgets/send_request_dialog.dart';
 import 'package:app/presentation/widgets/sticky_feed_actions.dart';
@@ -200,15 +203,26 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
   }
 
   Future<void> _reportCouple(UserProfile profile) async {
-    // Opening the full Report screen lives in `lib/presentation/pages/report/`
-    // in the agency's build — here we surface a minimal flow that records
-    // the intent and relies on the reports Cloud Function + moderation
-    // panel to take over. The sticky notification gives the user
-    // immediate feedback.
     if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.reportSubmittedThanks)),
+    // Lift the UserProfile fields into the Couple shape ReportScreen needs
+    // (id + names is the minimum). The full Couple model lives elsewhere
+    // but the report form only displays the names and submits to the
+    // reports collection by id.
+    final reported = cm.Couple(
+      id: profile.uid,
+      partnerA: pm.Partner(
+        name: profile.hisName,
+        birth: profile.hisBirth,
+        height: profile.hisHeight,
+      ),
+      partnerB: pm.Partner(
+        name: profile.herName,
+        birth: profile.herBirth,
+        height: profile.herHeight,
+      ),
+    );
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => ReportScreen(reported: reported)),
     );
   }
 

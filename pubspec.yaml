@@ -50,6 +50,7 @@ dependencies:
 
   # State management — introduced progressively for new features only
   flutter_riverpod: ^2.6.1
+  shared_preferences: ^2.3.5
 
   # Geo + Places (Week 1 + Week 3)
   geoflutterfire_plus: ^0.0.34

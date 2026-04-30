@@ -50,6 +50,15 @@ class FiltersState {
   final DateTime? travelFrom;
   final DateTime? travelTo;
 
+  /// Client request 2026-04-30 (#4): allow filtering the feed by the
+  /// country the couple registered from. ISO 3166-1 alpha-2 ("MX", "ES",
+  /// "AR"). Null means "any country".
+  final String? countryCode;
+
+  /// Client request 2026-04-30 (#5): hide explicit posts from the feed
+  /// unless the user explicitly opts in. Defaults to false.
+  final bool showExplicit;
+
   const FiltersState({
     this.centerLat,
     this.centerLng,
@@ -62,6 +71,8 @@ class FiltersState {
     this.travelDestinationId,
     this.travelFrom,
     this.travelTo,
+    this.countryCode,
+    this.showExplicit = false,
   }) : radiusKm = radiusKm < minRadiusKm ? minRadiusKm : radiusKm;
 
   FiltersState copyWith({
@@ -76,10 +87,13 @@ class FiltersState {
     String? travelDestinationId,
     DateTime? travelFrom,
     DateTime? travelTo,
+    String? countryCode,
+    bool? showExplicit,
     bool clearAgeRange = false,
     bool clearTravel = false,
     bool clearOpenToUnicorn = false,
     bool clearOpenToBull = false,
+    bool clearCountry = false,
   }) {
     return FiltersState(
       centerLat: centerLat ?? this.centerLat,
@@ -97,6 +111,8 @@ class FiltersState {
           : (travelDestinationId ?? this.travelDestinationId),
       travelFrom: clearTravel ? null : (travelFrom ?? this.travelFrom),
       travelTo: clearTravel ? null : (travelTo ?? this.travelTo),
+      countryCode: clearCountry ? null : (countryCode ?? this.countryCode),
+      showExplicit: showExplicit ?? this.showExplicit,
     );
   }
 
@@ -109,7 +125,9 @@ class FiltersState {
       openToUnicorn == null &&
       openToBull == null &&
       centerLat == null &&
-      travelDestinationId == null;
+      travelDestinationId == null &&
+      countryCode == null &&
+      !showExplicit;
 
   CoupleFilters toDatasourceFilters() => CoupleFilters(
         centerLat: centerLat,
@@ -120,6 +138,8 @@ class FiltersState {
         maxAge: maxAge,
         openToUnicorn: openToUnicorn,
         openToBull: openToBull,
+        countryCode: countryCode,
+        showExplicit: showExplicit,
       );
 }
 
@@ -202,6 +222,20 @@ class FiltersNotifier extends StateNotifier<FiltersState> {
       openToBull: value ? true : null,
       clearOpenToBull: !value,
     );
+  }
+
+  /// Set or clear the country filter. Null/empty clears it.
+  void setCountryCode(String? code) {
+    if (code == null || code.isEmpty) {
+      state = state.copyWith(clearCountry: true);
+    } else {
+      state = state.copyWith(countryCode: code.toUpperCase());
+    }
+  }
+
+  /// Toggle the explicit-content feed view.
+  void setShowExplicit(bool value) {
+    state = state.copyWith(showExplicit: value);
   }
 
   void reset() => state = const FiltersState();

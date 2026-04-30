@@ -27,6 +27,17 @@ class CoupleFilters {
   final bool? openToUnicorn;
   final bool? openToBull;
 
+  /// ISO 3166-1 alpha-2 ("MX", "ES", "AR"). Null = any country.
+  /// Client request 2026-04-30 (#4): pineapple filter sheet exposes this
+  /// alongside the existing geo radius. Country is a discrete filter so
+  /// it complements (not replaces) the radius.
+  final String? countryCode;
+
+  /// Client request 2026-04-30 (#5): explicit content is hidden by
+  /// default; setting this to true returns posts with explicit=true
+  /// and hides the rest, behaving like a separate feed.
+  final bool showExplicit;
+
   const CoupleFilters({
     this.centerLat,
     this.centerLng,
@@ -36,6 +47,8 @@ class CoupleFilters {
     this.maxAge,
     this.openToUnicorn,
     this.openToBull,
+    this.countryCode,
+    this.showExplicit = false,
   });
 
   bool get hasGeo => centerLat != null && centerLng != null;
@@ -167,6 +180,14 @@ class CouplesDatasource {
     if (filters.openToBull == true) {
       q = q.where('open_to_bull', isEqualTo: true);
     }
+    // Country filter — indexed on country_code (ISO 3166-1 alpha-2).
+    if (filters.countryCode != null && filters.countryCode!.isNotEmpty) {
+      q = q.where('country_code', isEqualTo: filters.countryCode);
+    }
+    // Explicit-content gating — when off (default), exclude any couple
+    // marked explicit; when on, return only the explicit ones (separate
+    // feed per client spec).
+    q = q.where('explicit', isEqualTo: filters.showExplicit);
 
     // Geohash ordering enables proximity-based pagination when geo is set.
     // Without geo we fall back to created_at ordering (stable, unique enough).
@@ -292,6 +313,14 @@ class CouplesDatasource {
       if (!_passesAge(c, filters)) return false;
       if (filters.openToUnicorn == true && !c.openToUnicorn) return false;
       if (filters.openToBull == true && !c.openToBull) return false;
+      if (filters.countryCode != null &&
+          filters.countryCode!.isNotEmpty &&
+          c.countryCode.toUpperCase() != filters.countryCode!.toUpperCase()) {
+        return false;
+      }
+      // In-memory explicit gating — Couple.explicit defaults to false on
+      // legacy docs, matching the off-by-default behaviour.
+      if (filters.showExplicit != c.explicit) return false;
       return true;
     }).toList()
       ..sort((a, b) {

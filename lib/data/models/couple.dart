@@ -41,6 +41,18 @@ class Couple {
   /// Open to interacting with a single man as a third party.
   final bool openToBull;
 
+  /// Client request 2026-04-30 (#5): when true, the couple's content is
+  /// classified explicit and only appears for users who opt into the
+  /// explicit feed. Defaults to false.
+  final bool explicit;
+
+  /// Client request 2026-04-30 (#2): IETF language tag the couple speaks
+  /// ("es", "en"). Used to bias the discovery feed so users browsing in
+  /// English see English-speaking couples first. Empty string = unknown
+  /// (legacy docs without the field) — those still appear, just not
+  /// preferentially in either bucket.
+  final String language;
+
   // Lifecycle
   final CoupleStatus status;
   final Verification? verification;
@@ -66,6 +78,8 @@ class Couple {
     this.interests = const [],
     this.openToUnicorn = false,
     this.openToBull = false,
+    this.explicit = false,
+    this.language = '',
     this.status = CoupleStatus.pendingReview,
     this.verification,
     this.ageRange = const AgeRange(min: 0, max: 0),
@@ -88,6 +102,8 @@ class Couple {
         'interests': interests,
         'open_to_unicorn': openToUnicorn,
         'open_to_bull': openToBull,
+        'explicit': explicit,
+        'language': language,
         'status': status.value,
         'verification': verification?.toMap(),
         'age_range': ageRange.toMap(),
@@ -124,6 +140,8 @@ class Couple {
       interests: _readInterests(m),
       openToUnicorn: m['open_to_unicorn'] as bool? ?? false,
       openToBull: m['open_to_bull'] as bool? ?? false,
+      explicit: m['explicit'] as bool? ?? false,
+      language: (m['language'] as String?) ?? '',
       status: CoupleStatus.fromString(m['status'] as String?),
       verification: _readVerification(m),
       ageRange: AgeRange.fromMap(m['age_range'] as Map<String, dynamic>?),
@@ -197,6 +215,8 @@ class Couple {
     List<String>? interests,
     bool? openToUnicorn,
     bool? openToBull,
+    bool? explicit,
+    String? language,
     CoupleStatus? status,
     Verification? verification,
     AgeRange? ageRange,
@@ -218,6 +238,8 @@ class Couple {
         interests: interests ?? this.interests,
         openToUnicorn: openToUnicorn ?? this.openToUnicorn,
         openToBull: openToBull ?? this.openToBull,
+        explicit: explicit ?? this.explicit,
+        language: language ?? this.language,
         status: status ?? this.status,
         verification: verification ?? this.verification,
         ageRange: ageRange ?? this.ageRange,

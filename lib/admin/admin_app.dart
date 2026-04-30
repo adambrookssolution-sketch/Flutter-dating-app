@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:app/admin/pages/admin_login_screen.dart';
+import 'package:app/admin/pages/blocks_queue_screen.dart';
 import 'package:app/admin/pages/moderation_queue_screen.dart';
+import 'package:app/admin/pages/reports_queue_screen.dart';
 
 /// Separate Flutter application for moderators. Built with
 /// `flutter build web -t lib/main_admin.dart` and deployed to Firebase
@@ -191,7 +193,7 @@ class AdminApp extends StatelessWidget {
           }
           final user = snap.data;
           if (user == null) return const AdminLoginScreen();
-          return const ModerationQueueScreen();
+          return const _AdminHome();
         },
       ),
     );
@@ -227,6 +229,58 @@ class _BootScreen extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 2.5),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Admin shell hosting the three moderation queues as tabs.
+/// Client request 2026-04-30 (#6): give moderators visibility over
+/// reports and blocks, not just the verification queue.
+class _AdminHome extends StatelessWidget {
+  const _AdminHome();
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        backgroundColor: AdminApp.bgDeep,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Container(
+                color: AdminApp.bgDeep,
+                child: const TabBar(
+                  isScrollable: false,
+                  indicatorColor: AdminApp.burgundyLight,
+                  indicatorWeight: 3,
+                  labelColor: AdminApp.textPrimary,
+                  unselectedLabelColor: AdminApp.textMuted,
+                  labelStyle: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    letterSpacing: 0.4,
+                  ),
+                  tabs: [
+                    Tab(text: 'VERIFICACIONES'),
+                    Tab(text: 'REPORTES'),
+                    Tab(text: 'BLOQUEOS'),
+                  ],
+                ),
+              ),
+              const Expanded(
+                child: TabBarView(
+                  children: [
+                    ModerationQueueScreen(),
+                    ReportsQueueScreen(),
+                    BlocksQueueScreen(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -191,6 +191,17 @@
 
   "changeEmail": "Change email",
   "deleteAccount": "Delete account",
+  "languageSettingTitle": "Language",
+  "languageSettingSubtitleSystem": "Follow device language",
+  "languageOptionSystem": "System default",
+  "languageOptionEnglish": "English",
+  "languageOptionSpanish": "Español",
+  "chatSearchHint": "Search couples or messages",
+  "feedCountryFilterTitle": "Country",
+  "feedCountryFilterAll": "All countries",
+  "explicitContentToggleLabel": "Show explicit content",
+  "explicitContentToggleHelp": "Couples can mark posts as explicit. They are hidden by default and only appear when this is on.",
+  "explicitContentMarkLabel": "Mark this post as explicit",
 
   "reportCategoryFakeProfile": "Fake profile",
   "reportCategoryHarassment": "Harassment",

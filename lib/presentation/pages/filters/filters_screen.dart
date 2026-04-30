@@ -235,6 +235,33 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
             value: filters.openToBull == true,
             onChanged: notifier.setOpenToBull,
           ),
+          const SizedBox(height: 22),
+          // Country filter — client request 2026-04-30 (#4). The list is
+          // intentionally a small curated set of LATAM + EU markets where
+          // Affinity is launching first; can be expanded later without
+          // backend changes (matches against ISO 3166-1 alpha-2 stored on
+          // the couple doc).
+          _sectionTitle(
+              AppLocalizations.of(context)!.feedCountryFilterTitle),
+          _CountryDropdown(
+            current: filters.countryCode,
+            onChanged: notifier.setCountryCode,
+          ),
+          const SizedBox(height: 22),
+          // Explicit-content gate — client request 2026-04-30 (#5). Hidden
+          // by default; turning it on makes the feed return ONLY explicit
+          // posts so it behaves as a separate, opt-in surface rather than
+          // mixing into the main feed.
+          _sectionTitle(
+              AppLocalizations.of(context)!.explicitContentToggleLabel),
+          _hintLine(
+              AppLocalizations.of(context)!.explicitContentToggleHelp),
+          _OpennessToggle(
+            label: AppLocalizations.of(context)!.explicitContentToggleLabel,
+            sublabel: '',
+            value: filters.showExplicit,
+            onChanged: notifier.setShowExplicit,
+          ),
           const SizedBox(height: 16),
           // Travel Match block (client 2026-04-20 mock): lives inside the
           // filters panel so users can constrain the feed to couples who
@@ -703,6 +730,61 @@ class _TravelMatchSection extends StatelessWidget {
           style: TextStyle(
             color: value == null ? const Color(0xFFA4A4AA) : Colors.black,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Country chooser used inside the filter sheet. Curated set of LATAM +
+/// EU launch markets; matches against ISO 3166-1 alpha-2 stored on the
+/// couple doc. Adding a country later is one line in the list — no
+/// backend or migration needed.
+class _CountryDropdown extends StatelessWidget {
+  final String? current;
+  final ValueChanged<String?> onChanged;
+
+  const _CountryDropdown({
+    required this.current,
+    required this.onChanged,
+  });
+
+  static const _countries = <(String code, String label)>[
+    ('MX', '🇲🇽  México'),
+    ('CO', '🇨🇴  Colombia'),
+    ('AR', '🇦🇷  Argentina'),
+    ('CL', '🇨🇱  Chile'),
+    ('PE', '🇵🇪  Perú'),
+    ('VE', '🇻🇪  Venezuela'),
+    ('UY', '🇺🇾  Uruguay'),
+    ('EC', '🇪🇨  Ecuador'),
+    ('ES', '🇪🇸  España'),
+    ('US', '🇺🇸  United States'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFA4A4AA)),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String?>(
+          value: current,
+          isExpanded: true,
+          hint: Text(l10n.feedCountryFilterAll),
+          items: <DropdownMenuItem<String?>>[
+            DropdownMenuItem<String?>(
+              value: null,
+              child: Text(l10n.feedCountryFilterAll),
+            ),
+            for (final (code, label) in _countries)
+              DropdownMenuItem<String?>(value: code, child: Text(label)),
+          ],
+          onChanged: onChanged,
         ),
       ),
     );

@@ -73,6 +73,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   bool _openToUnicorn = false;
   bool _openToBull = false;
+  bool _explicit = false;
 
   bool _isLoading = false;
 
@@ -235,10 +236,25 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           value: _openToBull,
           onChanged: (v) => setState(() => _openToBull = v),
         ),
+        const SizedBox(height: 18),
+        // Explicit-content tag — client request 2026-04-30 (#5). When on,
+        // posts from this couple only appear for users who have opted into
+        // the explicit feed via the pineapple filter.
+        _opennessRow(
+          label: l10nMaybe()?.explicitContentMarkLabel ??
+              'Marcar como contenido explícito',
+          sublabel: '',
+          value: _explicit,
+          onChanged: (v) => setState(() => _explicit = v),
+        ),
         const SizedBox(height: 20),
       ],
     );
   }
+
+  /// Best-effort access to AppLocalizations so we can avoid a hard
+  /// dependency at the call sites that already pass `l10n` from build().
+  AppLocalizations? l10nMaybe() => AppLocalizations.of(context);
 
   Widget _opennessRow({
     required String label,
@@ -345,6 +361,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       setState(() {
         _openToUnicorn = couple.openToUnicorn;
         _openToBull = couple.openToBull;
+        _explicit = couple.explicit;
       });
     } catch (_) {
       // Defaults stay false; user can re-toggle.
@@ -695,6 +712,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   Future<void> _save(AppLocalizations l10n) async {
     if (!_validate(l10n)) return;
 
+    // Snapshot the active locale before any async gaps so we can record it
+    // on the Couple doc without holding `context` across awaits.
+    final localeCode = Localizations.localeOf(context).languageCode;
+
     setState(() => _isLoading = true);
     try {
       final photoUrls = <String>[];
@@ -776,6 +797,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               interests: _selectedTags.toList(),
               openToUnicorn: _openToUnicorn,
               openToBull: _openToBull,
+              explicit: _explicit,
+              // Capture the locale the couple registered in so the discovery
+              // feed can bias results to same-language couples (client #2,
+              // 2026-04-30). Snapshotted at the top of _save before async
+              // gaps so we don't hold context across awaits.
+              language: localeCode,
               status: CoupleStatus.pendingReview,
               ageRange: AgeRange.fromBirths(profile.herBirth, profile.hisBirth),
             ),
@@ -790,6 +817,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           'interests': _selectedTags.toList(),
           'open_to_unicorn': _openToUnicorn,
           'open_to_bull': _openToBull,
+          'explicit': _explicit,
+          'language': localeCode,
         };
         if (_selectedPlace != null && _selectedPlace!.lat != 0) {
           patch.addAll(_selectedPlace!.toCoupleFields());

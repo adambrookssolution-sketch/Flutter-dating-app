@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Affinity brand palette — keep in sync with lib/presentation/constants/app_colors.dart -->
+    <color name="brand_primary">#B01030</color>
+    <color name="brand_primary_dark">#580818</color>
+</resources>
