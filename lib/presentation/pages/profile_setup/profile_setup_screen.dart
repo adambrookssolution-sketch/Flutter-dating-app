@@ -243,7 +243,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         _opennessRow(
           label: l10nMaybe()?.explicitContentMarkLabel ??
               'Marcar como contenido explícito',
-          sublabel: '',
+          sublabel: 'opcional',
           value: _explicit,
           onChanged: (v) => setState(() => _explicit = v),
         ),
@@ -289,13 +289,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       color: Color(0xFF1B1B1F),
                     ),
                   ),
-                  Text(
-                    '($sublabel)',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF8A8A93),
+                  if (sublabel.isNotEmpty)
+                    Text(
+                      '($sublabel)',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF8A8A93),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -997,7 +998,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             ),
             CustomButton(
               buttonText: _isLoading
-                  ? '...'
+                  ? l10n.reportSubmitting
                   : (_isEditing
                       ? l10n.saveProfile
                       : l10n.goToVerificationVideo),
