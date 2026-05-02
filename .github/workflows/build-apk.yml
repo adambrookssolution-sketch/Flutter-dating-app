@@ -45,16 +45,24 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
+          # Per-commit name keeps multiple builds reachable without
+          # blowing the storage quota — older runs auto-expire after 3
+          # days. Previous "app-debug-apk" hit the 500 MB free-tier
+          # cap on 2026-04-30; trimming retention is the smallest fix
+          # that doesn't strand the latest build behind quota errors.
+          name: app-debug-apk-${{ github.sha }}
           path: build/app/outputs/flutter-apk/app-debug.apk
-          retention-days: 7
+          retention-days: 3
           if-no-files-found: error
+          compression-level: 9
 
   build-admin-web:
-    # Builds the moderation admin panel (Flutter Web) so it can be
-    # deployed to Firebase Hosting without fighting the Windows file-
-    # lock issue that affects the dev workstation. Independent from
-    # the APK job so the two run in parallel.
+    # Compiles the moderator admin panel (Flutter Web) on every push so
+    # we know the build is green. We DON'T upload the build/web tree as
+    # an artifact — production deployment goes through the dedicated
+    # `deploy-production.yml` workflow, which rebuilds and pushes to
+    # Firebase Hosting directly. Skipping the upload here keeps the
+    # GitHub Actions storage quota for the APK that the client needs.
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -74,11 +82,3 @@ jobs:
 
       - name: Build admin web
         run: flutter build web -t lib/main_admin.dart --release --no-wasm-dry-run
-
-      - name: Upload admin web artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: admin-web-build
-          path: build/web
-          retention-days: 7
-          if-no-files-found: error
