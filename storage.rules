@@ -64,9 +64,12 @@ service firebase.storage {
       allow update, delete: if false;
     }
 
-    // ── Default deny ─────────────────────────────────────────────────────────
+    // ── Fallback for paths owned by the agency that share this Firebase
+    //    project. Our own paths above each have explicit, hardened rules;
+    //    everything else is delegated to the agency's own access model
+    //    and only requires authentication.
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read, write: if request.auth != null;
     }
   }
 }

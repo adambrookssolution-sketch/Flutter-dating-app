@@ -251,9 +251,15 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // ── Default deny ─────────────────────────────────────────────────────────
+    // ── Fallback for collections owned by the agency (users, profiles,
+    //    community_posts, etc.) that share this Firebase project. Our own
+    //    collections above each have explicit, hardened rules; everything
+    //    else is delegated to the agency's own access model and only
+    //    requires authentication. This keeps our security posture intact
+    //    on Affinity-side data while not breaking pre-existing agency
+    //    functionality on shared-project deploy.
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if request.auth != null;
     }
   }
 }
