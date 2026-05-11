@@ -903,36 +903,69 @@ abstract class AppLocalizations {
   String get deleteAccount;
 
   /// No description provided for @languageSettingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
   String get languageSettingTitle;
 
   /// No description provided for @languageSettingSubtitleSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow device language'**
   String get languageSettingSubtitleSystem;
 
   /// No description provided for @languageOptionSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
   String get languageOptionSystem;
 
   /// No description provided for @languageOptionEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
   String get languageOptionEnglish;
 
   /// No description provided for @languageOptionSpanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Español'**
   String get languageOptionSpanish;
 
   /// No description provided for @chatSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search couples or messages'**
   String get chatSearchHint;
 
   /// No description provided for @feedCountryFilterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
   String get feedCountryFilterTitle;
 
   /// No description provided for @feedCountryFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All countries'**
   String get feedCountryFilterAll;
 
   /// No description provided for @explicitContentToggleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Show explicit content'**
   String get explicitContentToggleLabel;
 
   /// No description provided for @explicitContentToggleHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Couples can mark posts as explicit. They are hidden by default and only appear when this is on.'**
   String get explicitContentToggleHelp;
 
   /// No description provided for @explicitContentMarkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark this post as explicit'**
   String get explicitContentMarkLabel;
 
   /// No description provided for @reportCategoryFakeProfile.

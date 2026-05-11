@@ -482,7 +482,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Las parejas pueden marcar publicaciones como explícitas. Están ocultas por defecto y solo aparecen al activar esta opción.';
 
   @override
-  String get explicitContentMarkLabel => 'Marcar esta publicación como explícita';
+  String get explicitContentMarkLabel =>
+      'Marcar esta publicación como explícita';
 
   @override
   String get reportCategoryFakeProfile => 'Perfil falso';

@@ -47,36 +47,77 @@ const ALLOWED_REASONS = new Set([
 /// more attempts. The THIRD rejection locks the account permanently.
 const MAX_VERIFICATION_ATTEMPTS = 3;
 
+// Write a step marker into function_audit/{autoId} so we can trace
+// what's happening from Firestore alone — Cloud Functions logs aren't
+// always reachable from the dev network. Each call writes one doc
+// containing the sequence of steps and the final outcome.
+async function audit(payload: Record<string, unknown>): Promise<void> {
+  try {
+    await admin.firestore().collection("function_audit").add({
+      fn: "moderateVerification",
+      at: admin.firestore.FieldValue.serverTimestamp(),
+      ...payload,
+    });
+  } catch (_) {
+    // Audit must never break the actual flow.
+  }
+}
+
 export const moderateVerification = onCall<Payload>(
   { region: "us-central1", maxInstances: 10 },
   async (req) => {
-    if (!req.auth) throw new HttpsError("unauthenticated", "sign in required");
-    const claims = req.auth.token;
-    if (claims.moderator !== true) {
-      throw new HttpsError("permission-denied", "moderator claim required");
-    }
-
-    const { coupleId, decision, reason } = req.data;
-    if (!coupleId) throw new HttpsError("invalid-argument", "coupleId required");
-    if (decision !== "approve" && decision !== "reject") {
-      throw new HttpsError("invalid-argument", "decision must be approve|reject");
-    }
-    if (decision === "reject") {
-      if (!reason || !ALLOWED_REASONS.has(reason)) {
-        throw new HttpsError(
-          "invalid-argument",
-          "reject decision requires a valid reason"
-        );
+    const trace: string[] = [];
+    const note = (s: string) => trace.push(s);
+    try {
+      note("entered");
+      if (!req.auth) {
+        note("no auth");
+        await audit({ outcome: "unauthenticated", trace });
+        throw new HttpsError("unauthenticated", "sign in required");
       }
-    }
+      note(`auth uid=${req.auth.uid}`);
+      const claims = req.auth.token;
+      note(`claims keys=${Object.keys(claims).join(",")}`);
+      note(`moderator=${claims.moderator}`);
+      if (claims.moderator !== true) {
+        await audit({
+          outcome: "permission-denied",
+          uid: req.auth.uid,
+          claims: { moderator: claims.moderator, admin: claims.admin },
+          trace,
+        });
+        throw new HttpsError("permission-denied", "moderator claim required");
+      }
 
-    const ref = db().collection(COLLECTIONS.couples).doc(coupleId);
-    const snap = await ref.get();
-    if (!snap.exists) {
-      throw new HttpsError("not-found", "couple not found");
-    }
+      const { coupleId, decision, reason } = req.data;
+      note(`payload coupleId=${coupleId} decision=${decision} reason=${reason ?? "n/a"}`);
+      if (!coupleId) {
+        await audit({ outcome: "invalid-argument", reason: "missing coupleId", trace });
+        throw new HttpsError("invalid-argument", "coupleId required");
+      }
+      if (decision !== "approve" && decision !== "reject") {
+        await audit({ outcome: "invalid-argument", reason: "bad decision", decision, trace });
+        throw new HttpsError("invalid-argument", "decision must be approve|reject");
+      }
+      if (decision === "reject") {
+        if (!reason || !ALLOWED_REASONS.has(reason)) {
+          await audit({ outcome: "invalid-argument", reason: "bad reject reason", trace });
+          throw new HttpsError(
+            "invalid-argument",
+            "reject decision requires a valid reason"
+          );
+        }
+      }
 
-    const now = admin.firestore.FieldValue.serverTimestamp();
+      const ref = db().collection(COLLECTIONS.couples).doc(coupleId);
+      const snap = await ref.get();
+      note(`couple exists=${snap.exists}`);
+      if (!snap.exists) {
+        await audit({ outcome: "not-found", coupleId, trace });
+        throw new HttpsError("not-found", "couple not found");
+      }
+
+      const now = admin.firestore.FieldValue.serverTimestamp();
 
     let update: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData>;
     if (decision === "approve") {
@@ -108,7 +149,26 @@ export const moderateVerification = onCall<Payload>(
       };
     }
 
-    await ref.update(update);
-    return { ok: true };
+      note("about to update");
+      await ref.update(update);
+      note("update done");
+      await audit({
+        outcome: "success",
+        coupleId,
+        decision,
+        uid: req.auth.uid,
+        trace,
+      });
+      return { ok: true };
+    } catch (e: unknown) {
+      // Re-throw HttpsError as-is so the client sees the right code.
+      // Anything else gets wrapped as `internal` AND audited so we know
+      // the exact internal error from Firestore-side.
+      if (e instanceof HttpsError) throw e;
+      const msg = e instanceof Error ? e.message : String(e);
+      const stack = e instanceof Error ? e.stack : undefined;
+      await audit({ outcome: "internal", error: msg, stack, trace });
+      throw new HttpsError("internal", msg);
+    }
   }
 );
