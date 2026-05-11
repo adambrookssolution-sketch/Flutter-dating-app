@@ -99,7 +99,23 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen> {
                   if (!snap.hasData) {
                     return const _LoadingState();
                   }
-                  final all = snap.data!.docs.map(Couple.fromDoc).toList();
+                  // Only show couples that completed BOTH the photo upload
+                  // and the verification-video upload. The profile-setup
+                  // screen currently flips status to pending_review the
+                  // moment a couple finishes the profile form, but a
+                  // couple is only truly reviewable once the video is in
+                  // Storage AND at least one photo exists. Anything else
+                  // is an incomplete registration that the user can come
+                  // back to from the app — it doesn't belong in the
+                  // moderator queue.
+                  final allRaw =
+                      snap.data!.docs.map(Couple.fromDoc).toList();
+                  final all = allRaw.where((c) {
+                    final hasVideo =
+                        (c.verification?.videoUrl ?? '').isNotEmpty;
+                    final hasPhotos = c.photos.isNotEmpty;
+                    return hasVideo && hasPhotos;
+                  }).toList();
                   final filtered = _filter.isEmpty
                       ? all
                       : all.where((c) {

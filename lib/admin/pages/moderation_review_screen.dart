@@ -482,7 +482,7 @@ class _VideoSectionState extends State<_VideoSection> {
         icon: Icons.videocam_off_outlined,
         title: 'Sin video disponible',
         body:
-            'Esta pareja envió su perfil pero el archivo de video no está accesible. En el entorno actual de pruebas, Cloud Storage está limitado al plan gratuito.',
+            'Esta pareja completó su perfil sin grabar el video de verificación. Podés rechazar la solicitud con motivo "Video poco claro" o esperar a que reintente desde la app.',
       );
     }
     if (widget.error != null) {
@@ -594,7 +594,7 @@ class _PhotosSection extends StatelessWidget {
         icon: Icons.photo_library_outlined,
         title: 'Sin fotos disponibles',
         body:
-            'Esta pareja no tiene fotos de perfil cargadas en este entorno. La subida de imágenes a Cloud Storage se activa al pasar al Firebase de producción.',
+            'Esta pareja completó su perfil sin subir fotos. Si querés rechazar la solicitud, usá el motivo "Fotos no coinciden" o esperá a que la pareja agregue las fotos desde la app.',
       );
     }
     return LayoutBuilder(
