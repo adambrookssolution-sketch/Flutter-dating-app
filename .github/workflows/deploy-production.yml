@@ -66,7 +66,7 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa-prod.json" >> $GITHUB_ENV
 
       - name: Install firebase-tools
-        run: npm install -g firebase-tools@13
+        run: npm install -g firebase-tools@latest
 
       - name: Install function deps + build
         if: ${{ github.event.inputs.target == 'all' || github.event.inputs.target == 'functions' }}
@@ -106,4 +106,4 @@ jobs:
 
       - name: Deploy (hosting — admin panel)
         if: ${{ github.event.inputs.target == 'all' || github.event.inputs.target == 'hosting' }}
-        run: firebase deploy --only hosting:admin --project=affinity-dating-app-cf807 --force --non-interactive
+        run: firebase deploy --only hosting:admin --project=affinity-dating-app-cf807 --force --non-interactive --debug
