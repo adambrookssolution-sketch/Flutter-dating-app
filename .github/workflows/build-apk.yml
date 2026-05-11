@@ -57,12 +57,12 @@ jobs:
           compression-level: 9
 
   build-admin-web:
-    # Compiles the moderator admin panel (Flutter Web) on every push so
-    # we know the build is green. We DON'T upload the build/web tree as
-    # an artifact — production deployment goes through the dedicated
-    # `deploy-production.yml` workflow, which rebuilds and pushes to
-    # Firebase Hosting directly. Skipping the upload here keeps the
-    # GitHub Actions storage quota for the APK that the client needs.
+    # Compiles the moderator admin panel (Flutter Web) on every push.
+    # The build/web tree is uploaded as an artifact so it can be deployed
+    # to Firebase Hosting from a local machine using the production SA
+    # key (sa-key-prod.json) when the in-CI deploy-production workflow
+    # is blocked by IAM propagation. Retention is 3 days to stay under
+    # the GitHub Actions storage quota.
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -82,3 +82,12 @@ jobs:
 
       - name: Build admin web
         run: flutter build web -t lib/main_admin.dart --release --no-wasm-dry-run
+
+      - name: Upload admin web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-web-${{ github.sha }}
+          path: build/web
+          retention-days: 3
+          if-no-files-found: error
+          compression-level: 9
