@@ -89,6 +89,8 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "retry": "Reintentar",
+  "feedEmptyTitle": "Por ahora no hay parejas que coincidan",
+  "feedEmptyBody": "Probá ampliar tus filtros o volvé más tarde — todos los días se suman parejas nuevas.",
   "filtersReset": "Restablecer",
   "filtersTitle": "Filtros",
   "filtersDistanceMin5km": "Mín 5 km",

@@ -307,6 +307,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
+  String get feedEmptyTitle => 'No matching couples right now';
+
+  @override
+  String get feedEmptyBody =>
+      'Try widening your filters or come back later — new couples join every day.';
+
+  @override
   String get filtersReset => 'Reset';
 
   @override

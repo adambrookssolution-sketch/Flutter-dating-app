@@ -662,6 +662,18 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get retry;
 
+  /// No description provided for @feedEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching couples right now'**
+  String get feedEmptyTitle;
+
+  /// No description provided for @feedEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try widening your filters or come back later — new couples join every day.'**
+  String get feedEmptyBody;
+
   /// No description provided for @filtersReset.
   ///
   /// In en, this message translates to:

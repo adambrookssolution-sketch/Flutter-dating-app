@@ -356,12 +356,34 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         color: const Color(0xFFB01030),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 120),
-            Text(
-              'No new couples to discover right now.\nCome back later!',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black45, fontSize: 15, height: 1.5),
+          children: [
+            const SizedBox(height: 120),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                children: [
+                  Text(
+                    l10n.feedEmptyTitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.feedEmptyBody,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.black45,
+                      fontSize: 14,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

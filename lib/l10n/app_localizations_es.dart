@@ -316,6 +316,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get retry => 'Reintentar';
 
   @override
+  String get feedEmptyTitle => 'Por ahora no hay parejas que coincidan';
+
+  @override
+  String get feedEmptyBody =>
+      'Probá ampliar tus filtros o volvé más tarde — todos los días se suman parejas nuevas.';
+
+  @override
   String get filtersReset => 'Restablecer';
 
   @override
