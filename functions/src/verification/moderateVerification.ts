@@ -70,6 +70,17 @@ export const moderateVerification = onCall<Payload>(
   async (req) => {
     const trace: string[] = [];
     const note = (s: string) => trace.push(s);
+    // Boot marker: always write a doc the moment the function is invoked,
+    // BEFORE any auth/payload checks. If audit shows zero entries even after
+    // a panel click, it proves the function isn't being invoked at all.
+    // The deploy version string is bumped on each redeploy to disambiguate
+    // which build is actually serving requests.
+    await admin.firestore().collection("function_audit").add({
+      fn: "moderateVerification",
+      outcome: "boot",
+      deployVersion: "2026-05-12-runtime-v3",
+      at: admin.firestore.FieldValue.serverTimestamp(),
+    }).catch(() => {});
     try {
       note("entered");
       if (!req.auth) {
