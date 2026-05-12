@@ -96,9 +96,21 @@ jobs:
             printf '%s' "$STRIPE_WEBHOOK_SECRET" | firebase functions:secrets:set STRIPE_WEBHOOK_SECRET --project=affinity-dating-app-cf807 --data-file=-
           fi
 
-      - name: Deploy (functions)
+      - name: Deploy (functions) — diagnostic
         if: ${{ github.event.inputs.target == 'all' || github.event.inputs.target == 'functions' }}
-        run: firebase deploy --only functions --project=affinity-dating-app-cf807 --force --non-interactive
+        run: |
+          echo "════════════════════════════════════════════════════"
+          echo "DEBUG: target input = '${{ github.event.inputs.target }}'"
+          echo "DEBUG: commit       = $GITHUB_SHA"
+          echo "DEBUG: build artifact preview (top of moderateVerification.js):"
+          echo "----"
+          head -40 functions/lib/verification/moderateVerification.js || echo "(NO BUILD ARTIFACT — npm run build did not produce lib/)"
+          echo "----"
+          echo "DEBUG: firebase --version"
+          firebase --version
+          echo "════════════════════════════════════════════════════"
+          echo "Starting firebase deploy --only functions --debug ..."
+          firebase deploy --only functions --project=affinity-dating-app-cf807 --force --non-interactive --debug 2>&1 | tail -120
 
       - name: Deploy (firestore + storage rules + indexes)
         if: ${{ github.event.inputs.target == 'all' || github.event.inputs.target == 'rules-and-indexes' }}
