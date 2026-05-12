@@ -1,6 +1,8 @@
 /**
  * Moderator action endpoint — approve or reject a couple's verification video.
  *
+ * Deploy marker: 2026-05-12-v2 (audit logging + force-refresh integration)
+ *
  * Called from the moderation web panel (Flutter Web, [admin] entry point).
  * Auth gate: only Firebase users with custom claim `moderator: true` can
  * invoke. Claims are set out-of-band (via the Firebase Admin CLI or a
