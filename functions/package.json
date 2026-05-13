@@ -1,6 +1,6 @@
 {
   "name": "affinity-functions",
-  "description": "Cloud Functions for Affinity (verification cleanup, deletion, reports, travel match, push notifications, recovery)",
+  "description": "Cloud Functions for Affinity (verification cleanup, deletion, reports, travel match, push notifications, recovery) [deploy:2026-05-12-v3]",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
     "build": "tsc",

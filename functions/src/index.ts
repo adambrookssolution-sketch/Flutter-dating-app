@@ -15,8 +15,25 @@
  * indicated by the file's leading docstring.
  */
 import { initializeApp } from "firebase-admin/app";
+import * as admin from "firebase-admin";
 
 initializeApp();
+
+// Boot marker — written every time a Cloud Function instance cold-starts.
+// Lets us verify from Firestore alone whether the latest deploy actually
+// took effect, without depending on Cloud Functions logs (which our local
+// network can't always reach).
+(async () => {
+  try {
+    await admin.firestore().collection("function_audit").add({
+      fn: "__boot__",
+      at: admin.firestore.FieldValue.serverTimestamp(),
+      marker: "2026-05-12-v3",
+    });
+  } catch (_) {
+    // ignore — boot audit must never break startup
+  }
+})();
 
 // Re-export every callable / scheduled / triggered function below as work lands.
 // Keeping the entry file empty for now is intentional — deploying with no
@@ -39,11 +56,11 @@ export { onTripCreated } from "./travel/onTripCreated";
 export { tripReminder } from "./travel/tripReminder";
 export { expireRequests } from "./requests/expireRequests";
 
-// Subscriptions module — Entrega 1 wiring (Stripe + Firestore mirror).
-// All four functions are dormant in production until the Stripe secrets
-// are populated, but exporting them here lets us deploy + smoke-test
-// against the test environment with Stripe test mode.
-export { stripeWebhook } from "./subscriptions/stripeWebhook";
-export { createCheckoutSession } from "./subscriptions/createCheckoutSession";
-export { cancelSubscription } from "./subscriptions/cancelSubscription";
-export { onCoupleCreatedSeedSubscription } from "./subscriptions/onCoupleCreated";
+// Subscriptions module — Stripe wiring.
+// Temporarily disabled in production until STRIPE_* secrets are populated
+// in Secret Manager. Re-enable by uncommenting these exports once secrets
+// are configured; the function source files themselves are unchanged.
+// export { stripeWebhook } from "./subscriptions/stripeWebhook";
+// export { createCheckoutSession } from "./subscriptions/createCheckoutSession";
+// export { cancelSubscription } from "./subscriptions/cancelSubscription";
+// export { onCoupleCreatedSeedSubscription } from "./subscriptions/onCoupleCreated";
