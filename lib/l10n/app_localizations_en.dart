@@ -195,6 +195,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorSignIn => 'Sign-in failed. Please check your credentials.';
 
   @override
+  String get errorEmailAlreadyInUse =>
+      'This email is already registered. Please sign in instead.';
+
+  @override
+  String get errorWeakPassword => 'Password must have at least 8 characters.';
+
+  @override
+  String get errorInvalidEmailFormat => 'Email format is not valid.';
+
+  @override
+  String get errorUserNotFound => 'No account exists with that email.';
+
+  @override
+  String get errorWrongPassword => 'Incorrect password.';
+
+  @override
+  String get errorInvalidCredential => 'Email or password is incorrect.';
+
+  @override
+  String get errorTooManyAttempts =>
+      'Too many attempts. Please wait a few minutes.';
+
+  @override
+  String get errorUserDisabled => 'This account is disabled.';
+
+  @override
+  String get errorNetworkRequest =>
+      'No internet connection. Check your network.';
+
+  @override
+  String get errorGoogleSignInConfig =>
+      'Google Sign-In is not yet configured for this APK build. Check the SHA-1 in the console.';
+
+  @override
+  String get errorGoogleSignInCancelled => 'Google sign-in cancelled.';
+
+  @override
   String get completeProfile => 'Complete your profile';
 
   @override

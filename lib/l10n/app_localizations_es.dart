@@ -201,6 +201,44 @@ class AppLocalizationsEs extends AppLocalizations {
       'Error al iniciar sesión. Por favor, revisa tus credenciales.';
 
   @override
+  String get errorEmailAlreadyInUse =>
+      'Este correo ya está registrado. Iniciá sesión.';
+
+  @override
+  String get errorWeakPassword =>
+      'La contraseña debe tener al menos 8 caracteres.';
+
+  @override
+  String get errorInvalidEmailFormat => 'El formato del correo no es válido.';
+
+  @override
+  String get errorUserNotFound => 'No existe una cuenta con ese correo.';
+
+  @override
+  String get errorWrongPassword => 'Contraseña incorrecta.';
+
+  @override
+  String get errorInvalidCredential => 'Correo o contraseña incorrectos.';
+
+  @override
+  String get errorTooManyAttempts =>
+      'Demasiados intentos. Esperá unos minutos.';
+
+  @override
+  String get errorUserDisabled => 'Esta cuenta está deshabilitada.';
+
+  @override
+  String get errorNetworkRequest => 'Sin conexión a internet. Verificá tu red.';
+
+  @override
+  String get errorGoogleSignInConfig =>
+      'Google Sign-In aún no está configurado para esta versión del APK. Revisar el SHA-1 en la consola.';
+
+  @override
+  String get errorGoogleSignInCancelled =>
+      'Inicio de sesión con Google cancelado.';
+
+  @override
   String get completeProfile => 'Completa tu perfil';
 
   @override

@@ -3,6 +3,7 @@ import 'package:app/presentation/pages/auth/widgets/form_title.dart';
 import 'package:app/presentation/pages/profile_setup/profile_setup_screen.dart';
 import 'package:app/presentation/utils/google_sign_in_action.dart';
 import 'package:app/presentation/widgets/widgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:flutter_svg/svg.dart';
@@ -81,13 +82,37 @@ class _SignUpFormState extends State<SignUpForm> {
         ),
         (route) => false,
       );
-    } catch (_) {
+    } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.errorSignUp)),
+        SnackBar(content: Text(_friendlySignUpError(l10n, e))),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${l10n.errorSignUp} (${e.toString()})')),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _friendlySignUpError(AppLocalizations l10n, FirebaseAuthException e) {
+    switch (e.code) {
+      case 'email-already-in-use':
+        return l10n.errorEmailAlreadyInUse;
+      case 'weak-password':
+        return l10n.errorWeakPassword;
+      case 'invalid-email':
+        return l10n.errorInvalidEmailFormat;
+      case 'too-many-requests':
+        return l10n.errorTooManyAttempts;
+      case 'network-request-failed':
+        return l10n.errorNetworkRequest;
+      case 'operation-not-allowed':
+        return l10n.errorSignUp;
+      default:
+        return '${l10n.errorSignUp} (${e.code})';
     }
   }
 

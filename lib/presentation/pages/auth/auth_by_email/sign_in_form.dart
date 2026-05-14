@@ -1,6 +1,7 @@
 import 'package:app/data/datasource/auth_datasource.dart';
 import 'package:app/presentation/utils/google_sign_in_action.dart';
 import 'package:app/presentation/utils/navigate_after_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:app/presentation/pages/auth/widgets/form_title.dart';
@@ -64,13 +65,39 @@ class _SignInFormState extends State<SignInForm> {
       final credential = await AuthDatasource.signInWithEmail(email, password);
       if (!mounted) return;
       await navigateAfterSignIn(context, credential.user!.uid);
-    } catch (_) {
+    } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.errorSignIn)),
+        SnackBar(content: Text(_friendlySignInError(l10n, e))),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${l10n.errorSignIn} (${e.toString()})')),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _friendlySignInError(AppLocalizations l10n, FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return l10n.errorUserNotFound;
+      case 'wrong-password':
+        return l10n.errorWrongPassword;
+      case 'invalid-credential':
+        return l10n.errorInvalidCredential;
+      case 'invalid-email':
+        return l10n.errorInvalidEmailFormat;
+      case 'user-disabled':
+        return l10n.errorUserDisabled;
+      case 'too-many-requests':
+        return l10n.errorTooManyAttempts;
+      case 'network-request-failed':
+        return l10n.errorNetworkRequest;
+      default:
+        return '${l10n.errorSignIn} (${e.code})';
     }
   }
 

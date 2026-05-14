@@ -458,6 +458,72 @@ abstract class AppLocalizations {
   /// **'Sign-in failed. Please check your credentials.'**
   String get errorSignIn;
 
+  /// No description provided for @errorEmailAlreadyInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered. Please sign in instead.'**
+  String get errorEmailAlreadyInUse;
+
+  /// No description provided for @errorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must have at least 8 characters.'**
+  String get errorWeakPassword;
+
+  /// No description provided for @errorInvalidEmailFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Email format is not valid.'**
+  String get errorInvalidEmailFormat;
+
+  /// No description provided for @errorUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No account exists with that email.'**
+  String get errorUserNotFound;
+
+  /// No description provided for @errorWrongPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect password.'**
+  String get errorWrongPassword;
+
+  /// No description provided for @errorInvalidCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or password is incorrect.'**
+  String get errorInvalidCredential;
+
+  /// No description provided for @errorTooManyAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please wait a few minutes.'**
+  String get errorTooManyAttempts;
+
+  /// No description provided for @errorUserDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'This account is disabled.'**
+  String get errorUserDisabled;
+
+  /// No description provided for @errorNetworkRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Check your network.'**
+  String get errorNetworkRequest;
+
+  /// No description provided for @errorGoogleSignInConfig.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Sign-In is not yet configured for this APK build. Check the SHA-1 in the console.'**
+  String get errorGoogleSignInConfig;
+
+  /// No description provided for @errorGoogleSignInCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in cancelled.'**
+  String get errorGoogleSignInCancelled;
+
   /// No description provided for @completeProfile.
   ///
   /// In en, this message translates to:
