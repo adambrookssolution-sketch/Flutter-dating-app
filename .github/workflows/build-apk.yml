@@ -48,9 +48,6 @@ jobs:
       - name: Generate native splash
         run: dart run flutter_native_splash:create
 
-      - name: Build debug APK
-        run: flutter build apk --debug
-
       - name: Write SA key + auth gcloud
         env:
           SA_KEY: ${{ secrets.FIREBASE_SA_KEY_PROD }}
@@ -62,6 +59,49 @@ jobs:
           echo "$SA_KEY" > "$RUNNER_TEMP/sa-prod.json"
           gcloud auth activate-service-account --key-file="$RUNNER_TEMP/sa-prod.json"
           gcloud config set project affinity-dating-app-cf807
+
+      - name: Pin debug keystore (stable Google Sign-In SHA-1)
+        # CI runners regenerate ~/.android/debug.keystore on every job,
+        # giving every APK a different SHA-1 and breaking Google Sign-In
+        # because the OAuth client in Firebase is bound to a specific
+        # SHA-1. We persist a single keystore in Firebase Storage so
+        # the SHA-1 stays constant across every build. Register the
+        # echoed SHA-1 once in Firebase Console > Android app, after
+        # that all builds keep working.
+        run: |
+          set -euo pipefail
+          BUCKET="affinity-dating-app-cf807.firebasestorage.app"
+          KEYSTORE_OBJECT="ci-keystore/debug.keystore"
+          KEYSTORE_PATH="$HOME/.android/debug.keystore"
+          mkdir -p "$HOME/.android"
+          if gcloud storage cp "gs://${BUCKET}/${KEYSTORE_OBJECT}" "$KEYSTORE_PATH" 2>/dev/null; then
+            echo "Reused pinned debug keystore from gs://${BUCKET}/${KEYSTORE_OBJECT}"
+          else
+            echo "No pinned keystore — generating new and uploading."
+            keytool -genkeypair -v \
+              -keystore "$KEYSTORE_PATH" \
+              -alias androiddebugkey \
+              -storepass android -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+            gcloud storage cp "$KEYSTORE_PATH" "gs://${BUCKET}/${KEYSTORE_OBJECT}"
+          fi
+          SHA1=$(keytool -list -v -keystore "$KEYSTORE_PATH" -alias androiddebugkey -storepass android 2>/dev/null | grep "SHA1:" | awk '{print $2}')
+          {
+            echo "## Debug Keystore SHA-1"
+            echo ""
+            echo "Register this fingerprint **once** in Firebase Console:"
+            echo "Project settings > Your apps > Android app (com.example.app) > Add fingerprint."
+            echo ""
+            echo "\`\`\`"
+            echo "${SHA1}"
+            echo "\`\`\`"
+            echo ""
+            echo "After registering, **download the updated google-services.json** from Firebase Console and commit it to \`android/app/google-services.json\`. From then on Google Sign-In works on every CI-built APK."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build debug APK
+        run: flutter build apk --debug
 
       - name: Upload APK to Firebase Storage (public download token)
         run: |
