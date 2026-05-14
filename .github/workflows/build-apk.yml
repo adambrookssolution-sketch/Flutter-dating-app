@@ -1,5 +1,14 @@
 name: Build Debug APK
 
+# Publishes the debug APK to Firebase Storage with a public download
+# token URL. Switched from actions/upload-artifact on 2026-05-14 because
+# the GitHub Actions free-tier 500 MB artifact quota was permanently
+# saturated even after deleting old runs (GitHub recalculates quota
+# every 6–12 h so the new builds still hit "storage quota exceeded").
+# Firebase Storage has a 5 GB free tier and the download-token URL
+# pattern lets the client download the APK without needing GitHub
+# access — same URL refreshes on every push to master.
+
 on:
   workflow_dispatch:
   push:
@@ -42,27 +51,55 @@ jobs:
       - name: Build debug APK
         run: flutter build apk --debug
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          # Per-commit name keeps multiple builds reachable without
-          # blowing the storage quota — older runs auto-expire after 3
-          # days. Previous "app-debug-apk" hit the 500 MB free-tier
-          # cap on 2026-04-30; trimming retention is the smallest fix
-          # that doesn't strand the latest build behind quota errors.
-          name: app-debug-apk-${{ github.sha }}
-          path: build/app/outputs/flutter-apk/app-debug.apk
-          retention-days: 3
-          if-no-files-found: error
-          compression-level: 9
+      - name: Write SA key + auth gcloud
+        env:
+          SA_KEY: ${{ secrets.FIREBASE_SA_KEY_PROD }}
+        run: |
+          if [ -z "$SA_KEY" ]; then
+            echo "FIREBASE_SA_KEY_PROD secret is not set."
+            exit 1
+          fi
+          echo "$SA_KEY" > "$RUNNER_TEMP/sa-prod.json"
+          gcloud auth activate-service-account --key-file="$RUNNER_TEMP/sa-prod.json"
+          gcloud config set project affinity-dating-app-cf807
+
+      - name: Upload APK to Firebase Storage (public download token)
+        run: |
+          set -euo pipefail
+          BUCKET="affinity-dating-app-cf807.firebasestorage.app"
+          OBJECT="public-apk/app-debug.apk"
+          # Stable UUID-shaped token kept identical across runs so the
+          # client always uses the SAME download URL — every push
+          # refreshes the APK in place. If a leak ever happens, rotate
+          # by changing this constant in one place.
+          TOKEN="affinity-apk-7f3c8d92"
+          gcloud storage cp \
+            build/app/outputs/flutter-apk/app-debug.apk \
+            "gs://${BUCKET}/${OBJECT}" \
+            --custom-metadata="firebaseStorageDownloadTokens=${TOKEN}"
+          # Build the public URL — slashes encoded as %2F per the
+          # Firebase Storage download URL convention.
+          OBJECT_ENCODED=$(printf '%s' "${OBJECT}" | sed 's|/|%2F|g')
+          URL="https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${OBJECT_ENCODED}?alt=media&token=${TOKEN}"
+          {
+            echo "## APK Download URL"
+            echo ""
+            echo "Commit: \`${GITHUB_SHA}\`"
+            echo ""
+            echo "[Download app-debug.apk](${URL})"
+            echo ""
+            echo "Direct link (share with client):"
+            echo ""
+            echo "\`\`\`"
+            echo "${URL}"
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   build-admin-web:
-    # Compiles the moderator admin panel (Flutter Web) on every push.
-    # The build/web tree is uploaded as an artifact so it can be deployed
-    # to Firebase Hosting from a local machine using the production SA
-    # key (sa-key-prod.json) when the in-CI deploy-production workflow
-    # is blocked by IAM propagation. Retention is 3 days to stay under
-    # the GitHub Actions storage quota.
+    # Smoke-test compile for the moderator admin panel on every push.
+    # The actual deployment is handled by deploy-production.yml; we
+    # build here only to catch breakage before someone triggers the
+    # manual deploy. No artifact upload (quota).
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -80,14 +117,5 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build admin web
+      - name: Build admin web (smoke test)
         run: flutter build web -t lib/main_admin.dart --release --no-wasm-dry-run
-
-      - name: Upload admin web artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: admin-web-${{ github.sha }}
-          path: build/web
-          retention-days: 3
-          if-no-files-found: error
-          compression-level: 9
