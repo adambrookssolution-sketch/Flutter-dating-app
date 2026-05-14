@@ -300,6 +300,67 @@ class AppLocalizationsEs extends AppLocalizations {
       'Muestra lo que los define como pareja. Tus etiquetas ayudan a crear mejores coincidencias y conexiones más significativas.';
 
   @override
+  String get dynamicsSelectWhatRepresentsYou =>
+      'SELECCIONA LO QUE LOS REPRESENTA';
+
+  @override
+  String get dynamicsSelectWhatRepresentsYouSubtitle =>
+      'Cuéntanos sobre sus dinámicas, preferencias e intereses.';
+
+  @override
+  String get dynamicsSelectWhatYouAreLookingFor =>
+      'Selecciona lo que están buscando';
+
+  @override
+  String get dynamicsLookingForTitle => 'BUSCANDO';
+
+  @override
+  String get dynamicsLookingForSubtitle =>
+      'Estas opciones describen lo que están buscando en la otra pareja.';
+
+  @override
+  String get dynamicsBlockTitle => 'DINÁMICAS';
+
+  @override
+  String get dynamicsIndividualIdentity => 'Identidad individual';
+
+  @override
+  String get dynamicsRole => 'Rol';
+
+  @override
+  String get dynamicsTypeOfInteraction => 'Tipo de interacción';
+
+  @override
+  String get dynamicsExperience => 'Experiencia';
+
+  @override
+  String get dynamicsInterestsLabel => 'Intereses';
+
+  @override
+  String get dynamicsHerLabel => 'Ella:';
+
+  @override
+  String get dynamicsHimLabel => 'Él:';
+
+  @override
+  String get dynamicsOpenToUnicornHer => 'Abierta a ser Unicornio (ella)';
+
+  @override
+  String get dynamicsOpenToBullHim => 'Abierto a ser Toro (él)';
+
+  @override
+  String get dynamicsLookingForUnicorn => 'Buscando Unicornio';
+
+  @override
+  String get dynamicsLookingForBull => 'Buscando Toro';
+
+  @override
+  String get dynamicsAboutUsOptional => 'Acerca de nosotros (opcional)';
+
+  @override
+  String get dynamicsAboutUsHint => 'Cuéntanos sobre ustedes';
+
+  @override
   String get addTag => 'Agregar';
 
   @override

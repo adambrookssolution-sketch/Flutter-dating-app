@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:app/core/interests/interest_groups.dart';
 import 'package:app/data/datasource/auth_datasource.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
@@ -68,8 +67,20 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   List<_Photo> _photos = [];
   String? _photoError;
 
-  // Single flat tag pool; visual blocks come from [InterestGroups].
+  // Legacy single flat tag pool — kept for backward compatibility with existing
+  // profiles, but the new Dynamics-split design (client 2026-05-12) uses the
+  // structured fields below.
   Set<String> _selectedTags = {};
+
+  // ───── Dynamics (client design 2026-05-12) ─────
+  // Profile-side: "What represents you".
+  String _herIdentity = '';
+  String _himIdentity = '';
+  String _herRole = '';
+  String _himRole = '';
+  String _selectedInteraction = '';
+  final Set<String> _selectedExperience = {};
+  final Set<String> _selectedDynamicInterests = {};
 
   bool _openToUnicorn = false;
   bool _openToBull = false;
@@ -105,103 +116,222 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     super.dispose();
   }
 
-  // ── Interests ────────────────────────────────────────────────────────────────
-
-  void _toggleInterest(String chip) {
-    setState(() {
-      if (_selectedTags.contains(chip)) {
-        _selectedTags.remove(chip);
-      } else {
-        _selectedTags.add(chip);
-      }
-      if (_selectedTags.isNotEmpty) _errors['tags'] = null;
-    });
-  }
-
-  Widget _buildInterestsSection() {
-    final hasError = _errors['tags'] != null;
-
+  /// Renders the new Dynamics block — replaces the legacy flat chip list
+  /// with the five-section "SELECT WHAT REPRESENTS YOU" layout from the
+  /// 2026-05-12 design.
+  Widget _buildDynamicsSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Intereses de la pareja',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: hasError ? Colors.red : const Color(0xFF222222),
+          l10n.dynamicsSelectWhatRepresentsYou,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFFB01030),
+            letterSpacing: 0.6,
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
-          'Seleccionen los intereses que mejor los representan y cómo prefieren interactuar con otras parejas.',
-          style: TextStyle(fontSize: 13, color: Color(0xFF888888), height: 1.4),
-        ),
-        const SizedBox(height: 14),
-        Container(
-          padding: hasError ? const EdgeInsets.all(8) : null,
-          decoration: hasError
-              ? BoxDecoration(
-                  border: Border.all(color: Colors.red),
-                  borderRadius: BorderRadius.circular(10),
-                )
-              : null,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _interestGroupBlock(
-                title: 'Tipo de interacción',
-                chips: InterestGroups.tipoDeInteraccion,
-              ),
-              const SizedBox(height: 14),
-              _interestGroupBlock(
-                title: 'Forma de experiencia',
-                chips: InterestGroups.formaDeExperiencia,
-              ),
-              const SizedBox(height: 14),
-              _interestGroupBlock(
-                title: 'Intereses',
-                chips: InterestGroups.intereses,
-              ),
-            ],
+        Text(
+          l10n.dynamicsSelectWhatRepresentsYouSubtitle,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF888888),
+            height: 1.4,
           ),
         ),
+        const SizedBox(height: 18),
+        Text(
+          l10n.dynamicsBlockTitle,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFFB01030),
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Individual Identity (Her + Him single-select)
+        _dynamicsBullet(l10n.dynamicsIndividualIdentity),
+        const SizedBox(height: 8),
+        _herHimSingleSelectRow(
+          l10n: l10n,
+          options: PartnerIdentities.all,
+          herValue: _herIdentity,
+          himValue: _himIdentity,
+          onHerSelect: (v) => setState(() => _herIdentity = v),
+          onHimSelect: (v) => setState(() => _himIdentity = v),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Role (Her + Him single-select)
+        _dynamicsBullet(l10n.dynamicsRole),
+        const SizedBox(height: 8),
+        _herHimSingleSelectRow(
+          l10n: l10n,
+          options: PartnerRoles.all,
+          herValue: _herRole,
+          himValue: _himRole,
+          onHerSelect: (v) => setState(() => _herRole = v),
+          onHimSelect: (v) => setState(() => _himRole = v),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Type of Interaction (single-select)
+        _dynamicsBullet(l10n.dynamicsTypeOfInteraction),
+        const SizedBox(height: 8),
+        _singleSelectChips(
+          options: CoupleInteractionTypes.all,
+          value: _selectedInteraction,
+          onSelect: (v) => setState(() => _selectedInteraction = v),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Experience (multi-select)
+        _dynamicsBullet(l10n.dynamicsExperience),
+        const SizedBox(height: 8),
+        _multiSelectChips(
+          options: CoupleExperiences.all,
+          selected: _selectedExperience,
+          onToggle: (v) => setState(() {
+            if (_selectedExperience.contains(v)) {
+              _selectedExperience.remove(v);
+            } else {
+              _selectedExperience.add(v);
+            }
+          }),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Interests (multi-select)
+        _dynamicsBullet(l10n.dynamicsInterestsLabel),
+        const SizedBox(height: 8),
+        _multiSelectChips(
+          options: CoupleDynamicInterests.all,
+          selected: _selectedDynamicInterests,
+          onToggle: (v) => setState(() {
+            if (_selectedDynamicInterests.contains(v)) {
+              _selectedDynamicInterests.remove(v);
+            } else {
+              _selectedDynamicInterests.add(v);
+            }
+          }),
+        ),
+
         const SizedBox(height: 20),
       ],
     );
   }
 
-  Widget _interestGroupBlock({
-    required String title,
-    required List<String> chips,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _dynamicsBullet(String label) {
+    return Row(
       children: [
+        const Text('• ',
+            style: TextStyle(fontSize: 16, color: Color(0xFF222222))),
         Text(
-          title,
+          label,
           style: const TextStyle(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
-            letterSpacing: 0.4,
-            color: Color(0xFF555555),
+            color: Color(0xFF222222),
           ),
         ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: chips
-              .map(
-                (chip) => _TagChip(
-                  label: chip,
-                  selected: _selectedTags.contains(chip),
-                  onTap: () => _toggleInterest(chip),
-                ),
-              )
-              .toList(),
+      ],
+    );
+  }
+
+  Widget _herHimSingleSelectRow({
+    required AppLocalizations l10n,
+    required List<String> options,
+    required String herValue,
+    required String himValue,
+    required ValueChanged<String> onHerSelect,
+    required ValueChanged<String> onHimSelect,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.dynamicsHerLabel,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF666666))),
+              const SizedBox(height: 6),
+              _singleSelectChips(
+                options: options,
+                value: herValue,
+                onSelect: onHerSelect,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.dynamicsHimLabel,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF666666))),
+              const SizedBox(height: 6),
+              _singleSelectChips(
+                options: options,
+                value: himValue,
+                onSelect: onHimSelect,
+              ),
+            ],
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _singleSelectChips({
+    required List<String> options,
+    required String value,
+    required ValueChanged<String> onSelect,
+  }) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: options
+          .map((opt) => _TagChip(
+                label: opt,
+                selected: value == opt,
+                onTap: () => onSelect(value == opt ? '' : opt),
+              ))
+          .toList(),
+    );
+  }
+
+  Widget _multiSelectChips({
+    required List<String> options,
+    required Set<String> selected,
+    required ValueChanged<String> onToggle,
+  }) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: options
+          .map((opt) => _TagChip(
+                label: opt,
+                selected: selected.contains(opt),
+                onTap: () => onToggle(opt),
+              ))
+          .toList(),
     );
   }
 
@@ -363,6 +493,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         _openToUnicorn = couple.openToUnicorn;
         _openToBull = couple.openToBull;
         _explicit = couple.explicit;
+        _herIdentity = couple.partnerA.identity;
+        _himIdentity = couple.partnerB.identity;
+        _herRole = couple.partnerA.role;
+        _himRole = couple.partnerB.role;
+        _selectedInteraction = couple.typeOfInteraction;
+        _selectedExperience
+          ..clear()
+          ..addAll(couple.experience);
+        _selectedDynamicInterests
+          ..clear()
+          ..addAll(couple.dynamicsInterests);
       });
     } catch (_) {
       // Defaults stay false; user can re-toggle.
@@ -781,11 +922,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 name: profile.herName,
                 birth: profile.herBirth,
                 height: profile.herHeight,
+                identity: _herIdentity,
+                role: _herRole,
               ),
               partnerB: Partner(
                 name: profile.hisName,
                 birth: profile.hisBirth,
                 height: profile.hisHeight,
+                identity: _himIdentity,
+                role: _himRole,
               ),
               city: _selectedPlace?.city ?? profile.city,
               country: _selectedPlace?.country ?? '',
@@ -796,6 +941,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               description: profile.description,
               photos: profile.photos,
               interests: _selectedTags.toList(),
+              typeOfInteraction: _selectedInteraction,
+              experience: _selectedExperience.toList(),
+              dynamicsInterests: _selectedDynamicInterests.toList(),
               openToUnicorn: _openToUnicorn,
               openToBull: _openToBull,
               explicit: _explicit,
@@ -813,9 +961,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           print('COUPLE_CREATE_SKIPPED: $e');
         }
       } else {
-        // Edit mode: patch interests, openness, and any new geo fields.
+        // Edit mode: patch interests, openness, dynamics, and any new geo fields.
         final patch = <String, dynamic>{
           'interests': _selectedTags.toList(),
+          'type_of_interaction': _selectedInteraction,
+          'experience': _selectedExperience.toList(),
+          'dynamics_interests': _selectedDynamicInterests.toList(),
+          'partnerA.identity': _herIdentity,
+          'partnerA.role': _herRole,
+          'partnerB.identity': _himIdentity,
+          'partnerB.role': _himRole,
           'open_to_unicorn': _openToUnicorn,
           'open_to_bull': _openToBull,
           'explicit': _explicit,
@@ -980,7 +1135,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               errorText: _errorFor('description'),
             ),
             const SizedBox(height: 4),
-            _buildInterestsSection(),
+            _buildDynamicsSection(),
             _buildOpennessSection(),
             Center(
               child: Padding(

@@ -38,6 +38,21 @@ class CoupleFilters {
   /// and hides the rest, behaving like a separate feed.
   final bool showExplicit;
 
+  /// Dynamics-split filter (client design 2026-05-12). These describe what
+  /// THIS couple is looking for in the OTHER couple — matched against the
+  /// candidate's SELF fields (partner.identity / partner.role /
+  /// type_of_interaction / experience / dynamics_interests).
+  /// Empty string / empty list means "no constraint on this field".
+  final String lookingForInteraction;
+  final List<String> lookingForExperience;
+  final List<String> lookingForInterests;
+  final String lookingForHerIdentity;
+  final String lookingForHimIdentity;
+  final String lookingForHerRole;
+  final String lookingForHimRole;
+  final bool lookingForUnicorn;
+  final bool lookingForBull;
+
   const CoupleFilters({
     this.centerLat,
     this.centerLng,
@@ -49,6 +64,15 @@ class CoupleFilters {
     this.openToBull,
     this.countryCode,
     this.showExplicit = false,
+    this.lookingForInteraction = '',
+    this.lookingForExperience = const [],
+    this.lookingForInterests = const [],
+    this.lookingForHerIdentity = '',
+    this.lookingForHimIdentity = '',
+    this.lookingForHerRole = '',
+    this.lookingForHimRole = '',
+    this.lookingForUnicorn = false,
+    this.lookingForBull = false,
   });
 
   bool get hasGeo => centerLat != null && centerLng != null;
@@ -208,6 +232,7 @@ class CouplesDatasource {
       if (!_passesInterests(c, filters)) return false;
       if (!_passesAge(c, filters)) return false;
       if (!_passesDistance(c, filters)) return false;
+      if (!_passesLookingFor(c, filters)) return false;
       return true;
     }).toList();
 
@@ -246,6 +271,49 @@ class CouplesDatasource {
     if (c.lat == null || c.lng == null) return false;
     return _haversineKm(f.centerLat!, f.centerLng!, c.lat!, c.lng!) <=
         f.radiusKm;
+  }
+
+  /// Dynamics-split predicate (client design 2026-05-12). Each lookingFor*
+  /// field that is non-empty must be satisfied by the candidate's SELF
+  /// field. The match rules:
+  ///   • Identity/Role (Her/Him)   — exact string equality on the partner
+  ///   • Type of Interaction       — exact match on `type_of_interaction`
+  ///   • Experience / Interests    — at least one common element (∩ ≥ 1)
+  ///   • Looking-for Unicorn/Bull  — candidate must have the open_to_* flag
+  ///
+  /// Empty values are "no constraint" and pass automatically.
+  static bool _passesLookingFor(Couple c, CoupleFilters f) {
+    if (f.lookingForHerIdentity.isNotEmpty &&
+        c.partnerA.identity != f.lookingForHerIdentity) {
+      return false;
+    }
+    if (f.lookingForHimIdentity.isNotEmpty &&
+        c.partnerB.identity != f.lookingForHimIdentity) {
+      return false;
+    }
+    if (f.lookingForHerRole.isNotEmpty &&
+        c.partnerA.role != f.lookingForHerRole) {
+      return false;
+    }
+    if (f.lookingForHimRole.isNotEmpty &&
+        c.partnerB.role != f.lookingForHimRole) {
+      return false;
+    }
+    if (f.lookingForInteraction.isNotEmpty &&
+        c.typeOfInteraction != f.lookingForInteraction) {
+      return false;
+    }
+    if (f.lookingForExperience.isNotEmpty &&
+        !c.experience.any(f.lookingForExperience.contains)) {
+      return false;
+    }
+    if (f.lookingForInterests.isNotEmpty &&
+        !c.dynamicsInterests.any(f.lookingForInterests.contains)) {
+      return false;
+    }
+    if (f.lookingForUnicorn && !c.openToUnicorn) return false;
+    if (f.lookingForBull && !c.openToBull) return false;
+    return true;
   }
 
   static double _haversineKm(double lat1, double lon1, double lat2, double lon2) {

@@ -40,6 +40,21 @@ class FiltersState {
   final bool? openToUnicorn;
   final bool? openToBull;
 
+  // Dynamics-split filter (client design 2026-05-12): what THIS couple is
+  // looking for in the OTHER couple. Mirrors the profile's self fields
+  // but lives only in feed state — never written back to the couple doc
+  // from here (the doc's looking_for_* fields are written by the filter
+  // commit handler so they survive cross-device sessions).
+  final String lookingForInteraction;
+  final Set<String> lookingForExperience;
+  final Set<String> lookingForInterests;
+  final String lookingForHerIdentity;
+  final String lookingForHimIdentity;
+  final String lookingForHerRole;
+  final String lookingForHimRole;
+  final bool lookingForUnicorn;
+  final bool lookingForBull;
+
   // Travel Match constraints — picked from inside the filters panel per the
   // 2026-04-21 brief ("Travel Match dentro de los filtros").
   //
@@ -73,6 +88,15 @@ class FiltersState {
     this.travelTo,
     this.countryCode,
     this.showExplicit = false,
+    this.lookingForInteraction = '',
+    this.lookingForExperience = const {},
+    this.lookingForInterests = const {},
+    this.lookingForHerIdentity = '',
+    this.lookingForHimIdentity = '',
+    this.lookingForHerRole = '',
+    this.lookingForHimRole = '',
+    this.lookingForUnicorn = false,
+    this.lookingForBull = false,
   }) : radiusKm = radiusKm < minRadiusKm ? minRadiusKm : radiusKm;
 
   FiltersState copyWith({
@@ -89,6 +113,15 @@ class FiltersState {
     DateTime? travelTo,
     String? countryCode,
     bool? showExplicit,
+    String? lookingForInteraction,
+    Set<String>? lookingForExperience,
+    Set<String>? lookingForInterests,
+    String? lookingForHerIdentity,
+    String? lookingForHimIdentity,
+    String? lookingForHerRole,
+    String? lookingForHimRole,
+    bool? lookingForUnicorn,
+    bool? lookingForBull,
     bool clearAgeRange = false,
     bool clearTravel = false,
     bool clearOpenToUnicorn = false,
@@ -113,6 +146,20 @@ class FiltersState {
       travelTo: clearTravel ? null : (travelTo ?? this.travelTo),
       countryCode: clearCountry ? null : (countryCode ?? this.countryCode),
       showExplicit: showExplicit ?? this.showExplicit,
+      lookingForInteraction:
+          lookingForInteraction ?? this.lookingForInteraction,
+      lookingForExperience:
+          lookingForExperience ?? this.lookingForExperience,
+      lookingForInterests:
+          lookingForInterests ?? this.lookingForInterests,
+      lookingForHerIdentity:
+          lookingForHerIdentity ?? this.lookingForHerIdentity,
+      lookingForHimIdentity:
+          lookingForHimIdentity ?? this.lookingForHimIdentity,
+      lookingForHerRole: lookingForHerRole ?? this.lookingForHerRole,
+      lookingForHimRole: lookingForHimRole ?? this.lookingForHimRole,
+      lookingForUnicorn: lookingForUnicorn ?? this.lookingForUnicorn,
+      lookingForBull: lookingForBull ?? this.lookingForBull,
     );
   }
 
@@ -127,7 +174,16 @@ class FiltersState {
       centerLat == null &&
       travelDestinationId == null &&
       countryCode == null &&
-      !showExplicit;
+      !showExplicit &&
+      lookingForInteraction.isEmpty &&
+      lookingForExperience.isEmpty &&
+      lookingForInterests.isEmpty &&
+      lookingForHerIdentity.isEmpty &&
+      lookingForHimIdentity.isEmpty &&
+      lookingForHerRole.isEmpty &&
+      lookingForHimRole.isEmpty &&
+      !lookingForUnicorn &&
+      !lookingForBull;
 
   CoupleFilters toDatasourceFilters() => CoupleFilters(
         centerLat: centerLat,
@@ -140,6 +196,15 @@ class FiltersState {
         openToBull: openToBull,
         countryCode: countryCode,
         showExplicit: showExplicit,
+        lookingForInteraction: lookingForInteraction,
+        lookingForExperience: lookingForExperience.toList(),
+        lookingForInterests: lookingForInterests.toList(),
+        lookingForHerIdentity: lookingForHerIdentity,
+        lookingForHimIdentity: lookingForHimIdentity,
+        lookingForHerRole: lookingForHerRole,
+        lookingForHimRole: lookingForHimRole,
+        lookingForUnicorn: lookingForUnicorn,
+        lookingForBull: lookingForBull,
       );
 }
 
@@ -236,6 +301,56 @@ class FiltersNotifier extends StateNotifier<FiltersState> {
   /// Toggle the explicit-content feed view.
   void setShowExplicit(bool value) {
     state = state.copyWith(showExplicit: value);
+  }
+
+  // ── Dynamics-split (2026-05-12) ─────────────────────────────────────────
+
+  void setLookingForInteraction(String value) {
+    state = state.copyWith(lookingForInteraction: value);
+  }
+
+  void toggleLookingForExperience(String value) {
+    final next = {...state.lookingForExperience};
+    if (next.contains(value)) {
+      next.remove(value);
+    } else {
+      next.add(value);
+    }
+    state = state.copyWith(lookingForExperience: next);
+  }
+
+  void toggleLookingForInterest(String value) {
+    final next = {...state.lookingForInterests};
+    if (next.contains(value)) {
+      next.remove(value);
+    } else {
+      next.add(value);
+    }
+    state = state.copyWith(lookingForInterests: next);
+  }
+
+  void setLookingForHerIdentity(String value) {
+    state = state.copyWith(lookingForHerIdentity: value);
+  }
+
+  void setLookingForHimIdentity(String value) {
+    state = state.copyWith(lookingForHimIdentity: value);
+  }
+
+  void setLookingForHerRole(String value) {
+    state = state.copyWith(lookingForHerRole: value);
+  }
+
+  void setLookingForHimRole(String value) {
+    state = state.copyWith(lookingForHimRole: value);
+  }
+
+  void setLookingForUnicorn(bool value) {
+    state = state.copyWith(lookingForUnicorn: value);
+  }
+
+  void setLookingForBull(bool value) {
+    state = state.copyWith(lookingForBull: value);
   }
 
   void reset() => state = const FiltersState();

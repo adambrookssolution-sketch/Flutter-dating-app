@@ -638,6 +638,120 @@ abstract class AppLocalizations {
   /// **'Show what defines you as a couple. Your tags help create better matches and more meaningful connections.'**
   String get tagsDescription;
 
+  /// No description provided for @dynamicsSelectWhatRepresentsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT WHAT REPRESENTS YOU'**
+  String get dynamicsSelectWhatRepresentsYou;
+
+  /// No description provided for @dynamicsSelectWhatRepresentsYouSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your dynamics, preferences and interests.'**
+  String get dynamicsSelectWhatRepresentsYouSubtitle;
+
+  /// No description provided for @dynamicsSelectWhatYouAreLookingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select what you are looking for'**
+  String get dynamicsSelectWhatYouAreLookingFor;
+
+  /// No description provided for @dynamicsLookingForTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'LOOKING FOR'**
+  String get dynamicsLookingForTitle;
+
+  /// No description provided for @dynamicsLookingForSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'These choices describe what you\'re looking for in the other couple.'**
+  String get dynamicsLookingForSubtitle;
+
+  /// No description provided for @dynamicsBlockTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'DYNAMICS'**
+  String get dynamicsBlockTitle;
+
+  /// No description provided for @dynamicsIndividualIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Individual Identity'**
+  String get dynamicsIndividualIdentity;
+
+  /// No description provided for @dynamicsRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get dynamicsRole;
+
+  /// No description provided for @dynamicsTypeOfInteraction.
+  ///
+  /// In en, this message translates to:
+  /// **'Type of Interaction'**
+  String get dynamicsTypeOfInteraction;
+
+  /// No description provided for @dynamicsExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get dynamicsExperience;
+
+  /// No description provided for @dynamicsInterestsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interests'**
+  String get dynamicsInterestsLabel;
+
+  /// No description provided for @dynamicsHerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Her:'**
+  String get dynamicsHerLabel;
+
+  /// No description provided for @dynamicsHimLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Him:'**
+  String get dynamicsHimLabel;
+
+  /// No description provided for @dynamicsOpenToUnicornHer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to be a Unicorn (her)'**
+  String get dynamicsOpenToUnicornHer;
+
+  /// No description provided for @dynamicsOpenToBullHim.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to be a Bull (him)'**
+  String get dynamicsOpenToBullHim;
+
+  /// No description provided for @dynamicsLookingForUnicorn.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for Unicorn'**
+  String get dynamicsLookingForUnicorn;
+
+  /// No description provided for @dynamicsLookingForBull.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for Bull'**
+  String get dynamicsLookingForBull;
+
+  /// No description provided for @dynamicsAboutUsOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'About us (optional)'**
+  String get dynamicsAboutUsOptional;
+
+  /// No description provided for @dynamicsAboutUsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourselves'**
+  String get dynamicsAboutUsHint;
+
   /// No description provided for @addTag.
   ///
   /// In en, this message translates to:

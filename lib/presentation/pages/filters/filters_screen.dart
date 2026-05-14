@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:app/core/interests/interest_groups.dart';
 import 'package:app/data/datasource/destinations_datasource.dart';
 import 'package:app/data/models/destination.dart';
+import 'package:app/data/models/partner.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/providers/filters_provider.dart';
 
@@ -198,42 +198,66 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
                   style: const TextStyle(color: Color(0xFFA4A4AA))),
             ],
           ),
-          // Three visual blocks, one shared `interests` set.
-          _sectionTitle('Tipo de interacción'),
-          _chipSection(
-            chips: InterestGroups.tipoDeInteraccion,
-            selected: filters.interests,
-            onToggle: notifier.toggleInterest,
+          // Dynamics-split filter (client design 2026-05-12). These chips
+          // describe WHAT THIS COUPLE IS LOOKING FOR in the other couple —
+          // mirror image of the profile's self fields. Five sub-sections
+          // grouped under a single "Looking for" heading.
+          _sectionTitle(l10n.dynamicsLookingForTitle),
+          _hintLine(l10n.dynamicsLookingForSubtitle),
+          _bulletLine(l10n.dynamicsIndividualIdentity),
+          _herHimSingleSelect(
+            l10n: l10n,
+            options: PartnerIdentities.all,
+            herValue: filters.lookingForHerIdentity,
+            himValue: filters.lookingForHimIdentity,
+            onHer: notifier.setLookingForHerIdentity,
+            onHim: notifier.setLookingForHimIdentity,
           ),
-          _sectionTitle('Forma de experiencia'),
-          _chipSection(
-            chips: InterestGroups.formaDeExperiencia,
-            selected: filters.interests,
-            onToggle: notifier.toggleInterest,
+          const SizedBox(height: 12),
+          _bulletLine(l10n.dynamicsRole),
+          _herHimSingleSelect(
+            l10n: l10n,
+            options: PartnerRoles.all,
+            herValue: filters.lookingForHerRole,
+            himValue: filters.lookingForHimRole,
+            onHer: notifier.setLookingForHerRole,
+            onHim: notifier.setLookingForHimRole,
           ),
-          _sectionTitle('Intereses'),
-          _chipSection(
-            chips: InterestGroups.intereses,
-            selected: filters.interests,
-            onToggle: notifier.toggleInterest,
+          const SizedBox(height: 12),
+          _bulletLine(l10n.dynamicsTypeOfInteraction),
+          _singleSelectChips(
+            options: CoupleInteractionTypes.all,
+            value: filters.lookingForInteraction,
+            onSelect: notifier.setLookingForInteraction,
+          ),
+          const SizedBox(height: 12),
+          _bulletLine(l10n.dynamicsExperience),
+          _multiSelectChips(
+            options: CoupleExperiences.all,
+            selected: filters.lookingForExperience,
+            onToggle: notifier.toggleLookingForExperience,
+          ),
+          const SizedBox(height: 12),
+          _bulletLine(l10n.dynamicsInterestsLabel),
+          _multiSelectChips(
+            options: CoupleDynamicInterests.all,
+            selected: filters.lookingForInterests,
+            onToggle: notifier.toggleLookingForInterest,
           ),
           const SizedBox(height: 22),
 
-          _sectionTitle('Apertura de la pareja'),
-          _hintLine(
-              'Indiquen si están abiertos a interactuar individualmente con terceros.'),
           _OpennessToggle(
-            label: 'Open to Unicorn',
-            sublabel: 'ella',
-            value: filters.openToUnicorn == true,
-            onChanged: notifier.setOpenToUnicorn,
+            label: l10n.dynamicsLookingForUnicorn,
+            sublabel: '',
+            value: filters.lookingForUnicorn,
+            onChanged: notifier.setLookingForUnicorn,
           ),
           const SizedBox(height: 8),
           _OpennessToggle(
-            label: 'Open to Bull',
-            sublabel: 'él',
-            value: filters.openToBull == true,
-            onChanged: notifier.setOpenToBull,
+            label: l10n.dynamicsLookingForBull,
+            sublabel: '',
+            value: filters.lookingForBull,
+            onChanged: notifier.setLookingForBull,
           ),
           const SizedBox(height: 22),
           // Country filter — client request 2026-04-30 (#4). The list is
@@ -337,23 +361,38 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
         ),
       );
 
-  /// Renders a wrap of FilterChips for one of the three interest blocks.
-  /// All three blocks share the same selected set + the same toggle
-  /// handler — visual grouping is decided here, not in the data layer.
-  Widget _chipSection({
-    required List<String> chips,
-    required Set<String> selected,
-    required void Function(String) onToggle,
+  Widget _bulletLine(String label) => Padding(
+        padding: const EdgeInsets.only(top: 6, bottom: 6),
+        child: Row(
+          children: [
+            const Text('• ',
+                style: TextStyle(fontSize: 16, color: Color(0xFF222222))),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF222222),
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _singleSelectChips({
+    required List<String> options,
+    required String value,
+    required void Function(String) onSelect,
   }) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: chips.map((label) {
-        final isSelected = selected.contains(label);
+      children: options.map((opt) {
+        final isSelected = opt == value;
         return FilterChip(
-          label: Text(label),
+          label: Text(opt),
           selected: isSelected,
-          onSelected: (_) => onToggle(label),
+          onSelected: (_) => onSelect(isSelected ? '' : opt),
           selectedColor: const Color(0xFFB01030),
           checkmarkColor: Colors.white,
           labelStyle: TextStyle(
@@ -367,6 +406,74 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
           backgroundColor: Colors.white,
         );
       }).toList(),
+    );
+  }
+
+  Widget _multiSelectChips({
+    required List<String> options,
+    required Set<String> selected,
+    required void Function(String) onToggle,
+  }) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: options.map((opt) {
+        final isSelected = selected.contains(opt);
+        return FilterChip(
+          label: Text(opt),
+          selected: isSelected,
+          onSelected: (_) => onToggle(opt),
+          selectedColor: const Color(0xFFB01030),
+          checkmarkColor: Colors.white,
+          labelStyle: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF555555),
+          ),
+          side: BorderSide(
+            color: isSelected
+                ? const Color(0xFFB01030)
+                : const Color(0xFFA4A4AA),
+          ),
+          backgroundColor: Colors.white,
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _herHimSingleSelect({
+    required AppLocalizations l10n,
+    required List<String> options,
+    required String herValue,
+    required String himValue,
+    required ValueChanged<String> onHer,
+    required ValueChanged<String> onHim,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.dynamicsHerLabel,
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF666666))),
+        const SizedBox(height: 4),
+        _singleSelectChips(
+          options: options,
+          value: herValue,
+          onSelect: onHer,
+        ),
+        const SizedBox(height: 8),
+        Text(l10n.dynamicsHimLabel,
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF666666))),
+        const SizedBox(height: 4),
+        _singleSelectChips(
+          options: options,
+          value: himValue,
+          onSelect: onHim,
+        ),
+      ],
     );
   }
 }
