@@ -101,7 +101,16 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build debug APK
-        run: flutter build apk --debug
+        # APPLE_SERVICE_ID enables Apple Sign-In's web/OAuth path on
+        # Android (required because the native ASAuthorization flow is
+        # iOS-only). When the secret is unset the build still succeeds
+        # but Apple Sign-In on Android falls back to the iOS-only path
+        # and surfaces a friendly error instead of silently breaking.
+        env:
+          APPLE_SERVICE_ID: ${{ secrets.APPLE_SERVICE_ID }}
+        run: |
+          flutter build apk --debug \
+            --dart-define=APPLE_SERVICE_ID="${APPLE_SERVICE_ID}"
 
       - name: Upload APK to Firebase Storage (public download token)
         run: |

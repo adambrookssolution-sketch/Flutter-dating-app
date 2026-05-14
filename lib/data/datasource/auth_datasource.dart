@@ -24,12 +24,37 @@ class AuthDatasource {
     final rawNonce = _generateNonce();
     final nonce = _sha256ofString(rawNonce);
 
+    // Apple Sign-In on iOS uses the native ASAuthorization flow and the
+    // [webAuthenticationOptions] argument is ignored. On Android (and
+    // web) the package falls back to an OAuth web flow that requires a
+    // Service ID registered in Apple Developer with:
+    //   • "Sign In with Apple" capability enabled
+    //   • Return URL = https://affinity-dating-app-cf807.firebaseapp.com/__/auth/handler
+    // The Service ID identifier is injected at build time via
+    // --dart-define=APPLE_SERVICE_ID=<id> so the same code ships across
+    // environments. When unset, [webOpts] stays null and the call falls
+    // back to the iOS-only native flow.
+    const appleServiceId = String.fromEnvironment(
+      'APPLE_SERVICE_ID',
+      defaultValue: '',
+    );
+    WebAuthenticationOptions? webOpts;
+    if (appleServiceId.isNotEmpty) {
+      webOpts = WebAuthenticationOptions(
+        clientId: appleServiceId,
+        redirectUri: Uri.parse(
+          'https://affinity-dating-app-cf807.firebaseapp.com/__/auth/handler',
+        ),
+      );
+    }
+
     final appleCredential = await SignInWithApple.getAppleIDCredential(
       scopes: [
         AppleIDAuthorizationScopes.email,
         AppleIDAuthorizationScopes.fullName,
       ],
       nonce: nonce,
+      webAuthenticationOptions: webOpts,
     );
 
     final OAuthCredential credential = OAuthProvider('apple.com').credential(
