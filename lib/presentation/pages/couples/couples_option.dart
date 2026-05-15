@@ -426,8 +426,12 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
                   photos: profile.photos,
                 );
                 return Padding(
+                  // Tighter horizontal padding per client feedback
+                  // 2026-05-15 #11 — earlier 16-px insets made the
+                  // cards visibly narrow and the cover-fit crop was
+                  // chopping the couple photos at the sides.
                   padding:
-                      const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      const EdgeInsets.fromLTRB(4, 8, 4, 0),
                   child: CoupleCard(
                     profile: coupleProfile,
                     onStartConversation: () => _startConversation(profile),

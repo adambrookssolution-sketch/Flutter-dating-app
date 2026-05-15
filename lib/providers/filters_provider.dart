@@ -45,7 +45,10 @@ class FiltersState {
   // but lives only in feed state — never written back to the couple doc
   // from here (the doc's looking_for_* fields are written by the filter
   // commit handler so they survive cross-device sessions).
-  final String lookingForInteraction;
+  // Multi-select since client feedback 2026-05-15 #6 — Type of
+  // Interaction can pick multiple values both for self and for the
+  // looking-for filter.
+  final Set<String> lookingForInteraction;
   final Set<String> lookingForExperience;
   final Set<String> lookingForInterests;
   final String lookingForHerIdentity;
@@ -88,7 +91,7 @@ class FiltersState {
     this.travelTo,
     this.countryCode,
     this.showExplicit = false,
-    this.lookingForInteraction = '',
+    this.lookingForInteraction = const {},
     this.lookingForExperience = const {},
     this.lookingForInterests = const {},
     this.lookingForHerIdentity = '',
@@ -113,7 +116,7 @@ class FiltersState {
     DateTime? travelTo,
     String? countryCode,
     bool? showExplicit,
-    String? lookingForInteraction,
+    Set<String>? lookingForInteraction,
     Set<String>? lookingForExperience,
     Set<String>? lookingForInterests,
     String? lookingForHerIdentity,
@@ -196,7 +199,7 @@ class FiltersState {
         openToBull: openToBull,
         countryCode: countryCode,
         showExplicit: showExplicit,
-        lookingForInteraction: lookingForInteraction,
+        lookingForInteraction: lookingForInteraction.toList(),
         lookingForExperience: lookingForExperience.toList(),
         lookingForInterests: lookingForInterests.toList(),
         lookingForHerIdentity: lookingForHerIdentity,
@@ -305,8 +308,14 @@ class FiltersNotifier extends StateNotifier<FiltersState> {
 
   // ── Dynamics-split (2026-05-12) ─────────────────────────────────────────
 
-  void setLookingForInteraction(String value) {
-    state = state.copyWith(lookingForInteraction: value);
+  void toggleLookingForInteraction(String value) {
+    final next = {...state.lookingForInteraction};
+    if (next.contains(value)) {
+      next.remove(value);
+    } else {
+      next.add(value);
+    }
+    state = state.copyWith(lookingForInteraction: next);
   }
 
   void toggleLookingForExperience(String value) {

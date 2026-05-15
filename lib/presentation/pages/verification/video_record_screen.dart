@@ -39,15 +39,19 @@ class _VideoRecordScreenState extends State<VideoRecordScreen> {
   // look forward, then turn head to the right, then to the left — enough
   // to prove they're a real person, short enough that uploads stay tiny
   // and the flow stays friction-free.
-  static const int _minSeconds = 3;
-  static const int _maxSeconds = 5;
+  // Client feedback 2026-05-15 #8: raise the recording window from 5s
+  // to 8s so users have enough time to actually rotate their head
+  // through the three beats. Minimum bumped to 5s so half-recorded
+  // clips still cover at least the "look at the camera" + first turn.
+  static const int _minSeconds = 5;
+  static const int _maxSeconds = 8;
 
   /// Cue text shown over the live camera view based on how far into the
-  /// 5-second recording the user is. Split into three roughly equal beats
-  /// so the head-turn gesture stays in sync with the prompt.
+  /// 8-second recording the user is. Split into three beats so the
+  /// head-turn gesture stays in sync with the prompt.
   String _headTurnPrompt(int elapsed) {
-    if (elapsed < 2) return 'Look at the camera';
-    if (elapsed < 4) return 'Turn your head to the right';
+    if (elapsed < 3) return 'Look at the camera';
+    if (elapsed < 5) return 'Turn your head to the right';
     return 'Turn your head to the left';
   }
 

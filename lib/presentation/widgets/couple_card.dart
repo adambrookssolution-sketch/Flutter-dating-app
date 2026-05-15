@@ -147,23 +147,32 @@ class _CoupleCardState extends State<CoupleCard> {
       );
     }
     final url = p.photos[_currentPhoto % p.photos.length];
-    return Image.network(
-      url,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) =>
-          const DecoratedBox(decoration: BoxDecoration(color: Colors.black)),
-      loadingBuilder: (ctx, child, progress) {
-        if (progress == null) return child;
-        return const ColoredBox(
-          color: Colors.black,
-          child: Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
+    // Client feedback 2026-05-15 #11: photos were being cropped at the
+    // sides when the card was narrower than the photo's aspect ratio.
+    // Switch to BoxFit.contain over a black panel so the full photo is
+    // always visible — the burgundy frame + bottom gradient still give
+    // the card its identity, and any remaining negative space matches
+    // the card background rather than chopping pixels.
+    return ColoredBox(
+      color: Colors.black,
+      child: Image.network(
+        url,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) =>
+            const DecoratedBox(decoration: BoxDecoration(color: Colors.black)),
+        loadingBuilder: (ctx, child, progress) {
+          if (progress == null) return child;
+          return const ColoredBox(
+            color: Colors.black,
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 

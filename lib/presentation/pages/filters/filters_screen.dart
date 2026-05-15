@@ -225,10 +225,10 @@ class _FiltersScreenState extends ConsumerState<FiltersScreen> {
           ),
           const SizedBox(height: 12),
           _bulletLine(l10n.dynamicsTypeOfInteraction),
-          _singleSelectChips(
+          _multiSelectChips(
             options: CoupleInteractionTypes.all,
-            value: filters.lookingForInteraction,
-            onSelect: notifier.setLookingForInteraction,
+            selected: filters.lookingForInteraction,
+            onToggle: notifier.toggleLookingForInteraction,
           ),
           const SizedBox(height: 12),
           _bulletLine(l10n.dynamicsExperience),

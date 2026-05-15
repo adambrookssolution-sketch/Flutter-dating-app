@@ -43,7 +43,9 @@ class CoupleFilters {
   /// candidate's SELF fields (partner.identity / partner.role /
   /// type_of_interaction / experience / dynamics_interests).
   /// Empty string / empty list means "no constraint on this field".
-  final String lookingForInteraction;
+  /// Subset of [CoupleInteractionTypes] — multi-select since client
+  /// feedback 2026-05-15 #6.
+  final List<String> lookingForInteraction;
   final List<String> lookingForExperience;
   final List<String> lookingForInterests;
   final String lookingForHerIdentity;
@@ -64,7 +66,7 @@ class CoupleFilters {
     this.openToBull,
     this.countryCode,
     this.showExplicit = false,
-    this.lookingForInteraction = '',
+    this.lookingForInteraction = const [],
     this.lookingForExperience = const [],
     this.lookingForInterests = const [],
     this.lookingForHerIdentity = '',
@@ -299,8 +301,10 @@ class CouplesDatasource {
         c.partnerB.role != f.lookingForHimRole) {
       return false;
     }
+    // Multi-select since client feedback 2026-05-15 #6 — match passes
+    // when the candidate offers at least one of the requested types.
     if (f.lookingForInteraction.isNotEmpty &&
-        c.typeOfInteraction != f.lookingForInteraction) {
+        !c.typeOfInteraction.any(f.lookingForInteraction.contains)) {
       return false;
     }
     if (f.lookingForExperience.isNotEmpty &&

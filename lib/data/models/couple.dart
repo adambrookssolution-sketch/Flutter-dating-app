@@ -40,8 +40,9 @@ class Couple {
   // On the filter screen the parallel `lookingFor*` answer "what is this
   // couple searching for in others".
 
-  /// One of [CoupleInteractionTypes].
-  final String typeOfInteraction;
+  /// Subset of [CoupleInteractionTypes] (multi-select per client
+  /// feedback 2026-05-15 #6 — previously a single string).
+  final List<String> typeOfInteraction;
 
   /// Subset of [CoupleExperiences] (multi-select).
   final List<String> experience;
@@ -115,7 +116,7 @@ class Couple {
     this.description = '',
     this.photos = const [],
     this.interests = const [],
-    this.typeOfInteraction = '',
+    this.typeOfInteraction = const [],
     this.experience = const [],
     this.dynamicsInterests = const [],
     this.lookingForInteraction = const [],
@@ -210,7 +211,10 @@ class Couple {
       description: (m['description'] as String?) ?? '',
       photos: _readPhotos(m),
       interests: _readInterests(m),
-      typeOfInteraction: (m['type_of_interaction'] as String?) ?? '',
+      // Multi-select since client feedback 2026-05-15 #6. Legacy docs
+      // wrote a single string here — fold those into a one-element list
+      // so existing profiles keep their selection after the upgrade.
+      typeOfInteraction: _readInteractionTypes(m),
       experience: _readStringList(m, 'experience'),
       dynamicsInterests: _readStringList(m, 'dynamics_interests'),
       lookingForInteraction: _readStringList(m, 'looking_for_interaction'),
@@ -243,6 +247,24 @@ class Couple {
           .whereType<String>()
           .where((s) => s.trim().isNotEmpty)
           .toList(growable: false);
+    }
+    return const [];
+  }
+
+  /// Multi-select reader for `type_of_interaction`. Accepts the new
+  /// List<String> shape as well as legacy single-string docs written
+  /// before the 2026-05-15 #6 refactor — those fold into a one-element
+  /// list so the user's prior choice survives.
+  static List<String> _readInteractionTypes(Map<String, dynamic> m) {
+    final v = m['type_of_interaction'];
+    if (v is List) {
+      return v
+          .whereType<String>()
+          .where((s) => s.trim().isNotEmpty)
+          .toList(growable: false);
+    }
+    if (v is String && v.trim().isNotEmpty) {
+      return [v.trim()];
     }
     return const [];
   }
@@ -308,7 +330,7 @@ class Couple {
     String? description,
     List<String>? photos,
     List<String>? interests,
-    String? typeOfInteraction,
+    List<String>? typeOfInteraction,
     List<String>? experience,
     List<String>? dynamicsInterests,
     List<String>? lookingForInteraction,

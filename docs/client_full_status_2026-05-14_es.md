@@ -16,7 +16,8 @@ cambios del 12 de mayo (separación de Dinámicas) viven en la app
 móvil, así que te paso un **APK actualizado**:
 
 **APK (Debug, Android):**
-[INSERTAR_URL_DESDE_BUILD_SUMMARY]
+
+https://firebasestorage.googleapis.com/v0/b/affinity-dating-app-cf807.firebasestorage.app/o/public-apk%2Fapp-debug.apk?alt=media&token=affinity-apk-7f3c8d92
 
 > Esta URL es estable: cada nueva versión que publiquemos se sirve en
 > el mismo enlace, así pueden seguir descargando desde ahí sin que les
@@ -41,7 +42,7 @@ en todos los siguientes sin intervención manual.
 
 ---
 
-## 3) Apple Sign-In — causa raíz encontrada
+## 3) Apple Sign-In — causa raíz encontrada y código corregido
 
 Después de revisar el código a fondo: el problema **no estaba en la
 configuración que hizo la agencia**. La agencia configuró el Service
@@ -51,16 +52,30 @@ Por eso fallaba aunque todo estuviera bien del lado de Apple.
 
 Ya tengo el código corregido (faltaba el bloque
 `webAuthenticationOptions` que conecta la app con el Service ID en
-Apple). Solo necesito **dos datos de la agencia**:
+Apple). Solo necesito **un dato puntual de la agencia**: el
+identificador del Service ID. Como no tengo contacto directo con
+ellos, te dejo abajo el mensaje listo para que sólo lo reenvíes —
+sin redactar nada — y en cuanto te lo respondan, yo lo configuro del
+lado del código y la siguiente build queda con Apple Sign-In
+funcionando en iOS y en Android.
 
-1. El identificador del **Service ID** de Apple
-   (algo como `com.affinitysocialclub.app.signin` o similar — lo
-   tienen registrado en Apple Developer > Identifiers > Services IDs).
-2. Confirmación de que el Return URL del Service ID está exactamente
-   en `https://affinity-dating-app-cf807.firebaseapp.com/__/auth/handler`.
+**Mensaje listo para reenviar a la agencia:**
 
-Con ese dato, en la siguiente build el Apple Sign-In quedará
-funcionando tanto en iOS como en Android.
+> Hola, una consulta técnica rápida sobre el Sign In with Apple del
+> proyecto Affinity (Firebase project `affinity-dating-app-cf807`):
+>
+> 1. ¿Cuál es el identificador exacto del **Service ID** que crearon
+>    en Apple Developer → Identifiers → Services IDs para esta app?
+>    (Es la cadena estilo de Bundle ID inverso, p. ej.
+>    `com.affinitysocialclub.app.signin` o similar.)
+> 2. ¿Podrían confirmar que el **Return URL** registrado en ese
+>    Service ID es exactamente
+>    `https://affinity-dating-app-cf807.firebaseapp.com/__/auth/handler`?
+>    Si tiene otro valor (con/sin barra final, otro subdominio,
+>    etc.), pásennoslo tal cual está configurado.
+>
+> Con esos dos datos terminamos de cerrar el Apple Sign-In de Android
+> en la próxima build. Gracias.
 
 ---
 
@@ -83,12 +98,13 @@ próximo APK estable.
 
 ---
 
-## Siguiente paso por su lado
+## Lo único que necesito de tu lado
 
-1. Descargar y probar el APK (link arriba) en un dispositivo Android.
-2. Pedirle a la agencia el **Service ID exacto** de Apple Sign-In y
-   confirmármelo (Apple Developer → Identifiers → Services IDs). Con
-   ese dato termino de cerrar Apple Sign-In del lado del código sin
-   que tengas que tocar la consola.
+Probar el APK en un dispositivo Android y avisarme cómo se ve la
+nueva separación de Dinámicas. Todo lo demás (registrar SHA-1,
+sincronizar `google-services.json`, integrar el Service ID que
+respondan los de la agencia) lo hago yo del lado del pipeline en
+cuanto tengamos la respuesta — no necesitas tocar la consola de
+Firebase ni la de Apple.
 
 Quedo atento.

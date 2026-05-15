@@ -78,7 +78,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   String _himIdentity = '';
   String _herRole = '';
   String _himRole = '';
-  String _selectedInteraction = '';
+  // Multi-select since client feedback 2026-05-15 #6: a couple can offer
+  // more than one interaction type (Parallel Play + Soft Swap, etc.).
+  final Set<String> _selectedInteraction = {};
   final Set<String> _selectedExperience = {};
   final Set<String> _selectedDynamicInterests = {};
 
@@ -182,13 +184,19 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
         const SizedBox(height: 16),
 
-        // Type of Interaction (single-select)
+        // Type of Interaction (multi-select since 2026-05-15 #6)
         _dynamicsBullet(l10n.dynamicsTypeOfInteraction),
         const SizedBox(height: 8),
-        _singleSelectChips(
+        _multiSelectChips(
           options: CoupleInteractionTypes.all,
-          value: _selectedInteraction,
-          onSelect: (v) => setState(() => _selectedInteraction = v),
+          selected: _selectedInteraction,
+          onToggle: (v) => setState(() {
+            if (_selectedInteraction.contains(v)) {
+              _selectedInteraction.remove(v);
+            } else {
+              _selectedInteraction.add(v);
+            }
+          }),
         ),
 
         const SizedBox(height: 16),
@@ -366,17 +374,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           value: _openToBull,
           onChanged: (v) => setState(() => _openToBull = v),
         ),
-        const SizedBox(height: 18),
-        // Explicit-content tag — client request 2026-04-30 (#5). When on,
-        // posts from this couple only appear for users who have opted into
-        // the explicit feed via the pineapple filter.
-        _opennessRow(
-          label: l10nMaybe()?.explicitContentMarkLabel ??
-              'Marcar como contenido explícito',
-          sublabel: 'opcional',
-          value: _explicit,
-          onChanged: (v) => setState(() => _explicit = v),
-        ),
+        // Explicit-content classification moved out of profile setup per
+        // client feedback 2026-05-15 #2. The flag is now set per-post when
+        // publishing in the feed (separate explicit feed surfaces via the
+        // pineapple filter). Keep [_explicit] on the state so existing
+        // couples don't lose their stored value during edit, but no UI
+        // exposes it here anymore.
         const SizedBox(height: 20),
       ],
     );
@@ -497,7 +500,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         _himIdentity = couple.partnerB.identity;
         _herRole = couple.partnerA.role;
         _himRole = couple.partnerB.role;
-        _selectedInteraction = couple.typeOfInteraction;
+        _selectedInteraction
+          ..clear()
+          ..addAll(couple.typeOfInteraction);
         _selectedExperience
           ..clear()
           ..addAll(couple.experience);
@@ -946,7 +951,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               description: profile.description,
               photos: profile.photos,
               interests: _selectedTags.toList(),
-              typeOfInteraction: _selectedInteraction,
+              typeOfInteraction: _selectedInteraction.toList(),
               experience: _selectedExperience.toList(),
               dynamicsInterests: _selectedDynamicInterests.toList(),
               openToUnicorn: _openToUnicorn,
@@ -969,7 +974,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         // Edit mode: patch interests, openness, dynamics, and any new geo fields.
         final patch = <String, dynamic>{
           'interests': _selectedTags.toList(),
-          'type_of_interaction': _selectedInteraction,
+          'type_of_interaction': _selectedInteraction.toList(),
           'experience': _selectedExperience.toList(),
           'dynamics_interests': _selectedDynamicInterests.toList(),
           'partnerA.identity': _herIdentity,
