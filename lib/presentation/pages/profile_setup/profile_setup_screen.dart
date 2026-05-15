@@ -829,8 +829,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       isValid = false;
     }
 
-    if (_selectedTags.isEmpty) {
-      _errors['tags'] = '';
+    // Dynamics-split (2026-05-12): the legacy flat `_selectedTags` field
+    // is no longer populated by any UI; the five sub-sections write to
+    // `_selectedDynamicInterests` instead. Keep the "at least one
+    // interest required" intent, but check the live field so users can
+    // actually advance past profile setup.
+    if (_selectedDynamicInterests.isEmpty) {
+      _errors['dynamicsInterests'] = '';
       isValid = false;
     }
 
