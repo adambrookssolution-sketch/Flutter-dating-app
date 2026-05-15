@@ -90,15 +90,57 @@ jobs:
           {
             echo "## Debug Keystore SHA-1"
             echo ""
-            echo "Register this fingerprint **once** in Firebase Console:"
-            echo "Project settings > Your apps > Android app (com.example.app) > Add fingerprint."
-            echo ""
             echo "\`\`\`"
             echo "${SHA1}"
             echo "\`\`\`"
-            echo ""
-            echo "After registering, **download the updated google-services.json** from Firebase Console and commit it to \`android/app/google-services.json\`. From then on Google Sign-In works on every CI-built APK."
           } >> "$GITHUB_STEP_SUMMARY"
+          # Expose to later steps without touching environment files.
+          echo "SHA1_FINGERPRINT=${SHA1}" >> "$GITHUB_ENV"
+
+      - name: Register SHA-1 + sync google-services.json from Firebase
+        # The deploy SA owns enough rights to register additional SHA
+        # fingerprints on the Android app and to fetch the canonical
+        # google-services.json. Doing it here keeps the operator out of
+        # the loop: every build (a) ensures the pinned debug keystore is
+        # in Firebase's allow-list and (b) ships the matching config
+        # file, so Google Sign-In keeps working without manual console
+        # clicks. Failures are non-fatal so a brief API outage doesn't
+        # block APK delivery — the prior committed google-services.json
+        # is reused.
+        run: |
+          set -uo pipefail
+          PROJECT_ID="affinity-dating-app-cf807"
+          APP_ID="1:156489398688:android:77e8ecdd2961c6ae984cc5"
+          SHA1_HEX=$(printf '%s' "${SHA1_FINGERPRINT}" | tr -d ':' | tr 'A-Z' 'a-z')
+          TOKEN=$(gcloud auth print-access-token)
+
+          # ── register SHA-1 (idempotent) ─────────────────────────────
+          REG_STATUS=$(curl -sS -o /tmp/sha-resp.json -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"shaHash\":\"${SHA1_HEX}\",\"certType\":\"SHA_1\"}" \
+            "https://firebase.googleapis.com/v1beta1/projects/${PROJECT_ID}/androidApps/${APP_ID}/sha")
+          if [ "${REG_STATUS}" = "200" ] || [ "${REG_STATUS}" = "201" ]; then
+            echo "SHA-1 registered with Firebase."
+          elif grep -qi 'already exists\|ALREADY_EXISTS' /tmp/sha-resp.json 2>/dev/null; then
+            echo "SHA-1 already registered (idempotent — fine)."
+          else
+            echo "SHA-1 registration returned HTTP ${REG_STATUS}:"
+            cat /tmp/sha-resp.json || true
+            echo "Continuing — Sign-In may not work on this APK."
+          fi
+
+          # ── pull latest google-services.json ────────────────────────
+          CFG_STATUS=$(curl -sS -o /tmp/cfg-resp.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            "https://firebase.googleapis.com/v1beta1/projects/${PROJECT_ID}/androidApps/${APP_ID}/config")
+          if [ "${CFG_STATUS}" = "200" ]; then
+            python3 -c 'import sys, json, base64; d = json.load(open("/tmp/cfg-resp.json")); open("android/app/google-services.json","wb").write(base64.b64decode(d["configFileContents"]))'
+            echo "google-services.json synced from Firebase."
+          else
+            echo "Could not fetch google-services.json (HTTP ${CFG_STATUS}); keeping committed version."
+            cat /tmp/cfg-resp.json || true
+          fi
 
       - name: Build debug APK
         # APPLE_SERVICE_ID enables Apple Sign-In's web/OAuth path on
