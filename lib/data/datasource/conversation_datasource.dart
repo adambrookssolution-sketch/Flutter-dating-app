@@ -117,12 +117,17 @@ class ConversationDatasource {
   }
 
   /// Saves a message and updates the denormalized last_message on the
-  /// conversation document in a single batch write.
+  /// conversation document in a single batch write. Optionally attaches
+  /// an image via [imageUrl] (the FirestoreMessage gained an image
+  /// field during the agency-merge on 2026-05-16); the conversation's
+  /// `last_message` denormalisation falls back to a "[photo]" sentinel
+  /// when [text] is empty so inbox previews stay readable.
   static Future<void> sendMessage(
     String conversationId,
     String senderUid,
-    String text,
-  ) async {
+    String text, {
+    String? imageUrl,
+  }) async {
     final db = FirebaseFirestore.instance;
     final convRef = db.collection('conversations').doc(conversationId);
     final msgRef = convRef.collection('messages').doc();
@@ -130,11 +135,14 @@ class ConversationDatasource {
     final batch = db.batch();
     batch.set(msgRef, {
       'text': text,
+      if (imageUrl != null && imageUrl.isNotEmpty) 'image_url': imageUrl,
       'sender_uid': senderUid,
       'created_at': FieldValue.serverTimestamp(),
     });
+    final previewText =
+        text.isNotEmpty ? text : (imageUrl == null ? '' : '📷');
     batch.update(convRef, {
-      'last_message': text,
+      'last_message': previewText,
       'last_message_time': FieldValue.serverTimestamp(),
       'last_message_by': senderUid,
       'replied_by': FieldValue.arrayUnion([senderUid]),

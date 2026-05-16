@@ -101,7 +101,7 @@ class _CoupleCardState extends State<CoupleCard> {
   @override
   Widget build(BuildContext context) {
     final p = widget.profile;
-    return Container(
+    final container = Container(
       decoration: BoxDecoration(
         color: Colors.black,
         border: Border.all(color: _burgundy, width: 4),
@@ -151,6 +151,12 @@ class _CoupleCardState extends State<CoupleCard> {
         ],
       ),
     );
+    if (widget.onTap == null) return container;
+    return GestureDetector(
+      onTap: widget.onTap,
+      behavior: HitTestBehavior.opaque,
+      child: container,
+    );
   }
 
   Widget _buildPhotoLayer(CoupleProfile p) {
@@ -161,32 +167,31 @@ class _CoupleCardState extends State<CoupleCard> {
       );
     }
     final url = p.photos[_currentPhoto % p.photos.length];
-    // Client feedback 2026-05-15 #11: photos were being cropped at the
-    // sides when the card was narrower than the photo's aspect ratio.
-    // Switch to BoxFit.contain over a black panel so the full photo is
-    // always visible — the burgundy frame + bottom gradient still give
-    // the card its identity, and any remaining negative space matches
-    // the card background rather than chopping pixels.
-    return ColoredBox(
-      color: Colors.black,
-      child: Image.network(
-        url,
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) =>
-            const DecoratedBox(decoration: BoxDecoration(color: Colors.black)),
-        loadingBuilder: (ctx, child, progress) {
-          if (progress == null) return child;
-          return const ColoredBox(
-            color: Colors.black,
-            child: Center(
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
+    // Client feedback 2026-05-16: photos must fill the card 100%. The
+    // earlier #11 patch switched to BoxFit.contain to "preserve" the
+    // image but produced very large black bars on tall portrait cards,
+    // which the client reported as worse than gentle side-cropping. We
+    // restore BoxFit.cover here; the wider card insets (4px instead of
+    // 16px) from the same #11 fix already minimise the crop, and the
+    // bottom-gradient + name block sit on top of the photo so the
+    // composition still matches the agency reference.
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) =>
+          const DecoratedBox(decoration: BoxDecoration(color: Colors.black)),
+      loadingBuilder: (ctx, child, progress) {
+        if (progress == null) return child;
+        return const ColoredBox(
+          color: Colors.black,
+          child: Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 2,
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -315,16 +320,52 @@ class _CoupleCardState extends State<CoupleCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          displayName,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-            height: 1.15,
-          ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                displayName,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  height: 1.15,
+                ),
+              ),
+            ),
+            if (widget.onTap != null) ...[
+              const SizedBox(width: 8),
+              // Round ⓘ button that mirrors the agency mock — same
+              // gesture as tapping the card body, kept visible so the
+              // affordance for "see full profile" is obvious.
+              GestureDetector(
+                onTap: widget.onTap,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.info_outline,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         if (p.location.isNotEmpty) ...[
           const SizedBox(height: 4),

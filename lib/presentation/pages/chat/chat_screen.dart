@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:app/data/datasource/conversation_datasource.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
@@ -9,7 +10,9 @@ import 'package:app/presentation/pages/report/report_screen.dart';
 import 'package:app/presentation/widgets/conversation_row.dart';
 import 'package:app/presentation/widgets/secure_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 // ── Local display model ────────────────────────────────────────────────────────
@@ -18,11 +21,16 @@ class ChatMessage {
   final String text;
   final DateTime time;
   final bool isMe;
+  /// Optional attached image URL (agency feature). When set, the bubble
+  /// renders the image above any text (text may be empty for
+  /// image-only sends).
+  final String? imageUrl;
 
   const ChatMessage({
     required this.text,
     required this.time,
     required this.isMe,
+    this.imageUrl,
   });
 }
 
@@ -131,6 +139,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 text: m.text,
                 time: m.createdAt,
                 isMe: m.senderUid == _myUid,
+                imageUrl: m.imageUrl,
               ))
           .toList();
       setState(() {
@@ -193,6 +202,40 @@ class _ChatScreenState extends State<ChatScreen> {
       _myUid,
       text,
     );
+  }
+
+  /// Pick → upload → send as image message. The bucket path follows the
+  /// same `chats/{conversationId}/...` convention agency uses so both
+  /// clients can read each other's attachments without rule changes
+  /// (the catch-all rule `request.auth != null` already covers it).
+  Future<void> _attachImage() async {
+    if (_myUid.isEmpty) return;
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+      maxWidth: 1600,
+    );
+    if (picked == null || !mounted) return;
+    final convId = widget.conversation.conversationId;
+    final stamp = DateTime.now().millisecondsSinceEpoch;
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('chats/$convId/$stamp.jpg');
+    try {
+      await ref.putFile(File(picked.path));
+      final url = await ref.getDownloadURL();
+      await ConversationDatasource.sendMessage(
+        convId,
+        _myUid,
+        '',
+        imageUrl: url,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Image send failed: $e')),
+      );
+    }
   }
 
   void _useSuggestion() {
@@ -471,14 +514,49 @@ class _ChatScreenState extends State<ChatScreen> {
                 msg.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                msg.text,
-                style: TextStyle(
-                  color: msg.isMe ? Colors.white : Colors.black87,
-                  fontSize: 14.5,
-                  height: 1.35,
+              if (msg.imageUrl != null && msg.imageUrl!.isNotEmpty) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    msg.imageUrl!,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (_, child, p) => p == null
+                        ? child
+                        : const SizedBox(
+                            height: 120,
+                            child: Center(
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ),
+                          ),
+                  ),
                 ),
-              ),
+                if (msg.text.isNotEmpty) const SizedBox(height: 6),
+              ],
+              if (msg.text.isNotEmpty)
+                Text(
+                  msg.text,
+                  style: TextStyle(
+                    color: msg.isMe ? Colors.white : Colors.black87,
+                    fontSize: 14.5,
+                    height: 1.35,
+                  ),
+                )
+              else if (msg.imageUrl == null || msg.imageUrl!.isEmpty)
+                Text(
+                  msg.text,
+                  style: TextStyle(
+                    color: msg.isMe ? Colors.white : Colors.black87,
+                    fontSize: 14.5,
+                    height: 1.35,
+                  ),
+                ),
               const SizedBox(height: 3),
               Text(
                 DateFormat('HH:mm').format(msg.time),
@@ -509,6 +587,26 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
+            // Attach-image button — gallery picker, uploads to
+            // chats/{conversationId}/{ts}.jpg in Storage, then sends
+            // the image as a message with imageUrl set.
+            GestureDetector(
+              onTap: _attachImage,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(
+                  color: _inputBg,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.image_outlined,
+                  color: Color(0xFFB01030),
+                  size: 22,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             Expanded(
               child: Container(
                 padding:

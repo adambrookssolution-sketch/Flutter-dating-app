@@ -8,6 +8,7 @@ import 'package:app/data/models/message_request.dart';
 import 'package:app/data/models/partner.dart' as pm;
 import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
+import 'package:app/presentation/pages/inbox/partner_profile_screen.dart';
 import 'package:app/presentation/pages/report/report_screen.dart';
 import 'package:app/presentation/widgets/couple_card.dart';
 import 'package:app/presentation/widgets/send_request_dialog.dart';
@@ -226,6 +227,19 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     );
   }
 
+  /// Tapping a card opens the partner-profile detail screen (agency
+  /// feature merged 2026-05-16). The detail page shows full
+  /// description, heights, interests and scheduled trips, plus a
+  /// "Start Conversation" CTA pinned to the bottom.
+  Future<void> _openPartnerProfile(UserProfile profile) async {
+    if (!mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => PartnerProfileScreen(profile: profile),
+      ),
+    );
+  }
+
   Future<void> _startConversation(UserProfile profile) async {
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     if (myUid == null) return;
@@ -437,6 +451,7 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
                     onStartConversation: () => _startConversation(profile),
                     onBlock: () => _blockCouple(profile),
                     onReport: () => _reportCouple(profile),
+                    onTap: () => _openPartnerProfile(profile),
                   ),
                 );
               },
