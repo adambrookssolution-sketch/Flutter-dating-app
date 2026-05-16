@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:app/l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../constants/app_colors.dart';
-import 'package:app/presentation/widgets/widgets.dart';
+import 'package:app/presentation/pages/auth/auth_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,22 +25,39 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1400),
     );
 
     _logoAlignment = AlignmentTween(
       begin: Alignment.center,
       end: const Alignment(0, -0.38),
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.5, 1.0, curve: Curves.easeInOut),
+    ));
 
-    _logoSize = Tween<double>(begin: 1.0, end: 0.78).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    // Client feedback 2026-05-16: the logo should zoom IN from small to
+    // large at the start of the animation, not the other way around.
+    // First half (0 → 0.5) grows the logo from 0.35× to 1.05× — a
+    // small overshoot so the burst feels alive — then settles to 0.85×
+    // while sliding to the top half (second half of the timeline).
+    _logoSize = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.35, end: 1.05)
+            .chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.05, end: 0.85)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+    ]).animate(_controller);
 
     _contentOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
+        curve: const Interval(0.6, 1.0, curve: Curves.easeIn),
       ),
     );
 
@@ -51,12 +67,32 @@ class _SplashScreenState extends State<SplashScreen>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
+        curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
       ),
     );
 
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    // Kick the animation off as soon as we're mounted — no 1.5-second
+    // dead air. The PostFrameCallback runs after the first paint, so
+    // the user sees the initial small-logo state for ~1 frame then
+    // the zoom-in begins.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _controller.forward();
+    });
+
+    // When the zoom-in finishes, slide into the real auth screen.
+    // pushReplacement so the user can't go back to the splash with
+    // the system back button.
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const AuthScreen(),
+            transitionDuration: const Duration(milliseconds: 250),
+            transitionsBuilder: (_, anim, __, child) =>
+                FadeTransition(opacity: anim, child: child),
+          ),
+        );
+      }
     });
   }
 
@@ -69,7 +105,6 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: Container(
@@ -90,42 +125,15 @@ class _SplashScreenState extends State<SplashScreen>
               position: _contentSlide,
               child: FadeTransition(
                 opacity: _contentOpacity,
-                child: Align(
-                  alignment: const Alignment(0, 0.6),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CustomButton(buttonText: l10n.signIn),
-                        const SizedBox(height: 13),
-                        CustomButton(
-                          buttonText: l10n.signUp,
-                          type: ButtonType.secondaryLogin,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 30),
-                          child: Text(
-                            l10n.signInAccounts,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        CustomButton(
-                          buttonText: l10n.signInWithGoogle,
-                          prefixIcon: SvgPicture.asset(
-                            'assets/images/google.svg',
-                            height: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 13),
-                        CustomButton(
-                          buttonText: l10n.signInWithApple,
-                          prefixIcon: SvgPicture.asset(
-                            'assets/images/apple.svg',
-                            height: 18,
-                          ),
-                        ),
-                      ],
+                child: const Align(
+                  alignment: Alignment(0, 0.6),
+                  child: Text(
+                    'Affinity',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
                     ),
                   ),
                 ),

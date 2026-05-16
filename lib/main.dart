@@ -1,5 +1,5 @@
-import 'package:app/presentation/pages/auth/auth_screen.dart';
 import 'package:app/presentation/pages/pages.dart';
+import 'package:app/presentation/pages/splash/splash_screen.dart';
 import 'package:app/presentation/router/app_routes.dart';
 import 'package:app/presentation/utils/navigate_after_sign_in.dart';
 import 'package:app/providers/locale_provider.dart';
@@ -54,9 +54,14 @@ class MyApp extends ConsumerWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
       routes: AppRoutes.routes,
+      // Cold-start route. Logged-in users skip the splash to keep the
+      // perceived "return to app" experience snappy; logged-out users
+      // see the zoom-in animation before they reach the AuthScreen
+      // (the SplashScreen itself pushReplaces to AuthScreen when the
+      // animation finishes).
       home: startUid != null
           ? _ProfileGate(uid: startUid!)
-          : const AuthScreen(),
+          : const SplashScreen(),
     );
   }
 }

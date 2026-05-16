@@ -127,16 +127,23 @@ class _CoupleCardState extends State<CoupleCard> {
             right: 0,
             child: Center(child: _favouriteBubble()),
           ),
-          // Overflow menu (block / report) — pinned to the top-right so
-          // the 2026-04-20 mock's heart bubble stays front and centre
-          // while still surfacing the safety actions the client asked
-          // for ("no encontramos dónde se realiza el bloqueo de usuarios").
-          if (widget.onBlock != null || widget.onReport != null)
-            Positioned(
-              top: 12,
-              right: 12,
-              child: _overflowMenu(context),
+          // Top-right corner cluster: info (open partner profile) on
+          // the outer edge per client feedback 2026-05-16, with the
+          // overflow menu (block / report) tucked just inside it. The
+          // heart bubble stays centred at the top via the row above.
+          Positioned(
+            top: 12,
+            right: 12,
+            child: Row(
+              children: [
+                if (widget.onBlock != null || widget.onReport != null) ...[
+                  _overflowMenu(context),
+                  if (widget.onTap != null) const SizedBox(width: 8),
+                ],
+                if (widget.onTap != null) _infoBubble(),
+              ],
             ),
+          ),
           // Bottom text block — names, location, trip dates, description,
           // tags. Sits on the gradient so white text always reads.
           Positioned(
@@ -209,6 +216,35 @@ class _CoupleCardState extends State<CoupleCard> {
               Colors.transparent,
               Colors.black.withValues(alpha: 0.85),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Top-right info bubble — opens the partner-profile detail screen.
+  /// Smaller and translucent so it sits next to the safety overflow
+  /// menu without competing visually with the heart bubble.
+  Widget _infoBubble() {
+    return GestureDetector(
+      onTap: widget.onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.20),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.60),
+            width: 1,
+          ),
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.info_outline,
+            color: Colors.white,
+            size: 20,
           ),
         ),
       ),
@@ -320,52 +356,16 @@ class _CoupleCardState extends State<CoupleCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-                displayName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  height: 1.15,
-                ),
-              ),
-            ),
-            if (widget.onTap != null) ...[
-              const SizedBox(width: 8),
-              // Round ⓘ button that mirrors the agency mock — same
-              // gesture as tapping the card body, kept visible so the
-              // affordance for "see full profile" is obvious.
-              GestureDetector(
-                onTap: widget.onTap,
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.55),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.info_outline,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
+        Text(
+          displayName,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 26,
+            fontWeight: FontWeight.w800,
+            height: 1.15,
+          ),
         ),
         if (p.location.isNotEmpty) ...[
           const SizedBox(height: 4),
