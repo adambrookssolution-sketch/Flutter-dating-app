@@ -1,0 +1,65 @@
+name: Configure Storage CORS
+
+# One-off (manual dispatch) workflow that applies CORS rules to the
+# production Firebase Storage bucket. Required so Flutter Web in the
+# moderator admin panel can render couple photos via Image.network —
+# CanvasKit's image loader sets crossOrigin='anonymous', and without
+# an Access-Control-Allow-Origin header from the bucket the browser
+# silently drops the image data and the moderator only sees the
+# placeholder tile.
+#
+# Safe to re-run any time — the operation overwrites the CORS config
+# atomically.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  configure-cors:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write SA key + auth gcloud
+        env:
+          SA_KEY: ${{ secrets.FIREBASE_SA_KEY_PROD }}
+        run: |
+          if [ -z "$SA_KEY" ]; then
+            echo "FIREBASE_SA_KEY_PROD secret is not set."
+            exit 1
+          fi
+          echo "$SA_KEY" > "$RUNNER_TEMP/sa-prod.json"
+          gcloud auth activate-service-account --key-file="$RUNNER_TEMP/sa-prod.json"
+          gcloud config set project affinity-dating-app-cf807
+
+      - name: Apply CORS to gs://affinity-dating-app-cf807.firebasestorage.app
+        run: |
+          set -euo pipefail
+          cat > /tmp/cors.json <<'JSON'
+          [
+            {
+              "origin": ["*"],
+              "method": ["GET", "HEAD"],
+              "responseHeader": [
+                "Content-Type",
+                "Content-Length",
+                "Cache-Control"
+              ],
+              "maxAgeSeconds": 3600
+            }
+          ]
+          JSON
+          gcloud storage buckets update \
+            gs://affinity-dating-app-cf807.firebasestorage.app \
+            --cors-file=/tmp/cors.json
+          echo ""
+          echo "── Current CORS configuration ──"
+          gcloud storage buckets describe \
+            gs://affinity-dating-app-cf807.firebasestorage.app \
+            --format='value(cors_config)' || \
+            gcloud storage buckets describe \
+              gs://affinity-dating-app-cf807.firebasestorage.app \
+              --format=yaml
