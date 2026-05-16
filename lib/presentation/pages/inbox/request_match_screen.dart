@@ -5,7 +5,6 @@ import 'package:app/presentation/constants/app_colors.dart';
 import 'package:app/presentation/pages/chat/chat_screen.dart';
 import 'package:app/presentation/widgets/conversation_row.dart';
 import 'package:app/presentation/widgets/custom_button.dart';
-import 'package:app/presentation/widgets/secure_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -79,6 +78,7 @@ class _RequestMatchScreenState extends State<RequestMatchScreen> {
                 ? widget.otherProfile.photos.first
                 : null,
           ),
+          otherProfile: widget.otherProfile,
         ),
       ),
     );
@@ -86,8 +86,7 @@ class _RequestMatchScreenState extends State<RequestMatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SecureView(
-      child: Scaffold(
+    return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.splashGradient),
         child: SafeArea(
@@ -98,7 +97,6 @@ class _RequestMatchScreenState extends State<RequestMatchScreen> {
               : _buildContent(),
         ),
       ),
-    ),
     );
   }
 

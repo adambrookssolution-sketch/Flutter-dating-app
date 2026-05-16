@@ -13,6 +13,11 @@ class ConversationModel {
   final int gradientIndex;
   final bool isRequest;
   final String? photoUrl;
+  /// When non-null the conversation doc hasn't been created in Firestore yet.
+  /// It will be created on the first message send.
+  final String? pendingPartnerUid;
+  /// True when the last message was sent by the other couple (unread indicator).
+  final bool lastMessageIsFromOther;
 
   const ConversationModel({
     required this.conversationId,
@@ -24,6 +29,8 @@ class ConversationModel {
     required this.gradientIndex,
     this.isRequest = false,
     this.photoUrl,
+    this.pendingPartnerUid,
+    this.lastMessageIsFromOther = false,
   });
 }
 
@@ -32,8 +39,16 @@ class ConversationModel {
 class ConversationRow extends StatelessWidget {
   final ConversationModel conversation;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onAvatarTap;
 
-  const ConversationRow({super.key, required this.conversation, this.onTap});
+  const ConversationRow({
+    super.key,
+    required this.conversation,
+    this.onTap,
+    this.onLongPress,
+    this.onAvatarTap,
+  });
 
   static const List<List<Color>> _gradients = [
     [Color(0xFFFF6B9D), Color(0xFFC44CFF)],
@@ -44,7 +59,7 @@ class ConversationRow extends StatelessWidget {
     [Color(0xFF9C27B0), Color(0xFF3F51B5)],
   ];
 
-  static const Color _badgeColor = Color(0xFFB01030);
+  static const Color _badgeColor = Color(0xFFB31637);
   static const double _avatarSize = 54.0;
 
   String _formatTime(DateTime time) {
@@ -60,6 +75,7 @@ class ConversationRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
@@ -97,7 +113,7 @@ class ConversationRow extends StatelessWidget {
       circle = _gradientCircle(colors);
     }
 
-    return Stack(
+    final stack = Stack(
       clipBehavior: Clip.none,
       children: [
         circle,
@@ -109,6 +125,14 @@ class ConversationRow extends StatelessWidget {
           ),
       ],
     );
+
+    if (onAvatarTap != null) {
+      return GestureDetector(
+        onTap: onAvatarTap,
+        child: stack,
+      );
+    }
+    return stack;
   }
 
   Widget _gradientCircle(List<Color> colors) {
@@ -168,6 +192,7 @@ class ConversationRow extends StatelessWidget {
 
   Widget _buildInfo(BuildContext context) {
     final hasUnread = conversation.unreadCount > 0;
+    final fromOther = conversation.lastMessageIsFromOther;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -187,10 +212,10 @@ class ConversationRow extends StatelessWidget {
           conversation.lastMessage,
           style: TextStyle(
             fontSize: 13,
-            color: hasUnread
+            color: fromOther
                 ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75)
                 : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
-            fontWeight: hasUnread ? FontWeight.w500 : FontWeight.normal,
+            fontWeight: fromOther ? FontWeight.w600 : FontWeight.normal,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

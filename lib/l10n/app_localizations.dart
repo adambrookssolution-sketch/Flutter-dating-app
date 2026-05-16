@@ -104,6 +104,30 @@ abstract class AppLocalizations {
   /// **'Affinity'**
   String get appTitle;
 
+  /// No description provided for @itsAMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'IT\'S A MATCH!'**
+  String get itsAMatch;
+
+  /// No description provided for @matchUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Us'**
+  String get matchUs;
+
+  /// No description provided for @sendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get sendMessage;
+
+  /// No description provided for @keepExploring.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep exploring'**
+  String get keepExploring;
+
   /// No description provided for @signIn.
   ///
   /// In en, this message translates to:
@@ -1357,6 +1381,450 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Report'**
   String get reportAction;
+
+  /// No description provided for @openChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Chat'**
+  String get openChat;
+
+  /// No description provided for @errorMustBeAdult.
+  ///
+  /// In en, this message translates to:
+  /// **'Both members must be at least 18 years old'**
+  String get errorMustBeAdult;
+
+  /// No description provided for @editTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit trip'**
+  String get editTrip;
+
+  /// No description provided for @manageTripTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Trip'**
+  String get manageTripTitle;
+
+  /// No description provided for @scheduledTrips.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled trips'**
+  String get scheduledTrips;
+
+  /// No description provided for @addATrip.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add a trip'**
+  String get addATrip;
+
+  /// No description provided for @noTripsScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'No trips scheduled'**
+  String get noTripsScheduled;
+
+  /// No description provided for @destination.
+  ///
+  /// In en, this message translates to:
+  /// **'Destination'**
+  String get destination;
+
+  /// No description provided for @tripCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get tripCountry;
+
+  /// No description provided for @tripCity.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get tripCity;
+
+  /// No description provided for @startDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get startDate;
+
+  /// No description provided for @endDate.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get endDate;
+
+  /// No description provided for @block.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get block;
+
+  /// No description provided for @report.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get report;
+
+  /// No description provided for @verifyYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your email'**
+  String get verifyYourEmail;
+
+  /// No description provided for @verifyEmailSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent a verification link to {email}. Click it to activate your account.'**
+  String verifyEmailSentTo(Object email);
+
+  /// No description provided for @continueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueAction;
+
+  /// No description provided for @resendEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend email'**
+  String get resendEmail;
+
+  /// No description provided for @resendEmailIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String resendEmailIn(Object seconds);
+
+  /// No description provided for @useDifferentEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a different email'**
+  String get useDifferentEmail;
+
+  /// No description provided for @errorEmailNotVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email not verified yet. Please check your inbox.'**
+  String get errorEmailNotVerified;
+
+  /// No description provided for @askAboutTrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about this trip'**
+  String get askAboutTrip;
+
+  /// No description provided for @tripMessageTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, I saw you\'re traveling to {destination} on {date}. Should we coordinate something?'**
+  String tripMessageTemplate(Object date, Object destination);
+
+  /// No description provided for @searchCouples.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name...'**
+  String get searchCouples;
+
+  /// No description provided for @favoriteCouples.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite Couples'**
+  String get favoriteCouples;
+
+  /// No description provided for @removeFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get removeFavorite;
+
+  /// No description provided for @removeFavoriteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove this couple from your favorites?'**
+  String get removeFavoriteConfirm;
+
+  /// No description provided for @noFavoriteCouples.
+  ///
+  /// In en, this message translates to:
+  /// **'No favorite couples yet.\nStart adding couples you like!'**
+  String get noFavoriteCouples;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageSpanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get languageSpanish;
+
+  /// No description provided for @prevPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Prev photo'**
+  String get prevPhoto;
+
+  /// No description provided for @nextPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Next photo'**
+  String get nextPhoto;
+
+  /// No description provided for @mainPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Main'**
+  String get mainPhoto;
+
+  /// No description provided for @errorLoadProfiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load profiles'**
+  String get errorLoadProfiles;
+
+  /// No description provided for @errorLoadFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load favorites'**
+  String get errorLoadFavorites;
+
+  /// No description provided for @noNewCouples.
+  ///
+  /// In en, this message translates to:
+  /// **'No new couples to discover right now.\nCome back later!'**
+  String get noNewCouples;
+
+  /// No description provided for @deleteCommentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete comment'**
+  String get deleteCommentTitle;
+
+  /// No description provided for @deleteReplyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete reply'**
+  String get deleteReplyTitle;
+
+  /// No description provided for @cannotBeUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone.'**
+  String get cannotBeUndone;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @errorPosting.
+  ///
+  /// In en, this message translates to:
+  /// **'Error posting: {error}'**
+  String errorPosting(Object error);
+
+  /// No description provided for @addComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment...'**
+  String get addComment;
+
+  /// No description provided for @whatsOnYourMind.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on your mind?'**
+  String get whatsOnYourMind;
+
+  /// No description provided for @addImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add image'**
+  String get addImage;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @chatInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type something...'**
+  String get chatInputHint;
+
+  /// No description provided for @chatEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your conversation…\nyour story begins here. 🌟'**
+  String get chatEmptyState;
+
+  /// No description provided for @requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests'**
+  String get requests;
+
+  /// No description provided for @errorSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving. Please try again.'**
+  String get errorSave;
+
+  /// No description provided for @noConversations.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet.\nStart connecting with couples!'**
+  String get noConversations;
+
+  /// No description provided for @errorLoadPosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load posts.'**
+  String get errorLoadPosts;
+
+  /// No description provided for @noPosts.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts yet.\nBe the first! 🎉'**
+  String get noPosts;
+
+  /// No description provided for @deletePostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete post?'**
+  String get deletePostTitle;
+
+  /// No description provided for @deletePost.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete post'**
+  String get deletePost;
+
+  /// No description provided for @comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get comments;
+
+  /// No description provided for @noComments.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet.\nBe the first! 💬'**
+  String get noComments;
+
+  /// No description provided for @replyingTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to {name}'**
+  String replyingTo(Object name);
+
+  /// No description provided for @replyingToComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to comment'**
+  String get replyingToComment;
+
+  /// No description provided for @reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get reply;
+
+  /// No description provided for @hideReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide replies'**
+  String get hideReplies;
+
+  /// No description provided for @viewReply.
+  ///
+  /// In en, this message translates to:
+  /// **'See 1 reply'**
+  String get viewReply;
+
+  /// No description provided for @viewReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'See {count} replies'**
+  String viewReplies(Object count);
+
+  /// No description provided for @shareWithCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Share with the community'**
+  String get shareWithCommunity;
+
+  /// No description provided for @postToCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Post to the community'**
+  String get postToCommunity;
+
+  /// No description provided for @deleteAccountDangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger Zone'**
+  String get deleteAccountDangerZone;
+
+  /// No description provided for @deleteAccountDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete your profile, photos, trips, and all associated data. This action cannot be undone.'**
+  String get deleteAccountDescription;
+
+  /// No description provided for @deleteAccountTypeToConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Type \"delete\" to confirm'**
+  String get deleteAccountTypeToConfirm;
+
+  /// No description provided for @deleteAccountConfirmWord.
+  ///
+  /// In en, this message translates to:
+  /// **'delete'**
+  String get deleteAccountConfirmWord;
+
+  /// No description provided for @deleteAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get deleteAccountButton;
+
+  /// No description provided for @deleteAccountError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete account. Please try again.'**
+  String get deleteAccountError;
+
+  /// No description provided for @deleteAccountDeleting.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting account...'**
+  String get deleteAccountDeleting;
 }
 
 class _AppLocalizationsDelegate

@@ -12,6 +12,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Affinity';
 
   @override
+  String get itsAMatch => 'IT\'S A MATCH!';
+
+  @override
+  String get matchUs => 'Us';
+
+  @override
+  String get sendMessage => 'Send message';
+
+  @override
+  String get keepExploring => 'Keep exploring';
+
+  @override
   String get signIn => 'Sign In';
 
   @override
@@ -691,4 +703,246 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportAction => 'Report';
+
+  @override
+  String get openChat => 'Open Chat';
+
+  @override
+  String get errorMustBeAdult => 'Both members must be at least 18 years old';
+
+  @override
+  String get editTrip => 'Edit trip';
+
+  @override
+  String get manageTripTitle => 'Manage Trip';
+
+  @override
+  String get scheduledTrips => 'Scheduled trips';
+
+  @override
+  String get addATrip => '+ Add a trip';
+
+  @override
+  String get noTripsScheduled => 'No trips scheduled';
+
+  @override
+  String get destination => 'Destination';
+
+  @override
+  String get tripCountry => 'Country';
+
+  @override
+  String get tripCity => 'City';
+
+  @override
+  String get startDate => 'Start date';
+
+  @override
+  String get endDate => 'End date';
+
+  @override
+  String get block => 'Block';
+
+  @override
+  String get report => 'Report';
+
+  @override
+  String get verifyYourEmail => 'Verify your email';
+
+  @override
+  String verifyEmailSentTo(Object email) {
+    return 'We\'ve sent a verification link to $email. Click it to activate your account.';
+  }
+
+  @override
+  String get continueAction => 'Continue';
+
+  @override
+  String get resendEmail => 'Resend email';
+
+  @override
+  String resendEmailIn(Object seconds) {
+    return 'Resend in ${seconds}s';
+  }
+
+  @override
+  String get useDifferentEmail => 'Use a different email';
+
+  @override
+  String get errorEmailNotVerified =>
+      'Email not verified yet. Please check your inbox.';
+
+  @override
+  String get askAboutTrip => 'Ask about this trip';
+
+  @override
+  String tripMessageTemplate(Object date, Object destination) {
+    return 'Hi, I saw you\'re traveling to $destination on $date. Should we coordinate something?';
+  }
+
+  @override
+  String get searchCouples => 'Search by name...';
+
+  @override
+  String get favoriteCouples => 'Favorite Couples';
+
+  @override
+  String get removeFavorite => 'Remove from favorites';
+
+  @override
+  String get removeFavoriteConfirm =>
+      'Are you sure you want to remove this couple from your favorites?';
+
+  @override
+  String get noFavoriteCouples =>
+      'No favorite couples yet.\nStart adding couples you like!';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageSpanish => 'Spanish';
+
+  @override
+  String get prevPhoto => 'Prev photo';
+
+  @override
+  String get nextPhoto => 'Next photo';
+
+  @override
+  String get mainPhoto => 'Main';
+
+  @override
+  String get errorLoadProfiles => 'Could not load profiles';
+
+  @override
+  String get errorLoadFavorites => 'Could not load favorites';
+
+  @override
+  String get noNewCouples =>
+      'No new couples to discover right now.\nCome back later!';
+
+  @override
+  String get deleteCommentTitle => 'Delete comment';
+
+  @override
+  String get deleteReplyTitle => 'Delete reply';
+
+  @override
+  String get cannotBeUndone => 'This action cannot be undone.';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String errorPosting(Object error) {
+    return 'Error posting: $error';
+  }
+
+  @override
+  String get addComment => 'Add a comment...';
+
+  @override
+  String get whatsOnYourMind => 'What\'s on your mind?';
+
+  @override
+  String get addImage => 'Add image';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get chatInputHint => 'Type something...';
+
+  @override
+  String get chatEmptyState =>
+      'Start your conversation…\nyour story begins here. 🌟';
+
+  @override
+  String get requests => 'Requests';
+
+  @override
+  String get errorSave => 'Error saving. Please try again.';
+
+  @override
+  String get noConversations =>
+      'No conversations yet.\nStart connecting with couples!';
+
+  @override
+  String get errorLoadPosts => 'Could not load posts.';
+
+  @override
+  String get noPosts => 'No posts yet.\nBe the first! 🎉';
+
+  @override
+  String get deletePostTitle => 'Delete post?';
+
+  @override
+  String get deletePost => 'Delete post';
+
+  @override
+  String get comments => 'Comments';
+
+  @override
+  String get noComments => 'No comments yet.\nBe the first! 💬';
+
+  @override
+  String replyingTo(Object name) {
+    return 'Replying to $name';
+  }
+
+  @override
+  String get replyingToComment => 'Replying to comment';
+
+  @override
+  String get reply => 'Reply';
+
+  @override
+  String get hideReplies => 'Hide replies';
+
+  @override
+  String get viewReply => 'See 1 reply';
+
+  @override
+  String viewReplies(Object count) {
+    return 'See $count replies';
+  }
+
+  @override
+  String get shareWithCommunity => 'Share with the community';
+
+  @override
+  String get postToCommunity => 'Post to the community';
+
+  @override
+  String get deleteAccountDangerZone => 'Danger Zone';
+
+  @override
+  String get deleteAccountDescription =>
+      'This will permanently delete your profile, photos, trips, and all associated data. This action cannot be undone.';
+
+  @override
+  String get deleteAccountTypeToConfirm => 'Type \"delete\" to confirm';
+
+  @override
+  String get deleteAccountConfirmWord => 'delete';
+
+  @override
+  String get deleteAccountButton => 'Delete my account';
+
+  @override
+  String get deleteAccountError =>
+      'Could not delete account. Please try again.';
+
+  @override
+  String get deleteAccountDeleting => 'Deleting account...';
 }

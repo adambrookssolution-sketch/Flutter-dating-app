@@ -1,44 +1,27 @@
 import 'package:flutter/material.dart';
 
-/// Affinity brand palette — sampled directly from the Figma master file
-/// Alejandra shared on 2026-04-25. Use these tokens instead of inlining
-/// hex literals so the next palette tweak (or Phase 2 dark-mode work) is
-/// a one-file change.
 class AppColors {
+  // Private constructor to prevent instantiation
   AppColors._();
 
-  /// Primary burgundy — used for CTAs, the heart logo, the active nav
-  /// indicator, sender chat bubbles. Exactly the hex Figma used for the
-  /// "Start Conversation" button across every mockup.
-  static const Color primary = Color(0xFFB01030);
-
-  /// Gradient end — the deep burgundy/aubergine at the bottom-left of the
-  /// splash and travel-card gradients in Figma.
-  static const Color primaryDark = Color(0xFF580818);
-
-  /// On-burgundy text colour. Figma uses pure white for legibility.
-  static const Color onPrimary = Color(0xFFFFFFFF);
-
-  // ── Backwards-compatible aliases ──────────────────────────────────
-  // The original palette named tokens after their first use site
-  // (splash gradient, switch buttons, etc.). Keep those aliases live so
-  // existing call sites don't break, but point them at the new
-  // Figma-correct values.
-
-  static const Color splashGradientStart = primary;
-  static const Color splashGradientEnd = primaryDark;
-  static const Color buttonTextColor = primaryDark;
-
+  // Splash screen gradient colors
+  static const Color splashGradientStart = Color(0xFFB31637);
+  static const Color splashGradientEnd = Color(0xFF331837);
+  static const Color buttonTextColor = Color(0xFF511737);
+  
   // Switch button colors
   static const Color switchButtonBackground = Colors.white;
-  static const Color switchButtonSelected = primaryDark;
+  static const Color switchButtonSelected = Color(0xFF331837);
   static const Color switchButtonTextSelected = Colors.white;
-  static const Color switchButtonTextUnselected = primaryDark;
+  static const Color switchButtonTextUnselected = Color(0xFF331837);
 
-  /// Splash gradient — top-right primary fading to bottom-left primaryDark.
+  // Gradient definition
   static const LinearGradient splashGradient = LinearGradient(
     begin: Alignment.topRight,
     end: Alignment.bottomLeft,
-    colors: [splashGradientStart, splashGradientEnd],
+    colors: [
+      splashGradientStart,
+      splashGradientEnd,
+    ],
   );
 }

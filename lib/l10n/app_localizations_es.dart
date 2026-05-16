@@ -12,6 +12,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get appTitle => 'Affinity';
 
   @override
+  String get itsAMatch => '¡ES UN MATCH!';
+
+  @override
+  String get matchUs => 'Vosotros';
+
+  @override
+  String get sendMessage => 'Enviar mensaje';
+
+  @override
+  String get keepExploring => 'Seguir explorando';
+
+  @override
   String get signIn => 'Iniciar sesión';
 
   @override
@@ -54,41 +66,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String get name => 'Nombre';
 
   @override
-  String get her => 'Enter her name';
+  String get her => 'Nombre de ella';
 
   @override
-  String get his => 'Enter his name';
+  String get his => 'Nombre de él';
 
   @override
-  String get dateOfBirth => 'Date of Birth';
+  String get dateOfBirth => 'Fecha de nacimiento';
 
   @override
-  String get dateOfBirthFormat => 'MM-DD-YYYY';
+  String get dateOfBirthFormat => 'DD-MM-AAAA';
 
   @override
-  String get selectCity => 'Select City';
+  String get selectCity => 'Selecciona ciudad';
 
   @override
-  String get description => 'Description';
+  String get description => 'Descripción';
 
   @override
-  String get tellUsAboutYourself => 'Tell us about yourself';
+  String get tellUsAboutYourself => 'Cuéntanos sobre vosotros';
 
   @override
-  String get confirmPassword => 'Confirm Password';
+  String get confirmPassword => 'Confirmar contraseña';
 
   @override
-  String get confirmPasswordHint => 'Re-enter your password';
+  String get confirmPasswordHint => 'Vuelve a introducir tu contraseña';
 
   @override
-  String get welcomeBack => 'Welcome back!';
+  String get welcomeBack => '¡Bienvenido de vuelta!';
 
   @override
   String get welcomeBackDescription =>
-      'Once verified, the next time you log in, you will be required to enter the verification code.';
+      'Una vez verificado, la próxima vez que inicies sesión deberás introducir el código de verificación.';
 
   @override
-  String get verify => 'Verify';
+  String get verify => 'Verificar';
 
   @override
   String get cancel => 'Cancelar';
@@ -136,20 +148,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navProfile => 'Perfil';
 
   @override
-  String get youAreIn => 'You\'re in!';
+  String get youAreIn => '¡Ya estás dentro!';
 
   @override
   String get recoveryPasswordSuccess =>
-      'We hope you have a fantastic time exploring and connecting with our vibrant community.';
+      'Esperamos que disfrutes explorando y conectando con nuestra vibrante comunidad.';
 
   @override
-  String get goToLogin => 'Go to Login';
+  String get goToLogin => 'Ir al inicio de sesión';
 
   @override
-  String get startConversation => 'Start Conversation';
+  String get startConversation => 'Iniciar conversación';
 
   @override
-  String get chatMessageQuickStarters => 'Chat Message (quick starters)';
+  String get chatMessageQuickStarters => 'Mensaje rápido (para comenzar)';
 
   @override
   String get errorGoogleSignIn =>
@@ -166,10 +178,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get logOutConfirm => '¿Estás seguro de que quieres cerrar sesión?';
 
   @override
-  String get alreadyAMember => 'Already a member?';
+  String get alreadyAMember => '¿Ya eres miembro?';
 
   @override
-  String get height => 'Height';
+  String get height => 'Altura';
 
   @override
   String get herHeight => 'Altura de ella (opcional)';
@@ -705,4 +717,247 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reportAction => 'Reportar';
+
+  @override
+  String get openChat => 'Ir al chat';
+
+  @override
+  String get errorMustBeAdult => 'Ambos miembros deben ser mayores de 18 años';
+
+  @override
+  String get editTrip => 'Editar viaje';
+
+  @override
+  String get manageTripTitle => 'Gestionar Viaje';
+
+  @override
+  String get scheduledTrips => 'Viajes programados';
+
+  @override
+  String get addATrip => '+ Agregar un viaje';
+
+  @override
+  String get noTripsScheduled => 'No tiene viajes programados';
+
+  @override
+  String get destination => 'Destino';
+
+  @override
+  String get tripCountry => 'País';
+
+  @override
+  String get tripCity => 'Ciudad';
+
+  @override
+  String get startDate => 'Fecha de inicio';
+
+  @override
+  String get endDate => 'Fecha de fin';
+
+  @override
+  String get block => 'Bloquear';
+
+  @override
+  String get report => 'Reportar';
+
+  @override
+  String get verifyYourEmail => 'Verifica tu correo';
+
+  @override
+  String verifyEmailSentTo(Object email) {
+    return 'Enviamos un enlace de verificación a $email. Haz clic en él para activar tu cuenta.';
+  }
+
+  @override
+  String get continueAction => 'Continuar';
+
+  @override
+  String get resendEmail => 'Reenviar correo';
+
+  @override
+  String resendEmailIn(Object seconds) {
+    return 'Reenviar en ${seconds}s';
+  }
+
+  @override
+  String get useDifferentEmail => 'Usar otro correo';
+
+  @override
+  String get errorEmailNotVerified =>
+      'Correo aún no verificado. Revisa tu bandeja de entrada.';
+
+  @override
+  String get askAboutTrip => 'Preguntar sobre este viaje';
+
+  @override
+  String tripMessageTemplate(Object date, Object destination) {
+    return 'Hola, vi que viajas a $destination el $date. ¿Coordinamos algo?';
+  }
+
+  @override
+  String get searchCouples => 'Buscar por nombre...';
+
+  @override
+  String get favoriteCouples => 'Parejas favoritas';
+
+  @override
+  String get removeFavorite => 'Quitar de favoritos';
+
+  @override
+  String get removeFavoriteConfirm =>
+      '¿Estás seguro de que quieres quitar esta pareja de tus favoritos?';
+
+  @override
+  String get noFavoriteCouples =>
+      'Aún no tienes parejas favoritas.\n¡Empieza a guardar las que te gusten!';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get languageEnglish => 'Inglés';
+
+  @override
+  String get languageSpanish => 'Español';
+
+  @override
+  String get prevPhoto => 'Foto anterior';
+
+  @override
+  String get nextPhoto => 'Foto siguiente';
+
+  @override
+  String get mainPhoto => 'Principal';
+
+  @override
+  String get errorLoadProfiles => 'No se pudo cargar los perfiles';
+
+  @override
+  String get errorLoadFavorites => 'No se pudo cargar los favoritos';
+
+  @override
+  String get noNewCouples =>
+      'No hay nuevas parejas por descubrir ahora.\n¡Vuelve más tarde!';
+
+  @override
+  String get deleteCommentTitle => 'Eliminar comentario';
+
+  @override
+  String get deleteReplyTitle => 'Eliminar respuesta';
+
+  @override
+  String get cannotBeUndone => 'Esta acción no se puede deshacer.';
+
+  @override
+  String get gallery => 'Galería';
+
+  @override
+  String get camera => 'Cámara';
+
+  @override
+  String errorPosting(Object error) {
+    return 'Error al publicar: $error';
+  }
+
+  @override
+  String get addComment => 'Añade un comentario...';
+
+  @override
+  String get whatsOnYourMind => '¿Qué tenéis en mente?';
+
+  @override
+  String get addImage => 'Añadir imagen';
+
+  @override
+  String get today => 'Hoy';
+
+  @override
+  String get yesterday => 'Ayer';
+
+  @override
+  String get chatInputHint => 'Escribe algo...';
+
+  @override
+  String get chatEmptyState =>
+      'Inicia vuestra conversación…\nvuestra historia empieza aquí. 🌟';
+
+  @override
+  String get requests => 'Solicitudes';
+
+  @override
+  String get errorSave => 'Error al guardar. Inténtalo de nuevo.';
+
+  @override
+  String get noConversations =>
+      'Aún no hay conversaciones.\n¡Empieza a conectar con parejas!';
+
+  @override
+  String get errorLoadPosts => 'No se pudieron cargar los posts.';
+
+  @override
+  String get noPosts => 'Aún no hay publicaciones.\n¡Sé el primero! 🎉';
+
+  @override
+  String get deletePostTitle => '¿Eliminar publicación?';
+
+  @override
+  String get deletePost => 'Eliminar post';
+
+  @override
+  String get comments => 'Comentarios';
+
+  @override
+  String get noComments => 'Sin comentarios aún.\n¡Sé el primero! 💬';
+
+  @override
+  String replyingTo(Object name) {
+    return 'Respondiendo a $name';
+  }
+
+  @override
+  String get replyingToComment => 'Respondiendo al comentario';
+
+  @override
+  String get reply => 'Responder';
+
+  @override
+  String get hideReplies => 'Ocultar respuestas';
+
+  @override
+  String get viewReply => 'Ver 1 respuesta';
+
+  @override
+  String viewReplies(Object count) {
+    return 'Ver $count respuestas';
+  }
+
+  @override
+  String get shareWithCommunity => 'Comparte con la comunidad';
+
+  @override
+  String get postToCommunity => 'Publicar en la comunidad';
+
+  @override
+  String get deleteAccountDangerZone => 'Zona de peligro';
+
+  @override
+  String get deleteAccountDescription =>
+      'Esto eliminará permanentemente tu perfil, fotos, viajes y todos los datos asociados. Esta acción no se puede deshacer.';
+
+  @override
+  String get deleteAccountTypeToConfirm =>
+      'Escribe \"eliminar\" para confirmar';
+
+  @override
+  String get deleteAccountConfirmWord => 'eliminar';
+
+  @override
+  String get deleteAccountButton => 'Eliminar mi cuenta';
+
+  @override
+  String get deleteAccountError =>
+      'No se pudo eliminar la cuenta. Inténtalo de nuevo.';
+
+  @override
+  String get deleteAccountDeleting => 'Eliminando cuenta...';
 }

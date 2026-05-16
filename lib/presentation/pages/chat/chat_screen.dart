@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app/data/datasource/conversation_datasource.dart';
 import 'package:app/data/datasource/couples_datasource.dart';
 import 'package:app/data/models/firestore_message.dart';
+import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/report/report_screen.dart';
 import 'package:app/presentation/widgets/conversation_row.dart';
@@ -30,7 +31,20 @@ class ChatMessage {
 class ChatScreen extends StatefulWidget {
   final ConversationModel conversation;
 
-  const ChatScreen({super.key, required this.conversation});
+  /// When set, lets the chat header tap into the partner's full profile
+  /// detail screen (agency-merged 2026-05-16). Null disables the tap.
+  final UserProfile? otherProfile;
+
+  /// Pre-fills the message composer with this text (used when the user
+  /// taps a quick-starter template before opening the chat).
+  final String? initialMessage;
+
+  const ChatScreen({
+    super.key,
+    required this.conversation,
+    this.otherProfile,
+    this.initialMessage,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();

@@ -6,6 +6,7 @@ import 'package:app/presentation/constants/app_colors.dart';
 import 'package:app/presentation/layouts/system_layout.dart';
 import 'package:app/presentation/pages/auth/auth_screen.dart';
 import 'package:app/presentation/pages/notifications/notifications_screen.dart';
+import 'package:app/presentation/pages/profile/favorite_couples_screen.dart';
 import 'package:app/presentation/pages/profile_setup/profile_setup_screen.dart';
 import 'package:app/presentation/pages/security/security_screen.dart';
 import 'package:app/presentation/pages/settings/account_settings_screen.dart';
@@ -329,7 +330,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _SettingItem(
           iconAsset: 'assets/images/icon_favorites_couples.png',
           label: l10n.viewFavoriteCouples,
-          onTap: () {},
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const FavoriteCouplesScreen(),
+            ),
+          ),
         ),
         _SettingItem(
           iconAsset: 'assets/images/icon_settings.png',

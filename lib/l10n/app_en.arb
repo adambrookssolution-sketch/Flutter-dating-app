@@ -1,7 +1,10 @@
 {
   "@@locale": "en",
-
   "appTitle": "Affinity",
+  "itsAMatch": "IT'S A MATCH!",
+  "matchUs": "Us",
+  "sendMessage": "Send message",
+  "keepExploring": "Keep exploring",
   "signIn": "Sign In",
   "signUp": "Sign Up",
   "signInAccounts": "Sign in using your accounts.",
@@ -49,13 +52,17 @@
   "theCodeWasSentTo": "The code was sent to {email}",
   "@theCodeWasSentTo": {
     "placeholders": {
-      "email": { "type": "String" }
+      "email": {
+        "type": "String"
+      }
     }
   },
   "resendCodeIn": "Resend code in {seconds}s",
   "@resendCodeIn": {
     "placeholders": {
-      "seconds": { "type": "String" }
+      "seconds": {
+        "type": "String"
+      }
     }
   },
   "resendCode": "Resend code",
@@ -142,22 +149,33 @@
   "chatSuggestion4": "Your vibe is everything ✨ we had to match!",
   "chatSuggestion5": "How about a double date? ☕🍷",
   "chatSuggestion6": "We've been looking for a couple like you 🙌",
-
   "blockedCouple": "Blocked {him} & {her}",
   "@blockedCouple": {
     "placeholders": {
-      "him": { "type": "String" },
-      "her": { "type": "String" }
+      "him": {
+        "type": "String"
+      },
+      "her": {
+        "type": "String"
+      }
     }
   },
   "couldNotBlock": "Could not block: {error}",
   "@couldNotBlock": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "reportSubmittedThanks": "Thanks — the report will be reviewed by our team.",
   "requestSentTo": "Request sent to {name}",
   "@requestSentTo": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "retry": "Retry",
   "feedEmptyTitle": "No matching couples right now",
@@ -167,11 +185,19 @@
   "filtersDistanceMin5km": "Min 5 km",
   "filtersAgeMin": "Min {n}",
   "@filtersAgeMin": {
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "filtersAgeMax": "Max {n}",
   "@filtersAgeMax": {
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "selectResortOrCruise": "Select Resort or Cruise",
   "anyDestination": "Any destination",
@@ -183,16 +209,23 @@
   "imagePickerGallery": "Gallery",
   "imagePickerCamera": "Camera",
   "photoMain": "Main",
-
   "notSignedIn": "Not signed in",
   "securityTitle": "Security",
   "couldNotLoadError": "Could not load: {error}",
   "@couldNotLoadError": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "unblockFailed": "Unblock failed: {error}",
   "@unblockFailed": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "unblockAction": "Unblock",
   "accountSettingsTitle": "Account settings",
@@ -209,18 +242,24 @@
   "deleteTripTitle": "Delete trip?",
   "deleteTripBody": "Cancels notifications to couples matched on \"{destination}\".",
   "@deleteTripBody": {
-    "placeholders": { "destination": { "type": "String" } }
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
   },
   "delete": "Delete",
-
   "noBlockedCouples": "You have not blocked anyone.",
   "blockedOn": "Blocked on {date}",
   "@blockedOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "blockOriginViaReport": "(via report)",
   "blockOriginAuto": "(auto)",
-
   "changeEmail": "Change email",
   "deleteAccount": "Delete account",
   "languageSettingTitle": "Language",
@@ -234,7 +273,6 @@
   "explicitContentToggleLabel": "Show explicit content",
   "explicitContentToggleHelp": "Couples can mark posts as explicit. They are hidden by default and only appear when this is on.",
   "explicitContentMarkLabel": "Mark this post as explicit",
-
   "reportCategoryFakeProfile": "Fake profile",
   "reportCategoryHarassment": "Harassment",
   "reportCategoryNonConsensual": "Non-consensual content",
@@ -243,7 +281,11 @@
   "reportCategoryOther": "Other",
   "reportingCouple": "Reporting {names}",
   "@reportingCouple": {
-    "placeholders": { "names": { "type": "String" } }
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
   },
   "reportCategoryLabel": "Category",
   "reportDescriptionRequired": "Description (required)",
@@ -256,25 +298,44 @@
   "reportFooterConfidential": "Reports are confidential. The reported couple is never told who submitted the report.",
   "reportCouldNotSubmit": "Could not submit: {error}",
   "@reportCouldNotSubmit": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-
   "couldNotAccept": "Could not accept: {error}",
   "@couldNotAccept": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "couldNotDismiss": "Could not dismiss: {error}",
   "@couldNotDismiss": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "couldNotCancelDeletion": "Could not cancel deletion: {error}",
   "@couldNotCancelDeletion": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "keepDeletionScheduled": "Keep deletion scheduled",
   "couldNotRequestDeletion": "Could not request deletion: {error}",
   "@couldNotRequestDeletion": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "deleteAccountTitle": "Delete account",
   "addTripTitle": "Add trip",
@@ -286,5 +347,79 @@
   "openSettings": "Open Settings",
   "goBack": "Go back",
   "blockThisCouple": "Block this couple",
-  "reportAction": "Report"
+  "reportAction": "Report",
+  "openChat": "Open Chat",
+  "errorMustBeAdult": "Both members must be at least 18 years old",
+  "editTrip": "Edit trip",
+  "manageTripTitle": "Manage Trip",
+  "scheduledTrips": "Scheduled trips",
+  "addATrip": "+ Add a trip",
+  "noTripsScheduled": "No trips scheduled",
+  "destination": "Destination",
+  "tripCountry": "Country",
+  "tripCity": "City",
+  "startDate": "Start date",
+  "endDate": "End date",
+  "block": "Block",
+  "report": "Report",
+  "verifyYourEmail": "Verify your email",
+  "verifyEmailSentTo": "We've sent a verification link to {email}. Click it to activate your account.",
+  "continueAction": "Continue",
+  "resendEmail": "Resend email",
+  "resendEmailIn": "Resend in {seconds}s",
+  "useDifferentEmail": "Use a different email",
+  "errorEmailNotVerified": "Email not verified yet. Please check your inbox.",
+  "askAboutTrip": "Ask about this trip",
+  "tripMessageTemplate": "Hi, I saw you're traveling to {destination} on {date}. Should we coordinate something?",
+  "searchCouples": "Search by name...",
+  "favoriteCouples": "Favorite Couples",
+  "removeFavorite": "Remove from favorites",
+  "removeFavoriteConfirm": "Are you sure you want to remove this couple from your favorites?",
+  "noFavoriteCouples": "No favorite couples yet.\nStart adding couples you like!",
+  "language": "Language",
+  "languageEnglish": "English",
+  "languageSpanish": "Spanish",
+  "prevPhoto": "Prev photo",
+  "nextPhoto": "Next photo",
+  "mainPhoto": "Main",
+  "errorLoadProfiles": "Could not load profiles",
+  "errorLoadFavorites": "Could not load favorites",
+  "noNewCouples": "No new couples to discover right now.\nCome back later!",
+  "deleteCommentTitle": "Delete comment",
+  "deleteReplyTitle": "Delete reply",
+  "cannotBeUndone": "This action cannot be undone.",
+  "gallery": "Gallery",
+  "camera": "Camera",
+  "errorPosting": "Error posting: {error}",
+  "addComment": "Add a comment...",
+  "whatsOnYourMind": "What's on your mind?",
+  "addImage": "Add image",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "chatInputHint": "Type something...",
+  "chatEmptyState": "Start your conversation…\nyour story begins here. 🌟",
+  "requests": "Requests",
+  "errorSave": "Error saving. Please try again.",
+  "noConversations": "No conversations yet.\nStart connecting with couples!",
+  "errorLoadPosts": "Could not load posts.",
+  "noPosts": "No posts yet.\nBe the first! 🎉",
+  "deletePostTitle": "Delete post?",
+  "deletePost": "Delete post",
+  "comments": "Comments",
+  "noComments": "No comments yet.\nBe the first! 💬",
+  "replyingTo": "Replying to {name}",
+  "replyingToComment": "Replying to comment",
+  "reply": "Reply",
+  "hideReplies": "Hide replies",
+  "viewReply": "See 1 reply",
+  "viewReplies": "See {count} replies",
+  "shareWithCommunity": "Share with the community",
+  "postToCommunity": "Post to the community",
+  "deleteAccountDangerZone": "Danger Zone",
+  "deleteAccountDescription": "This will permanently delete your profile, photos, trips, and all associated data. This action cannot be undone.",
+  "deleteAccountTypeToConfirm": "Type \"delete\" to confirm",
+  "deleteAccountConfirmWord": "delete",
+  "deleteAccountButton": "Delete my account",
+  "deleteAccountError": "Could not delete account. Please try again.",
+  "deleteAccountDeleting": "Deleting account..."
 }

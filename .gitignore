@@ -63,6 +63,19 @@ assets/branding/source/
 .env.*
 !.env.example
 
+# Apple Sign-In private signing keys (.p8). These are issued per-account
+# from Apple Developer and grant the holder the ability to mint JWTs as
+# our app's Apple Sign-In service — they MUST NEVER be committed even
+# inside a private repo. The Key ID lives in the filename so the
+# pattern below catches every name shape (AuthKey_*.p8 or just *.p8).
+AuthKey_*.p8
+*.p8
+
+# Service-account keys that may end up dropped into the project root
+# during local debugging — same rule, never commit.
+sa-key-*.json
+*-sa-key.json
+
 # Firebase Functions build artefacts
 functions/node_modules/
 functions/lib/

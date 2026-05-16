@@ -63,12 +63,26 @@ class CoupleCard extends StatefulWidget {
   /// hides the menu item.
   final VoidCallback? onReport;
 
+  /// Whether the heart button shows the filled "favorited" state.
+  /// Agency feature merged 2026-05-16 (`Favorite Couples` screen).
+  final bool isFavorite;
+
+  /// Invoked when the user taps the heart toggle. Null hides the toggle.
+  final VoidCallback? onToggleFavorite;
+
+  /// Invoked when the user taps anywhere on the card. Used by the
+  /// favorite-couples list to push the partner-profile detail screen.
+  final VoidCallback? onTap;
+
   const CoupleCard({
     super.key,
     required this.profile,
     this.onStartConversation,
     this.onBlock,
     this.onReport,
+    this.isFavorite = false,
+    this.onToggleFavorite,
+    this.onTap,
   });
 
   @override

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class MatchOverlay extends StatefulWidget {
@@ -134,7 +135,7 @@ class _MatchOverlayState extends State<MatchOverlay>
     final rng = Random(42);
     const colors = [
       Color(0xFFE24696),
-      Color(0xFFB01030),
+      Color(0xFFB31637),
       Color(0xFFFF6B9D),
       Color(0xFFFFD700),
       Colors.white,
@@ -163,6 +164,7 @@ class _MatchOverlayState extends State<MatchOverlay>
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    final l10n = AppLocalizations.of(context)!;
 
     return AnimatedBuilder(
       animation: Listenable.merge([_mainCtrl, _particleCtrl, _pulseCtrl]),
@@ -211,12 +213,12 @@ class _MatchOverlayState extends State<MatchOverlay>
                       const Spacer(flex: 2),
 
                       // Profile circles + heart
-                      _buildAvatarRow(screenSize),
+                      _buildAvatarRow(screenSize, l10n),
 
                       const SizedBox(height: 36),
 
-                      // "¡ES UN MATCH!"
-                      _buildTitle(),
+                      // Match title
+                      _buildTitle(l10n),
 
                       const SizedBox(height: 10),
 
@@ -241,7 +243,7 @@ class _MatchOverlayState extends State<MatchOverlay>
                       const Spacer(flex: 3),
 
                       // Action buttons
-                      _buildButtons(),
+                      _buildButtons(l10n),
 
                       const SizedBox(height: 36),
                     ],
@@ -255,7 +257,7 @@ class _MatchOverlayState extends State<MatchOverlay>
     );
   }
 
-  Widget _buildAvatarRow(Size screenSize) {
+  Widget _buildAvatarRow(Size screenSize, AppLocalizations l10n) {
     const double avatarSize = 112.0;
 
     return Row(
@@ -269,11 +271,11 @@ class _MatchOverlayState extends State<MatchOverlay>
             child: _Avatar(
               size: avatarSize,
               gradient: const LinearGradient(
-                colors: [Color(0xFF580818), Color(0xFFB01030)],
+                colors: [Color(0xFF331837), Color(0xFFB31637)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              topLabel: 'Vosotros',
+              topLabel: l10n.matchUs,
               bottomLabel: '',
             ),
           ),
@@ -290,11 +292,11 @@ class _MatchOverlayState extends State<MatchOverlay>
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFB01030),
+                color: const Color(0xFFB31637),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFB01030).withValues(alpha: 0.65),
+                    color: const Color(0xFFB31637).withValues(alpha: 0.65),
                     blurRadius: 18,
                     spreadRadius: 3,
                   ),
@@ -328,7 +330,7 @@ class _MatchOverlayState extends State<MatchOverlay>
     );
   }
 
-  Widget _buildTitle() {
+  Widget _buildTitle(AppLocalizations l10n) {
     return ScaleTransition(
       scale: _titleScale,
       child: FadeTransition(
@@ -337,8 +339,8 @@ class _MatchOverlayState extends State<MatchOverlay>
           shaderCallback: (bounds) => const LinearGradient(
             colors: [Color(0xFFFF6B9D), Color(0xFFFFD700), Color(0xFFFF6B9D)],
           ).createShader(bounds),
-          child: const Text(
-            '¡ES UN MATCH!',
+          child: Text(
+            l10n.itsAMatch,
             style: TextStyle(
               color: Colors.white,
               fontSize: 36,
@@ -351,7 +353,7 @@ class _MatchOverlayState extends State<MatchOverlay>
     );
   }
 
-  Widget _buildButtons() {
+  Widget _buildButtons(AppLocalizations l10n) {
     return Transform.translate(
       offset: Offset(0, _buttonsY.value),
       child: Opacity(
@@ -365,12 +367,12 @@ class _MatchOverlayState extends State<MatchOverlay>
                 child: FilledButton.icon(
                   onPressed: widget.onSendMessage,
                   icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
-                  label: const Text(
-                    'Enviar mensaje',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  label: Text(
+                    l10n.sendMessage,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFB01030),
+                    backgroundColor: const Color(0xFFB31637),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -391,9 +393,9 @@ class _MatchOverlayState extends State<MatchOverlay>
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'Seguir explorando',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  child: Text(
+                    l10n.keepExploring,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

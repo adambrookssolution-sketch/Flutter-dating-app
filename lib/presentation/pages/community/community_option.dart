@@ -1,58 +1,20 @@
 import 'dart:io';
 
+import 'package:app/l10n/app_localizations.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
-import 'package:app/l10n/app_localizations.dart';
+import 'package:app/data/datasource/community_datasource.dart';
+import 'package:app/data/datasource/profile_datasource.dart';
+import 'package:app/data/models/comment_data.dart';
+import 'package:app/data/models/community_post.dart';
+import 'package:app/data/models/reply_data.dart';
+import 'package:app/data/models/user_profile.dart';
+import 'package:app/presentation/pages/inbox/partner_profile_screen.dart';
 
-// ── Models ────────────────────────────────────────────────────────────────────
-
-class CommentModel {
-  final String name1;
-  final String name2;
-  final DateTime time;
-  final String text;
-  final int gradientIndex;
-
-  const CommentModel({
-    required this.name1,
-    required this.name2,
-    required this.time,
-    required this.text,
-    required this.gradientIndex,
-  });
-}
-
-class PostModel {
-  final String name1;
-  final String name2;
-  final DateTime postedAt;
-  final String text;
-  final bool hasImage;
-  final String? imageFilePath;
-  final int gradientIndex;
-  final int imageGradientIndex;
-  int likes;
-  bool likedByMe;
-  final List<CommentModel> comments;
-  final bool isOwn;
-
-  PostModel({
-    required this.name1,
-    required this.name2,
-    required this.postedAt,
-    required this.text,
-    required this.hasImage,
-    this.imageFilePath,
-    required this.gradientIndex,
-    this.imageGradientIndex = 0,
-    required this.likes,
-    required this.likedByMe,
-    required this.comments,
-    this.isOwn = false,
-  });
-}
+// ignore_for_file: use_build_context_synchronously
 
 // ── Option ────────────────────────────────────────────────────────────────────
 
@@ -73,211 +35,269 @@ class _CommunityOptionState extends State<CommunityOption> {
     [Color(0xFF9C27B0), Color(0xFF3F51B5)],
   ];
 
-  late final List<PostModel> _posts;
+  UserProfile? _profile;
+  List<CommunityPost> _posts = [];
+  bool _loading = true;
+  bool _hasError = false;
+  final Set<String> _processingLikes = {};
+  final Map<String, String?> _profilePhotoCache = {};
 
   @override
   void initState() {
     super.initState();
-    _posts = _buildMockPosts()..shuffle();
+    _loadProfile();
+    _fetchPosts();
   }
 
-  List<PostModel> _buildMockPosts() => [
-        PostModel(
-          name1: 'Ana',
-          name2: 'Carlos',
-          postedAt: DateTime.now().subtract(const Duration(hours: 2)),
-          text:
-              '¡Menudo planazo el de ayer en el Born! Definitivamente tenemos que volver 🥂✨',
-          hasImage: true,
-          gradientIndex: 0,
-          imageGradientIndex: 2,
-          likes: 24,
-          likedByMe: false,
-          comments: [
-            CommentModel(
-              name1: 'Sofia',
-              name2: 'Mateo',
-              time: DateTime.now().subtract(const Duration(minutes: 45)),
-              text: '¡Qué envidia! Tenemos que ir juntos la próxima vez 😍',
-              gradientIndex: 1,
-            ),
-            CommentModel(
-              name1: 'Laura',
-              name2: 'Javi',
-              time: DateTime.now().subtract(const Duration(hours: 1)),
-              text: 'Nosotros también fuimos el mes pasado, ¡es increíble! 🙌',
-              gradientIndex: 2,
-            ),
-          ],
-        ),
-        PostModel(
-          name1: 'Sofia',
-          name2: 'Mateo',
-          postedAt: DateTime.now().subtract(const Duration(hours: 5)),
-          text:
-              'Primer aniversario juntos como pareja 🎉❤️ Ha sido el año más bonito de nuestras vidas',
-          hasImage: false,
-          gradientIndex: 1,
-          likes: 87,
-          likedByMe: true,
-          comments: [
-            CommentModel(
-              name1: 'Ana',
-              name2: 'Carlos',
-              time: DateTime.now().subtract(const Duration(minutes: 10)),
-              text: '¡Felicidades! Sois la pareja más adorable 💕',
-              gradientIndex: 0,
-            ),
-            CommentModel(
-              name1: 'Marta',
-              name2: 'Pablo',
-              time: DateTime.now().subtract(const Duration(hours: 3)),
-              text: '¡Muchísimas felicidades! Que sean muchos más 🥳',
-              gradientIndex: 3,
-            ),
-            CommentModel(
-              name1: 'Rita',
-              name2: 'Leo',
-              time: DateTime.now().subtract(const Duration(hours: 4)),
-              text: '¡Os queremos! 🎊',
-              gradientIndex: 4,
-            ),
-          ],
-        ),
-        PostModel(
-          name1: 'Laura',
-          name2: 'Javi',
-          postedAt: DateTime.now().subtract(const Duration(days: 1)),
-          text:
-              'Senderismo en Montserrat 🏔️ Nada como un domingo de naturaleza para recargar pilas',
-          hasImage: true,
-          gradientIndex: 2,
-          imageGradientIndex: 4,
-          likes: 41,
-          likedByMe: false,
-          comments: [
-            CommentModel(
-              name1: 'Noa',
-              name2: 'Erik',
-              time: DateTime.now()
-                  .subtract(const Duration(days: 1, hours: 2)),
-              text:
-                  'Nosotros fuimos la semana pasada, está precioso ahora 🌿',
-              gradientIndex: 5,
-            ),
-          ],
-        ),
-        PostModel(
-          name1: 'Marta',
-          name2: 'Pablo',
-          postedAt: DateTime.now().subtract(const Duration(days: 2)),
-          text:
-              'Acabamos de hacer match con una pareja superchula 🎉 ¡Esta app es increíble!',
-          hasImage: false,
-          gradientIndex: 3,
-          likes: 15,
-          likedByMe: false,
-          comments: [],
-        ),
-        PostModel(
-          name1: 'Noa',
-          name2: 'Erik',
-          postedAt: DateTime.now().subtract(const Duration(days: 3)),
-          text:
-              'Tarde de cocina en casa 🍝 ¿Alguien más es fan de cocinar en pareja?',
-          hasImage: true,
-          gradientIndex: 5,
-          imageGradientIndex: 1,
-          likes: 32,
-          likedByMe: true,
-          comments: [
-            CommentModel(
-              name1: 'Sofia',
-              name2: 'Mateo',
-              time: DateTime.now()
-                  .subtract(const Duration(days: 2, hours: 18)),
-              text: '¡A nosotros nos encanta! Es nuestra actividad favorita ❤️',
-              gradientIndex: 1,
-            ),
-            CommentModel(
-              name1: 'Laura',
-              name2: 'Javi',
-              time: DateTime.now().subtract(const Duration(days: 3)),
-              text: 'Siempre cocinamos juntos los domingos 🍕',
-              gradientIndex: 2,
-            ),
-          ],
-        ),
-      ];
+  Future<void> _loadProfile() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final profile = await ProfileDatasource.getProfile(uid);
+    if (mounted) {
+      setState(() {
+        _profile = profile;
+        if (profile != null && profile.photos.isNotEmpty) {
+          _profilePhotoCache[uid] = profile.photos.first;
+        }
+      });
+    }
+  }
 
-  void _onPost(String text, String? imageFilePath) {
+  Future<void> _fetchPosts() async {
+    if (!mounted) return;
     setState(() {
-      _posts.insert(
-        0,
-        PostModel(
-          name1: 'You',
-          name2: '',
-          postedAt: DateTime.now(),
-          text: text,
-          hasImage: imageFilePath != null,
-          imageFilePath: imageFilePath,
-          gradientIndex: 0,
-          likes: 0,
-          likedByMe: false,
-          comments: [],
-          isOwn: true,
-        ),
+      _loading = true;
+      _hasError = false;
+    });
+    try {
+      final posts = await CommunityDatasource.fetchPosts();
+      if (mounted) {
+        setState(() {
+          _posts = posts;
+          _loading = false;
+        });
+        // Prefetch unique author photos
+        final uids = posts.map((p) => p.uid).toSet();
+        for (final uid in uids) {
+          if (!_profilePhotoCache.containsKey(uid)) {
+            _loadAuthorPhoto(uid);
+          }
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadAuthorPhoto(String uid) async {
+    try {
+      final profile = await ProfileDatasource.getProfile(uid);
+      if (mounted && profile != null) {
+        setState(() {
+          _profilePhotoCache[uid] =
+              profile.photos.isNotEmpty ? profile.photos.first : null;
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _onPost(String text, XFile? image) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final authorPhotoUrl = (_profile != null && _profile!.photos.isNotEmpty)
+        ? _profile!.photos.first
+        : null;
+
+    await CommunityDatasource.createPost(
+      uid: uid,
+      herName: _profile?.herName ?? '',
+      hisName: _profile?.hisName ?? '',
+      authorPhotoUrl: authorPhotoUrl,
+      text: text,
+      image: image,
+    );
+    await _fetchPosts();
+  }
+
+  Future<void> _toggleLike(int index) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (uid.isEmpty) return;
+
+    final post = _posts[index];
+    if (_processingLikes.contains(post.id)) return;
+
+    final likedByMe = post.likedBy.contains(uid);
+
+    setState(() {
+      _processingLikes.add(post.id);
+      _posts[index] = post.copyWith(
+        likesCount: likedByMe
+            ? (post.likesCount > 0 ? post.likesCount - 1 : 0)
+            : post.likesCount + 1,
+        likedBy: likedByMe
+            ? post.likedBy.where((u) => u != uid).toList()
+            : [...post.likedBy, uid],
+      );
+    });
+
+    try {
+      await CommunityDatasource.toggleLike(post.id, uid);
+    } catch (_) {
+      if (mounted) setState(() => _posts[index] = post);
+    } finally {
+      if (mounted) setState(() => _processingLikes.remove(post.id));
+    }
+  }
+
+  Future<void> _deletePost(int index) async {
+    final post = _posts[index];
+    setState(() => _posts.removeAt(index));
+    await CommunityDatasource.deletePost(post.id, post.imageUrl);
+  }
+
+  int _gradientFor(String uid) {
+    if (uid.isEmpty) return 0;
+    return uid.codeUnits.reduce((a, b) => a + b) % _gradients.length;
+  }
+
+  void _onCommentAdded(String postId) {
+    final index = _posts.indexWhere((p) => p.id == postId);
+    if (index == -1) return;
+    setState(() {
+      _posts[index] = _posts[index].copyWith(
+        commentsCount: _posts[index].commentsCount + 1,
       );
     });
   }
 
-  void _deletePost(int index) {
-    setState(() => _posts.removeAt(index));
-  }
-
-  void _toggleLike(int index) {
-    setState(() {
-      final p = _posts[index];
-      p.likedByMe ? p.likes-- : p.likes++;
-      p.likedByMe = !p.likedByMe;
-    });
-  }
-
-  void _openComments(int index) {
+  void _openComments(CommunityPost post) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => _CommentsSheet(
-        post: _posts[index],
+        postId: post.id,
+        postAuthorUid: post.uid,
+        currentUid: FirebaseAuth.instance.currentUser?.uid ?? '',
+        profile: _profile,
         gradients: _gradients,
-        onChanged: () => setState(() {}),
+        photoCache: _profilePhotoCache,
+        onCommentAdded: () => _onCommentAdded(post.id),
       ),
     );
   }
 
+  Future<void> _openProfile(String uid) async {
+    final profile = await ProfileDatasource.getProfile(uid);
+    if (profile != null && mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => PartnerProfileScreen(profile: profile),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+
     return Column(
       children: [
         const SizedBox(height: 8),
         _FloatingComposer(onPost: _onPost),
         const SizedBox(height: 8),
         Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.only(bottom: 24),
-            itemCount: _posts.length,
-            separatorBuilder: (_, __) => const SizedBox(
-              height: 10,
-              child: ColoredBox(color: Color(0xFFF5F5F5)),
-            ),
-            itemBuilder: (context, i) => _PostCard(
-              post: _posts[i],
-              gradients: _gradients,
-              onLike: () => _toggleLike(i),
-              onComment: () => _openComments(i),
-              onDelete: _posts[i].isOwn ? () => _deletePost(i) : null,
-            ),
+          child: RefreshIndicator(
+            onRefresh: _fetchPosts,
+            color: const Color(0xFFB31637),
+            child: _loading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFB31637),
+                    ),
+                  )
+                : _hasError
+                    ? _buildError()
+                    : _posts.isEmpty
+                        ? _buildEmpty()
+                        : ListView.separated(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.only(bottom: 24),
+                            itemCount: _posts.length,
+                            separatorBuilder: (_, __) => const SizedBox(
+                              height: 10,
+                              child: ColoredBox(color: Color(0xFFF5F5F5)),
+                            ),
+                            itemBuilder: (context, i) => _PostCard(
+                              post: _posts[i],
+                              gradients: _gradients,
+                              gradientIndex: _gradientFor(_posts[i].uid),
+                              currentUid: uid,
+                              commentCount: _posts[i].commentsCount,
+                              authorPhotoUrl:
+                                  _profilePhotoCache[_posts[i].uid] ??
+                                      _posts[i].authorPhotoUrl,
+                              onLike: () => _toggleLike(i),
+                              onComment: () => _openComments(_posts[i]),
+                              onAvatarTap: () => _openProfile(_posts[i].uid),
+                              onDelete: _posts[i].uid == uid
+                                  ? () => _deletePost(i)
+                                  : null,
+                            ),
+                          ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildError() {
+    final l10n = AppLocalizations.of(context)!;
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        const SizedBox(height: 80),
+        Center(
+          child: Column(
+            children: [
+              Text(
+                l10n.errorLoadPosts,
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: _fetchPosts,
+                child: Text(
+                  l10n.retry,
+                  style: const TextStyle(
+                    color: Color(0xFFB31637),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmpty() {
+    final l10n = AppLocalizations.of(context)!;
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        const SizedBox(height: 80),
+        Center(
+          child: Text(
+            l10n.noPosts,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.black38, fontSize: 14),
           ),
         ),
       ],
@@ -288,22 +308,33 @@ class _CommunityOptionState extends State<CommunityOption> {
 // ── Post Card ─────────────────────────────────────────────────────────────────
 
 class _PostCard extends StatelessWidget {
-  final PostModel post;
+  final CommunityPost post;
   final List<List<Color>> gradients;
+  final int gradientIndex;
+  final String currentUid;
+  final int commentCount;
+  final String? authorPhotoUrl;
   final VoidCallback onLike;
   final VoidCallback onComment;
+  final VoidCallback? onAvatarTap;
   final VoidCallback? onDelete;
 
   const _PostCard({
     required this.post,
     required this.gradients,
+    required this.gradientIndex,
+    required this.currentUid,
+    required this.commentCount,
+    this.authorPhotoUrl,
     required this.onLike,
     required this.onComment,
+    this.onAvatarTap,
     this.onDelete,
   });
 
   static const Color _grey = Color(0xFFB9B9B9);
-  static const Color _red = Color(0xFFB01030);
+
+  bool get _likedByMe => post.likedBy.contains(currentUid);
 
   @override
   Widget build(BuildContext context) {
@@ -312,18 +343,19 @@ class _PostCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(),
+          _buildHeader(context),
           const SizedBox(height: 10),
-          Text(
-            post.text,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-              height: 1.45,
+          if (post.text.isNotEmpty)
+            Text(
+              post.text,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+                height: 1.45,
+              ),
             ),
-          ),
-          if (post.hasImage) ...[
-            const SizedBox(height: 10),
+          if (post.imageUrl != null) ...[
+            if (post.text.isNotEmpty) const SizedBox(height: 10),
             _buildImage(),
           ],
           const SizedBox(height: 12),
@@ -333,25 +365,33 @@ class _PostCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
-    final colors = gradients[post.gradientIndex % gradients.length];
-    final date = DateFormat('dd/MM/yyyy hh:mm a')
-        .format(post.postedAt)
+  Widget _buildHeader(BuildContext context) {
+    final colors = gradients[gradientIndex % gradients.length];
+    final date = DateFormat('dd/MM/yyyy • hh:mm a')
+        .format(post.createdAt)
         .toLowerCase();
+    final name = post.hisName.isEmpty
+        ? post.herName
+        : '${post.herName} & ${post.hisName}';
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _AvatarCircle(size: 44, colors: colors),
+        GestureDetector(
+          onTap: onAvatarTap,
+          child: _AvatarCircle(
+            size: 44,
+            colors: colors,
+            photoUrl: authorPhotoUrl,
+          ),
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                post.name2.isEmpty
-                    ? post.name1
-                    : '${post.name1} & ${post.name2}',
+                name,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -371,20 +411,59 @@ class _PostCard extends StatelessWidget {
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert,
                 color: Color(0xFFB9B9B9), size: 20),
-            onSelected: (value) {
-              if (value == 'delete') onDelete!();
+            onSelected: (value) async {
+              if (value != 'delete') return;
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: Text(
+                    AppLocalizations.of(ctx)!.deletePostTitle,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  content: Text(
+                    AppLocalizations.of(ctx)!.cannotBeUndone,
+                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: Text(
+                        AppLocalizations.of(ctx)!.cancel,
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: Text(
+                        AppLocalizations.of(ctx)!.delete,
+                        style: const TextStyle(
+                          color: Color(0xFFB31637),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) onDelete!();
             },
-            itemBuilder: (_) => [
-              const PopupMenuItem(
+            itemBuilder: (ctx) => [
+              PopupMenuItem(
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline,
-                        color: Color(0xFFB01030), size: 20),
-                    SizedBox(width: 10),
+                    const Icon(Icons.delete_outline,
+                        color: Color(0xFFB31637), size: 20),
+                    const SizedBox(width: 10),
                     Text(
-                      'Delete post',
-                      style: TextStyle(color: Color(0xFFB01030)),
+                      AppLocalizations.of(ctx)!.deletePost,
+                      style: const TextStyle(color: Color(0xFFB31637)),
                     ),
                   ],
                 ),
@@ -396,33 +475,32 @@ class _PostCard extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    if (post.imageFilePath != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.file(
-          File(post.imageFilePath!),
-          width: double.infinity,
-          fit: BoxFit.fitWidth,
-        ),
-      );
-    }
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: gradients[post.imageGradientIndex % gradients.length],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      child: Image.network(
+        post.imageUrl!,
+        width: double.infinity,
+        fit: BoxFit.fitWidth,
+        loadingBuilder: (_, child, progress) {
+          if (progress == null) return child;
+          return AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Container(
+              color: const Color(0xFFF1F1F1),
+              child: Center(
+                child: CircularProgressIndicator(
+                  value: progress.expectedTotalBytes != null
+                      ? progress.cumulativeBytesLoaded /
+                          progress.expectedTotalBytes!
+                      : null,
+                  color: const Color(0xFFB31637),
+                  strokeWidth: 2,
+                ),
+              ),
             ),
-          ),
-          child: const Center(
-            child: Icon(Icons.image_outlined, color: Colors.white38, size: 48),
-          ),
-        ),
+          );
+        },
+        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
       ),
     );
   }
@@ -430,27 +508,10 @@ class _PostCard extends StatelessWidget {
   Widget _buildActions() {
     return Row(
       children: [
-        GestureDetector(
+        _LikeButton(
+          likedByMe: _likedByMe,
+          likesCount: post.likesCount,
           onTap: onLike,
-          behavior: HitTestBehavior.opaque,
-          child: Row(
-            children: [
-              Icon(
-                post.likedByMe ? Icons.favorite : Icons.favorite_border,
-                color: post.likedByMe ? _red : _grey,
-                size: 22,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                '${post.likes}',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: post.likedByMe ? _red : _grey,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
         ),
         const SizedBox(width: 22),
         GestureDetector(
@@ -465,7 +526,7 @@ class _PostCard extends StatelessWidget {
               ),
               const SizedBox(width: 5),
               Text(
-                '${post.comments.length}',
+                '$commentCount',
                 style: const TextStyle(
                   fontSize: 13,
                   color: _grey,
@@ -483,14 +544,22 @@ class _PostCard extends StatelessWidget {
 // ── Comments Sheet ────────────────────────────────────────────────────────────
 
 class _CommentsSheet extends StatefulWidget {
-  final PostModel post;
+  final String postId;
+  final String postAuthorUid;
+  final String currentUid;
+  final UserProfile? profile;
   final List<List<Color>> gradients;
-  final VoidCallback onChanged;
+  final Map<String, String?> photoCache;
+  final VoidCallback onCommentAdded;
 
   const _CommentsSheet({
-    required this.post,
+    required this.postId,
+    required this.postAuthorUid,
+    required this.currentUid,
+    required this.profile,
     required this.gradients,
-    required this.onChanged,
+    required this.photoCache,
+    required this.onCommentAdded,
   });
 
   @override
@@ -499,38 +568,112 @@ class _CommentsSheet extends StatefulWidget {
 
 class _CommentsSheetState extends State<_CommentsSheet> {
   final TextEditingController _ctrl = TextEditingController();
+  final ScrollController _scroll = ScrollController();
+  final FocusNode _focus = FocusNode();
+  bool _sending = false;
+
+  String? _replyingToCommentId;
+  String? _replyingToName;
+  String? _replyingToUid;
 
   @override
   void dispose() {
     _ctrl.dispose();
+    _scroll.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
-  static String _relTime(DateTime t) {
-    final d = DateTime.now().difference(t);
-    if (d.inSeconds < 60) return 'now';
-    if (d.inMinutes < 60) return '${d.inMinutes}m';
-    if (d.inHours < 24) return '${d.inHours}h';
-    if (d.inDays < 7) return '${d.inDays}d';
-    if (d.inDays < 28) return '${d.inDays ~/ 7}w';
-    if (d.inDays < 365) return '${d.inDays ~/ 30}mo';
-    return '${d.inDays ~/ 365}y';
+  void _setReply({
+    required String commentId,
+    String? replyToName,
+    String? replyToUid,
+  }) {
+    setState(() {
+      _replyingToCommentId = commentId;
+      _replyingToName = replyToName;
+      _replyingToUid = replyToUid;
+    });
+    _focus.requestFocus();
   }
 
-  void _send() {
-    final text = _ctrl.text.trim();
-    if (text.isEmpty) return;
+  void _clearReply() {
     setState(() {
-      widget.post.comments.add(CommentModel(
-        name1: 'Vosotros',
-        name2: '',
-        time: DateTime.now(),
-        text: text,
-        gradientIndex: 0,
-      ));
+      _replyingToCommentId = null;
+      _replyingToName = null;
+      _replyingToUid = null;
+    });
+  }
+
+  Future<void> _openProfile(String uid) async {
+    final profile = await ProfileDatasource.getProfile(uid);
+    if (profile != null && mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => PartnerProfileScreen(profile: profile),
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteComment(String commentId) async {
+    await CommunityDatasource.deleteComment(widget.postId, commentId);
+  }
+
+  Future<void> _deleteReply(String commentId, String replyId) async {
+    await CommunityDatasource.deleteReply(widget.postId, commentId, replyId);
+  }
+
+  Future<void> _send() async {
+    final text = _ctrl.text.trim();
+    if (text.isEmpty || _sending) return;
+    setState(() {
+      _sending = true;
       _ctrl.clear();
     });
-    widget.onChanged();
+    final authorPhotoUrl =
+        (widget.profile != null && widget.profile!.photos.isNotEmpty)
+            ? widget.profile!.photos.first
+            : null;
+    try {
+      if (_replyingToCommentId != null) {
+        await CommunityDatasource.addReply(
+          postId: widget.postId,
+          commentId: _replyingToCommentId!,
+          uid: widget.currentUid,
+          herName: widget.profile?.herName ?? '',
+          hisName: widget.profile?.hisName ?? '',
+          authorPhotoUrl: authorPhotoUrl,
+          text: text,
+          replyToName: _replyingToName,
+          replyToUid: _replyingToUid,
+        );
+        _clearReply();
+      } else {
+        await CommunityDatasource.addComment(
+          postId: widget.postId,
+          uid: widget.currentUid,
+          herName: widget.profile?.herName ?? '',
+          hisName: widget.profile?.hisName ?? '',
+          authorPhotoUrl: authorPhotoUrl,
+          text: text,
+        );
+        widget.onCommentAdded();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scroll.hasClients) {
+            _scroll.animateTo(
+              _scroll.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    } catch (_) {
+      if (mounted) _ctrl.text = text;
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
   }
 
   @override
@@ -539,10 +682,8 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     final keyboardH = mq.viewInsets.bottom;
     final safeBottom = mq.padding.bottom;
     final screenH = mq.size.height;
-
-    // List shrinks as the keyboard rises to prevent overflow.
     final listMaxH =
-        (screenH * 0.40 - keyboardH).clamp(80.0, screenH * 0.40);
+        (screenH * 0.45 - keyboardH).clamp(80.0, screenH * 0.45);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -566,49 +707,115 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-
-            // Title
-            const Padding(
-              padding: EdgeInsets.only(bottom: 10),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
               child: Text(
-                'Comments',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                AppLocalizations.of(context)!.comments,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
+            ),
+            const Divider(height: 1),
+
+            // Real-time comment list
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: listMaxH),
+              child: StreamBuilder<List<CommentData>>(
+                stream: CommunityDatasource.streamComments(widget.postId),
+                builder: (ctx, snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFB31637),
+                          strokeWidth: 2,
+                        ),
+                      ),
+                    );
+                  }
+                  final comments = snap.data ?? [];
+                  if (comments.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                        child: Text(
+                          AppLocalizations.of(ctx)!.noComments,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: Colors.black38, fontSize: 14),
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    controller: _scroll,
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                    shrinkWrap: true,
+                    itemCount: comments.length,
+                    itemBuilder: (_, i) {
+                      final c = comments[i];
+                      final canDelete = widget.currentUid == c.uid ||
+                          widget.currentUid == widget.postAuthorUid;
+                      return _CommentRow(
+                        key: ValueKey(c.id),
+                        postId: widget.postId,
+                        comment: c,
+                        gradients: widget.gradients,
+                        currentUid: widget.currentUid,
+                        postAuthorUid: widget.postAuthorUid,
+                        canDelete: canDelete,
+                        authorPhotoUrl:
+                            widget.photoCache[c.uid] ?? c.authorPhotoUrl,
+                        photoCache: widget.photoCache,
+                        onDelete:
+                            canDelete ? () => _deleteComment(c.id) : null,
+                        onAvatarTap: _openProfile,
+                        onDeleteReply: (replyId) =>
+                            _deleteReply(c.id, replyId),
+                        onReply: ({replyToName, replyToUid}) => _setReply(
+                          commentId: c.id,
+                          replyToName: replyToName,
+                          replyToUid: replyToUid,
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
 
             const Divider(height: 1),
 
-            // Comment list — height adapts to keyboard
-            ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: listMaxH),
-              child: widget.post.comments.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32),
-                      child: Center(
-                        child: Text(
-                          'No comments yet.\nBe the first! 💬',
-                          textAlign: TextAlign.center,
-                          style:
-                              TextStyle(color: Colors.black38, fontSize: 14),
+            // Reply pill
+            if (_replyingToCommentId != null)
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.reply,
+                        size: 15, color: Color(0xFFB31637)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        _replyingToName != null
+                            ? AppLocalizations.of(context)!.replyingTo(_replyingToName!)
+                            : AppLocalizations.of(context)!.replyingToComment,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFB31637),
+                          fontWeight: FontWeight.w500,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                      shrinkWrap: true,
-                      itemCount: widget.post.comments.length,
-                      itemBuilder: (_, i) {
-                        final c = widget.post.comments[i];
-                        return _CommentRow(
-                          comment: c,
-                          gradients: widget.gradients,
-                          relTime: _relTime(c.time),
-                        );
-                      },
                     ),
-            ),
-
-            const Divider(height: 1),
+                    GestureDetector(
+                      onTap: _clearReply,
+                      child: const Icon(Icons.close,
+                          size: 15, color: Color(0xFFB31637)),
+                    ),
+                  ],
+                ),
+              ),
 
             // Input bar
             Padding(
@@ -625,15 +832,17 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                       ),
                       child: TextField(
                         controller: _ctrl,
+                        focusNode: _focus,
                         minLines: 1,
                         maxLines: 3,
                         textInputAction: TextInputAction.send,
+                        enabled: !_sending,
                         onSubmitted: (_) => _send(),
                         style: const TextStyle(fontSize: 14),
-                        decoration: const InputDecoration(
-                          hintText: 'Add a comment...',
-                          hintStyle:
-                              TextStyle(color: Colors.black38, fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: AppLocalizations.of(context)!.addComment,
+                          hintStyle: TextStyle(
+                              color: Colors.black38, fontSize: 14),
                           border: InputBorder.none,
                           isDense: true,
                           contentPadding:
@@ -644,19 +853,27 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                   ),
                   const SizedBox(width: 8),
                   GestureDetector(
-                    onTap: _send,
+                    onTap: _sending ? null : _send,
                     child: Container(
                       width: 40,
                       height: 40,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFB01030),
+                        color: Color(0xFFB31637),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.arrow_forward_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      child: _sending
+                          ? const Padding(
+                              padding: EdgeInsets.all(10),
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                     ),
                   ),
                 ],
@@ -671,69 +888,396 @@ class _CommentsSheetState extends State<_CommentsSheet> {
 
 // ── Comment Row ───────────────────────────────────────────────────────────────
 
-class _CommentRow extends StatelessWidget {
-  final CommentModel comment;
+class _CommentRow extends StatefulWidget {
+  final String postId;
+  final CommentData comment;
   final List<List<Color>> gradients;
-  final String relTime;
+  final String currentUid;
+  final String postAuthorUid;
+  final bool canDelete;
+  final String? authorPhotoUrl;
+  final Map<String, String?> photoCache;
+  final VoidCallback? onDelete;
+  final void Function(String uid) onAvatarTap;
+  final void Function(String replyId) onDeleteReply;
+  final void Function({String? replyToName, String? replyToUid}) onReply;
 
   const _CommentRow({
+    super.key,
+    required this.postId,
     required this.comment,
     required this.gradients,
-    required this.relTime,
+    required this.currentUid,
+    required this.postAuthorUid,
+    required this.canDelete,
+    this.authorPhotoUrl,
+    required this.photoCache,
+    this.onDelete,
+    required this.onAvatarTap,
+    required this.onDeleteReply,
+    required this.onReply,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final colors = gradients[comment.gradientIndex % gradients.length];
-    final name = comment.name2.isEmpty
-        ? comment.name1
-        : '${comment.name1} & ${comment.name2}';
+  State<_CommentRow> createState() => _CommentRowState();
+}
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _AvatarCircle(size: 36, colors: colors),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+class _CommentRowState extends State<_CommentRow> {
+  bool _showReplies = false;
+
+  static String _relTime(DateTime t) {
+    final d = DateTime.now().difference(t);
+    if (d.inSeconds < 60) return 'ahora';
+    if (d.inMinutes < 60) return '${d.inMinutes}m';
+    if (d.inHours < 24) return '${d.inHours}h';
+    if (d.inDays < 7) return '${d.inDays}d';
+    if (d.inDays < 28) return '${d.inDays ~/ 7}sem';
+    if (d.inDays < 365) return '${d.inDays ~/ 30}mes';
+    return '${d.inDays ~/ 365}a';
+  }
+
+  int _gradientFor(String uid) {
+    if (uid.isEmpty) return 0;
+    return uid.codeUnits.reduce((a, b) => a + b) % widget.gradients.length;
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(AppLocalizations.of(ctx)!.deleteCommentTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Text(AppLocalizations.of(ctx)!.cannotBeUndone,
+            style: const TextStyle(fontSize: 14, color: Colors.black54)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(AppLocalizations.of(ctx)!.cancel,
+                style: const TextStyle(color: Colors.black54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(AppLocalizations.of(ctx)!.delete,
+                style: const TextStyle(
+                    color: Color(0xFFB31637),
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) widget.onDelete?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.comment;
+    final colors =
+        widget.gradients[_gradientFor(c.uid) % widget.gradients.length];
+    final name =
+        c.hisName.isEmpty ? c.herName : '${c.herName} & ${c.hisName}';
+
+    return InkWell(
+      onLongPress:
+          widget.canDelete ? () => _confirmDelete(context) : null,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () => widget.onAvatarTap(c.uid),
+              child: _AvatarCircle(
+                size: 36,
+                colors: colors,
+                photoUrl: widget.authorPhotoUrl,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: const TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Text(
-                      relTime,
+                      Text(
+                        _relTime(c.createdAt),
+                        style: const TextStyle(
+                            fontSize: 11, color: Colors.black38),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    c.text,
+                    style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                        height: 1.35),
+                  ),
+                  const SizedBox(height: 4),
+                  // Reply button
+                  GestureDetector(
+                    onTap: () => widget.onReply(
+                        replyToName: null, replyToUid: null),
+                    child: Text(
+                      AppLocalizations.of(context)!.reply,
                       style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.black38,
+                          fontSize: 12,
+                          color: Colors.black45,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  // Toggle replies
+                  if (c.repliesCount > 0) ...[
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: () =>
+                          setState(() => _showReplies = !_showReplies),
+                      child: Row(
+                        children: [
+                          Container(
+                              width: 24, height: 1, color: Colors.black26),
+                          const SizedBox(width: 8),
+                          Text(
+                            _showReplies
+                                ? AppLocalizations.of(context)!.hideReplies
+                                : c.repliesCount == 1
+                                    ? AppLocalizations.of(context)!.viewReply
+                                    : AppLocalizations.of(context)!.viewReplies(c.repliesCount),
+                            style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black45,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ],
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  comment.text,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                    height: 1.35,
-                  ),
-                ),
-              ],
+                  // Replies list
+                  if (_showReplies)
+                    StreamBuilder<List<ReplyData>>(
+                      stream: CommunityDatasource.streamReplies(
+                          widget.postId, c.id),
+                      builder: (ctx, snap) {
+                        final replies = snap.data ?? [];
+                        if (snap.connectionState ==
+                                ConnectionState.waiting &&
+                            replies.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 8),
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFFB31637)),
+                            ),
+                          );
+                        }
+                        return Column(
+                          children: replies.map((r) {
+                            final canDeleteReply =
+                                widget.currentUid == r.uid ||
+                                    widget.currentUid ==
+                                        widget.postAuthorUid ||
+                                    widget.currentUid == c.uid;
+                            final replyName = r.hisName.isEmpty
+                                ? r.herName
+                                : '${r.herName} & ${r.hisName}';
+                            return _ReplyRow(
+                              reply: r,
+                              gradients: widget.gradients,
+                              canDelete: canDeleteReply,
+                              authorPhotoUrl: widget.photoCache[r.uid] ??
+                                  r.authorPhotoUrl,
+                              onDelete: canDeleteReply
+                                  ? () => widget.onDeleteReply(r.id)
+                                  : null,
+                              onAvatarTap: () =>
+                                  widget.onAvatarTap(r.uid),
+                              onReply: () => widget.onReply(
+                                replyToName: replyName,
+                                replyToUid: r.uid,
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+                ],
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Reply Row ─────────────────────────────────────────────────────────────────
+
+class _ReplyRow extends StatelessWidget {
+  final ReplyData reply;
+  final List<List<Color>> gradients;
+  final bool canDelete;
+  final String? authorPhotoUrl;
+  final VoidCallback? onDelete;
+  final VoidCallback onAvatarTap;
+  final VoidCallback onReply;
+
+  const _ReplyRow({
+    required this.reply,
+    required this.gradients,
+    required this.canDelete,
+    this.authorPhotoUrl,
+    this.onDelete,
+    required this.onAvatarTap,
+    required this.onReply,
+  });
+
+  static String _relTime(DateTime t) {
+    final d = DateTime.now().difference(t);
+    if (d.inSeconds < 60) return 'ahora';
+    if (d.inMinutes < 60) return '${d.inMinutes}m';
+    if (d.inHours < 24) return '${d.inHours}h';
+    if (d.inDays < 7) return '${d.inDays}d';
+    if (d.inDays < 28) return '${d.inDays ~/ 7}sem';
+    if (d.inDays < 365) return '${d.inDays ~/ 30}mes';
+    return '${d.inDays ~/ 365}a';
+  }
+
+  int _gradientFor() {
+    if (reply.uid.isEmpty) return 0;
+    return reply.uid.codeUnits.reduce((a, b) => a + b) % gradients.length;
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(AppLocalizations.of(ctx)!.deleteReplyTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Text(AppLocalizations.of(ctx)!.cannotBeUndone,
+            style: const TextStyle(fontSize: 14, color: Colors.black54)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(AppLocalizations.of(ctx)!.cancel,
+                style: const TextStyle(color: Colors.black54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(AppLocalizations.of(ctx)!.delete,
+                style: const TextStyle(
+                    color: Color(0xFFB31637),
+                    fontWeight: FontWeight.w700)),
           ),
         ],
+      ),
+    );
+    if (confirmed == true) onDelete?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = gradients[_gradientFor()];
+    final name = reply.hisName.isEmpty
+        ? reply.herName
+        : '${reply.herName} & ${reply.hisName}';
+
+    return InkWell(
+      onLongPress: canDelete ? () => _confirmDelete(context) : null,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: onAvatarTap,
+              child: _AvatarCircle(
+                size: 28,
+                colors: colors,
+                photoUrl: authorPhotoUrl,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        _relTime(reply.createdAt),
+                        style: const TextStyle(
+                            fontSize: 10, color: Colors.black38),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  if (reply.replyToName != null)
+                    Text.rich(
+                      TextSpan(children: [
+                        TextSpan(
+                          text: '@${reply.replyToName} ',
+                          style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFFB31637),
+                              fontWeight: FontWeight.w600),
+                        ),
+                        TextSpan(
+                          text: reply.text,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.black87,
+                              height: 1.35),
+                        ),
+                      ]),
+                    )
+                  else
+                    Text(
+                      reply.text,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.black87,
+                          height: 1.35),
+                    ),
+                  const SizedBox(height: 2),
+                  GestureDetector(
+                    onTap: onReply,
+                    child: Text(
+                      AppLocalizations.of(context)!.reply,
+                      style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.black45,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -742,7 +1286,7 @@ class _CommentRow extends StatelessWidget {
 // ── Floating Composer ─────────────────────────────────────────────────────────
 
 class _FloatingComposer extends StatefulWidget {
-  final void Function(String text, String? imageFilePath) onPost;
+  final Future<void> Function(String text, XFile? image) onPost;
 
   const _FloatingComposer({required this.onPost});
 
@@ -752,6 +1296,7 @@ class _FloatingComposer extends StatefulWidget {
 
 class _FloatingComposerState extends State<_FloatingComposer> {
   bool _expanded = false;
+  bool _isPosting = false;
   XFile? _pickedImage;
   final TextEditingController _ctrl = TextEditingController();
   final FocusNode _focus = FocusNode();
@@ -773,20 +1318,34 @@ class _FloatingComposerState extends State<_FloatingComposer> {
     setState(() {
       _expanded = false;
       _pickedImage = null;
+      _isPosting = false;
       _ctrl.clear();
     });
     _focus.unfocus();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final text = _ctrl.text.trim();
-    if (text.isEmpty) return;
-    widget.onPost(text, _pickedImage?.path);
-    _collapse();
+    if (text.isEmpty && _pickedImage == null) return;
+    setState(() => _isPosting = true);
+    try {
+      await widget.onPost(text, _pickedImage);
+      if (mounted) _collapse();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isPosting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorPosting(e.toString())),
+            backgroundColor: const Color(0xFFB31637),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _pickImage() async {
-    final l10n = AppLocalizations.of(context)!;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.white,
@@ -808,12 +1367,12 @@ class _FloatingComposerState extends State<_FloatingComposer> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: Text(l10n.imagePickerGallery),
+              title: Text(AppLocalizations.of(ctx)!.gallery),
               onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
-              title: Text(l10n.imagePickerCamera),
+              title: Text(AppLocalizations.of(ctx)!.camera),
               onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
             ),
             const SizedBox(height: 8),
@@ -830,7 +1389,7 @@ class _FloatingComposerState extends State<_FloatingComposer> {
       maxWidth: 1920,
     );
 
-    if (image != null) {
+    if (image != null && mounted) {
       setState(() => _pickedImage = image);
     }
   }
@@ -845,7 +1404,7 @@ class _FloatingComposerState extends State<_FloatingComposer> {
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color(0xFFB01030),
+            color: const Color(0xFFB31637),
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
@@ -862,16 +1421,16 @@ class _FloatingComposerState extends State<_FloatingComposer> {
   }
 
   Widget _buildCollapsed() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.image, color: Colors.white, size: 20),
-          SizedBox(width: 8),
+          const Icon(Icons.image, color: Colors.white, size: 20),
+          const SizedBox(width: 8),
           Text(
-            'Share with the community',
-            style: TextStyle(
+            AppLocalizations.of(context)!.shareWithCommunity,
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 15,
@@ -888,7 +1447,6 @@ class _FloatingComposerState extends State<_FloatingComposer> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Text area
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -903,17 +1461,16 @@ class _FloatingComposerState extends State<_FloatingComposer> {
                   focusNode: _focus,
                   minLines: 3,
                   maxLines: 6,
+                  enabled: !_isPosting,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 15,
                     height: 1.4,
                   ),
-                  decoration: const InputDecoration(
-                    hintText: 'What do you have in mind',
-                    hintStyle: TextStyle(
-                      color: Colors.white60,
-                      fontSize: 15,
-                    ),
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.whatsOnYourMind,
+                    hintStyle:
+                        TextStyle(color: Colors.white60, fontSize: 15),
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
@@ -942,18 +1499,16 @@ class _FloatingComposerState extends State<_FloatingComposer> {
                   top: 6,
                   right: 6,
                   child: GestureDetector(
-                    onTap: () => setState(() => _pickedImage = null),
+                    onTap:
+                        _isPosting ? null : () => setState(() => _pickedImage = null),
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
                         color: Colors.black54,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                        size: 16,
-                      ),
+                      child: const Icon(Icons.close,
+                          color: Colors.white, size: 16),
                     ),
                   ),
                 ),
@@ -961,15 +1516,15 @@ class _FloatingComposerState extends State<_FloatingComposer> {
             ),
           ] else
             OutlinedButton.icon(
-              onPressed: _pickImage,
+              onPressed: _isPosting ? null : _pickImage,
               icon: const Icon(
                 Icons.add_photo_alternate_outlined,
                 color: Colors.white,
                 size: 18,
               ),
-              label: const Text(
-                'Add image',
-                style: TextStyle(
+              label: Text(
+                AppLocalizations.of(context)!.addImage,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
@@ -986,17 +1541,8 @@ class _FloatingComposerState extends State<_FloatingComposer> {
           const SizedBox(height: 10),
 
           // Share button
-          ElevatedButton.icon(
-            onPressed: _submit,
-            icon: const Icon(Icons.send, size: 17, color: Colors.black87),
-            label: const Text(
-              'Share with the community',
-              style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
+          ElevatedButton(
+            onPressed: _isPosting ? null : _submit,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.black87,
@@ -1005,6 +1551,111 @@ class _FloatingComposerState extends State<_FloatingComposer> {
                 borderRadius: BorderRadius.circular(10),
               ),
               padding: const EdgeInsets.symmetric(vertical: 10),
+            ),
+            child: _isPosting
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFFB31637),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.send, size: 17, color: Colors.black87),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppLocalizations.of(context)!.postToCommunity,
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Like button with scale animation ─────────────────────────────────────────
+
+class _LikeButton extends StatefulWidget {
+  final bool likedByMe;
+  final int likesCount;
+  final VoidCallback onTap;
+
+  const _LikeButton({
+    required this.likedByMe,
+    required this.likesCount,
+    required this.onTap,
+  });
+
+  @override
+  State<_LikeButton> createState() => _LikeButtonState();
+}
+
+class _LikeButtonState extends State<_LikeButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  static const Color _grey = Color(0xFFB9B9B9);
+  static const Color _red = Color(0xFFB31637);
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+      lowerBound: 0.0,
+      upperBound: 0.3,
+    );
+    _scale = Tween<double>(begin: 1.0, end: 1.35).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleTap() async {
+    await _ctrl.forward();
+    await _ctrl.reverse();
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          ScaleTransition(
+            scale: _scale,
+            child: Icon(
+              widget.likedByMe ? Icons.favorite : Icons.favorite_border,
+              color: widget.likedByMe ? _red : _grey,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            '${widget.likesCount}',
+            style: TextStyle(
+              fontSize: 13,
+              color: widget.likedByMe ? _red : _grey,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -1018,8 +1669,13 @@ class _FloatingComposerState extends State<_FloatingComposer> {
 class _AvatarCircle extends StatelessWidget {
   final double size;
   final List<Color> colors;
+  final String? photoUrl;
 
-  const _AvatarCircle({required this.size, required this.colors});
+  const _AvatarCircle({
+    required this.size,
+    required this.colors,
+    this.photoUrl,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1034,12 +1690,25 @@ class _AvatarCircle extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
       ),
-      child: Center(
-        child: Icon(
-          Icons.favorite,
-          color: Colors.white30,
-          size: size * 0.4,
-        ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(size / 2),
+        child: photoUrl != null && photoUrl!.isNotEmpty
+            ? Image.network(
+                photoUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildPlaceholder(),
+              )
+            : _buildPlaceholder(),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Center(
+      child: Icon(
+        Icons.favorite,
+        color: Colors.white30,
+        size: size * 0.4,
       ),
     );
   }

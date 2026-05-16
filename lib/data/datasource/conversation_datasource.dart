@@ -37,6 +37,27 @@ class ConversationDatasource {
     return snap.docs.map(ChatConversation.fromDoc).toList();
   }
 
+  /// Real-time count of pending conversation requests for [myUid]:
+  /// conversations initiated by someone else that [myUid] hasn't yet
+  /// replied to. Drives the badge on the inbox tab.
+  ///
+  /// Sourced from the agency's ConversationDatasource during the
+  /// 2026-05-16 merge — the inbox/request UI relies on this counter
+  /// to surface unread request invitations.
+  static Stream<int> pendingRequestsStream(String myUid) {
+    return FirebaseFirestore.instance
+        .collection('conversations')
+        .where('participants', arrayContains: myUid)
+        .snapshots()
+        .map((snap) => snap.docs.where((doc) {
+              final data = doc.data();
+              final initiatedBy = data['initiated_by'] as String? ?? '';
+              final repliedBy =
+                  List<String>.from(data['replied_by'] as List? ?? []);
+              return initiatedBy != myUid && !repliedBy.contains(myUid);
+            }).length);
+  }
+
   /// Real-time stream of all conversations that include [myUid],
   /// ordered by most-recently-updated first.
   static Stream<List<ChatConversation>> conversationsStream(String myUid) {

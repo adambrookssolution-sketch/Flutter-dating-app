@@ -1,7 +1,10 @@
 {
   "@@locale": "es",
-
   "appTitle": "Affinity",
+  "itsAMatch": "¡ES UN MATCH!",
+  "matchUs": "Vosotros",
+  "sendMessage": "Enviar mensaje",
+  "keepExploring": "Seguir explorando",
   "signIn": "Iniciar sesión",
   "signUp": "Registrarse",
   "signInAccounts": "Inicia sesión con tus cuentas.",
@@ -101,22 +104,33 @@
   "chatSuggestion4": "Su vibe es todo ✨ teníamos que conectar",
   "chatSuggestion5": "¿Qué tal una cita doble? ☕🍷",
   "chatSuggestion6": "Buscábamos una pareja como ustedes 🙌",
-
   "blockedCouple": "Bloqueaste a {him} y {her}",
   "@blockedCouple": {
     "placeholders": {
-      "him": { "type": "String" },
-      "her": { "type": "String" }
+      "him": {
+        "type": "String"
+      },
+      "her": {
+        "type": "String"
+      }
     }
   },
   "couldNotBlock": "No se pudo bloquear: {error}",
   "@couldNotBlock": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "reportSubmittedThanks": "Gracias — nuestro equipo revisará el reporte.",
   "requestSentTo": "Solicitud enviada a {name}",
   "@requestSentTo": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "retry": "Reintentar",
   "feedEmptyTitle": "Por ahora no hay parejas que coincidan",
@@ -126,11 +140,19 @@
   "filtersDistanceMin5km": "Mín 5 km",
   "filtersAgeMin": "Mín {n}",
   "@filtersAgeMin": {
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "filtersAgeMax": "Máx {n}",
   "@filtersAgeMax": {
-    "placeholders": { "n": { "type": "int" } }
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   },
   "selectResortOrCruise": "Selecciona un resort o crucero",
   "anyDestination": "Cualquier destino",
@@ -142,16 +164,23 @@
   "imagePickerGallery": "Galería",
   "imagePickerCamera": "Cámara",
   "photoMain": "Principal",
-
   "notSignedIn": "Sesión no iniciada",
   "securityTitle": "Seguridad",
   "couldNotLoadError": "No se pudo cargar: {error}",
   "@couldNotLoadError": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "unblockFailed": "Desbloqueo fallido: {error}",
   "@unblockFailed": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "unblockAction": "Desbloquear",
   "accountSettingsTitle": "Ajustes de cuenta",
@@ -168,18 +197,24 @@
   "deleteTripTitle": "¿Eliminar viaje?",
   "deleteTripBody": "Cancela las notificaciones a las parejas con coincidencia en \"{destination}\".",
   "@deleteTripBody": {
-    "placeholders": { "destination": { "type": "String" } }
+    "placeholders": {
+      "destination": {
+        "type": "String"
+      }
+    }
   },
   "delete": "Eliminar",
-
   "noBlockedCouples": "No has bloqueado a nadie.",
   "blockedOn": "Bloqueado el {date}",
   "@blockedOn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "blockOriginViaReport": "(vía reporte)",
   "blockOriginAuto": "(automático)",
-
   "changeEmail": "Cambiar correo",
   "deleteAccount": "Eliminar cuenta",
   "languageSettingTitle": "Idioma",
@@ -193,7 +228,6 @@
   "explicitContentToggleLabel": "Mostrar contenido explícito",
   "explicitContentToggleHelp": "Las parejas pueden marcar publicaciones como explícitas. Están ocultas por defecto y solo aparecen al activar esta opción.",
   "explicitContentMarkLabel": "Marcar esta publicación como explícita",
-
   "reportCategoryFakeProfile": "Perfil falso",
   "reportCategoryHarassment": "Acoso",
   "reportCategoryNonConsensual": "Contenido no consensuado",
@@ -202,7 +236,11 @@
   "reportCategoryOther": "Otro",
   "reportingCouple": "Reportando a {names}",
   "@reportingCouple": {
-    "placeholders": { "names": { "type": "String" } }
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
   },
   "reportCategoryLabel": "Categoría",
   "reportDescriptionRequired": "Descripción (obligatoria)",
@@ -215,25 +253,44 @@
   "reportFooterConfidential": "Los reportes son confidenciales. La pareja reportada nunca sabe quién envió el reporte.",
   "reportCouldNotSubmit": "No se pudo enviar: {error}",
   "@reportCouldNotSubmit": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-
   "couldNotAccept": "No se pudo aceptar: {error}",
   "@couldNotAccept": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "couldNotDismiss": "No se pudo descartar: {error}",
   "@couldNotDismiss": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "couldNotCancelDeletion": "No se pudo cancelar la eliminación: {error}",
   "@couldNotCancelDeletion": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "keepDeletionScheduled": "Mantener eliminación programada",
   "couldNotRequestDeletion": "No se pudo solicitar la eliminación: {error}",
   "@couldNotRequestDeletion": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "deleteAccountTitle": "Eliminar cuenta",
   "addTripTitle": "Añadir viaje",
@@ -245,5 +302,98 @@
   "openSettings": "Abrir ajustes",
   "goBack": "Volver",
   "blockThisCouple": "Bloquear a esta pareja",
-  "reportAction": "Reportar"
+  "reportAction": "Reportar",
+  "her": "Nombre de ella",
+  "his": "Nombre de él",
+  "dateOfBirth": "Fecha de nacimiento",
+  "dateOfBirthFormat": "DD-MM-AAAA",
+  "selectCity": "Selecciona ciudad",
+  "description": "Descripción",
+  "tellUsAboutYourself": "Cuéntanos sobre vosotros",
+  "confirmPassword": "Confirmar contraseña",
+  "confirmPasswordHint": "Vuelve a introducir tu contraseña",
+  "welcomeBack": "¡Bienvenido de vuelta!",
+  "welcomeBackDescription": "Una vez verificado, la próxima vez que inicies sesión deberás introducir el código de verificación.",
+  "verify": "Verificar",
+  "youAreIn": "¡Ya estás dentro!",
+  "recoveryPasswordSuccess": "Esperamos que disfrutes explorando y conectando con nuestra vibrante comunidad.",
+  "goToLogin": "Ir al inicio de sesión",
+  "startConversation": "Iniciar conversación",
+  "chatMessageQuickStarters": "Mensaje rápido (para comenzar)",
+  "alreadyAMember": "¿Ya eres miembro?",
+  "height": "Altura",
+  "errorMustBeAdult": "Ambos miembros deben ser mayores de 18 años",
+  "editTrip": "Editar viaje",
+  "manageTripTitle": "Gestionar Viaje",
+  "scheduledTrips": "Viajes programados",
+  "addATrip": "+ Agregar un viaje",
+  "noTripsScheduled": "No tiene viajes programados",
+  "destination": "Destino",
+  "tripCountry": "País",
+  "tripCity": "Ciudad",
+  "startDate": "Fecha de inicio",
+  "endDate": "Fecha de fin",
+  "block": "Bloquear",
+  "report": "Reportar",
+  "verifyYourEmail": "Verifica tu correo",
+  "verifyEmailSentTo": "Enviamos un enlace de verificación a {email}. Haz clic en él para activar tu cuenta.",
+  "continueAction": "Continuar",
+  "resendEmail": "Reenviar correo",
+  "resendEmailIn": "Reenviar en {seconds}s",
+  "useDifferentEmail": "Usar otro correo",
+  "errorEmailNotVerified": "Correo aún no verificado. Revisa tu bandeja de entrada.",
+  "askAboutTrip": "Preguntar sobre este viaje",
+  "tripMessageTemplate": "Hola, vi que viajas a {destination} el {date}. ¿Coordinamos algo?",
+  "openChat": "Ir al chat",
+  "searchCouples": "Buscar por nombre...",
+  "favoriteCouples": "Parejas favoritas",
+  "removeFavorite": "Quitar de favoritos",
+  "removeFavoriteConfirm": "¿Estás seguro de que quieres quitar esta pareja de tus favoritos?",
+  "noFavoriteCouples": "Aún no tienes parejas favoritas.\n¡Empieza a guardar las que te gusten!",
+  "language": "Idioma",
+  "languageEnglish": "Inglés",
+  "languageSpanish": "Español",
+  "prevPhoto": "Foto anterior",
+  "nextPhoto": "Foto siguiente",
+  "mainPhoto": "Principal",
+  "errorLoadProfiles": "No se pudo cargar los perfiles",
+  "errorLoadFavorites": "No se pudo cargar los favoritos",
+  "noNewCouples": "No hay nuevas parejas por descubrir ahora.\n¡Vuelve más tarde!",
+  "deleteCommentTitle": "Eliminar comentario",
+  "deleteReplyTitle": "Eliminar respuesta",
+  "cannotBeUndone": "Esta acción no se puede deshacer.",
+  "gallery": "Galería",
+  "camera": "Cámara",
+  "errorPosting": "Error al publicar: {error}",
+  "addComment": "Añade un comentario...",
+  "whatsOnYourMind": "¿Qué tenéis en mente?",
+  "addImage": "Añadir imagen",
+  "today": "Hoy",
+  "yesterday": "Ayer",
+  "chatInputHint": "Escribe algo...",
+  "chatEmptyState": "Inicia vuestra conversación…\nvuestra historia empieza aquí. 🌟",
+  "requests": "Solicitudes",
+  "errorSave": "Error al guardar. Inténtalo de nuevo.",
+  "noConversations": "Aún no hay conversaciones.\n¡Empieza a conectar con parejas!",
+  "errorLoadPosts": "No se pudieron cargar los posts.",
+  "noPosts": "Aún no hay publicaciones.\n¡Sé el primero! 🎉",
+  "deletePostTitle": "¿Eliminar publicación?",
+  "deletePost": "Eliminar post",
+  "comments": "Comentarios",
+  "noComments": "Sin comentarios aún.\n¡Sé el primero! 💬",
+  "replyingTo": "Respondiendo a {name}",
+  "replyingToComment": "Respondiendo al comentario",
+  "reply": "Responder",
+  "hideReplies": "Ocultar respuestas",
+  "viewReply": "Ver 1 respuesta",
+  "viewReplies": "Ver {count} respuestas",
+  "shareWithCommunity": "Comparte con la comunidad",
+  "postToCommunity": "Publicar en la comunidad",
+  "deleteAccountDangerZone": "Zona de peligro",
+  "deleteAccountDescription": "Esto eliminará permanentemente tu perfil, fotos, viajes y todos los datos asociados. Esta acción no se puede deshacer.",
+  "deleteAccountTypeToConfirm": "Escribe \"eliminar\" para confirmar",
+  "deleteAccountConfirmWord": "eliminar",
+  "deleteAccountButton": "Eliminar mi cuenta",
+  "deleteAccountError": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
+  "deleteAccountDeleting": "Eliminando cuenta..."
 }
