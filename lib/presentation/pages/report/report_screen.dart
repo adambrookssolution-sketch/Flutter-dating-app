@@ -78,8 +78,15 @@ class _ReportScreenState extends State<ReportScreen> {
       );
       if (!mounted) return;
       Navigator.pop(context, true);
+      // Client feedback 2026-05-17 #2: the success snackbar should
+      // promise a follow-up so the user knows their report won't fall
+      // into a black hole. Bumped to 5s so they actually get to read
+      // it (the default 3s is too short for the longer message).
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.reportSubmitted)),
+        SnackBar(
+          content: Text(l10n.reportSubmittedWithFollowup),
+          duration: const Duration(seconds: 5),
+        ),
       );
     } catch (e) {
       if (!mounted) return;

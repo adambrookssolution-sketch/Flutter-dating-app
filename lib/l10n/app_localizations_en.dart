@@ -980,4 +980,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verificationIntroHeaderHere => 'Here\'s what you need to do:';
+
+  @override
+  String get reportSubmittedWithFollowup =>
+      'Thanks — our team will review your report and we will notify you once a decision is made.';
 }

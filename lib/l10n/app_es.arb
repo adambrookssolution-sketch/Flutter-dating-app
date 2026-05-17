@@ -405,5 +405,6 @@
   "verificationStepLighting": "Buena iluminación en el rostro",
   "verificationStepRecordingLength": "La grabación dura aproximadamente 8 segundos",
   "verificationStepNoFilters": "Sin filtros ni ediciones — directo desde la cámara",
-  "verificationIntroHeaderHere": "Esto es lo que debes hacer:"
+  "verificationIntroHeaderHere": "Esto es lo que debes hacer:",
+  "reportSubmittedWithFollowup": "Gracias — nuestro equipo revisará tu reporte y te avisaremos cuando tengamos una respuesta."
 }

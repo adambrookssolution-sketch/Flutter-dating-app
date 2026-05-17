@@ -127,23 +127,17 @@ class _CoupleCardState extends State<CoupleCard> {
             right: 0,
             child: Center(child: _favouriteBubble()),
           ),
-          // Top-right corner cluster: info (open partner profile) on
-          // the outer edge per client feedback 2026-05-16, with the
-          // overflow menu (block / report) tucked just inside it. The
-          // heart bubble stays centred at the top via the row above.
-          Positioned(
-            top: 12,
-            right: 12,
-            child: Row(
-              children: [
-                if (widget.onBlock != null || widget.onReport != null) ...[
-                  _overflowMenu(context),
-                  if (widget.onTap != null) const SizedBox(width: 8),
-                ],
-                if (widget.onTap != null) _infoBubble(),
-              ],
+          // Top-right: only the overflow menu (block / report). Client
+          // feedback 2026-05-17 #4: tapping the card already opens the
+          // partner-profile detail, so the separate ⓘ button was
+          // redundant and we removed it. The heart bubble stays centred
+          // at the top via the Positioned row above.
+          if (widget.onBlock != null || widget.onReport != null)
+            Positioned(
+              top: 12,
+              right: 12,
+              child: _overflowMenu(context),
             ),
-          ),
           // Bottom text block — names, location, trip dates, description,
           // tags. Sits on the gradient so white text always reads.
           Positioned(
@@ -216,35 +210,6 @@ class _CoupleCardState extends State<CoupleCard> {
               Colors.transparent,
               Colors.black.withValues(alpha: 0.85),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Top-right info bubble — opens the partner-profile detail screen.
-  /// Smaller and translucent so it sits next to the safety overflow
-  /// menu without competing visually with the heart bubble.
-  Widget _infoBubble() {
-    return GestureDetector(
-      onTap: widget.onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.20),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.60),
-            width: 1,
-          ),
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.info_outline,
-            color: Colors.white,
-            size: 20,
           ),
         ),
       ),

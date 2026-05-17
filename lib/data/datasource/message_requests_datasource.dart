@@ -107,6 +107,28 @@ class MessageRequestsDatasource {
     });
   }
 
+  /// IDs of every couple [myCoupleId] has sent a request to and that
+  /// request is still pending or accepted. Used by the discovery feed
+  /// to filter out couples we've already engaged with — once a request
+  /// goes out, the recipient shouldn't reappear at the top of the
+  /// stack (client feedback 2026-05-17 #9).
+  static Future<Set<String>> getSentRequestReceiverIds(
+    String myCoupleId,
+  ) async {
+    final snap = await _db
+        .collection('message_requests')
+        .where('pareja_emisora', isEqualTo: myCoupleId)
+        .where('estado', whereIn: [
+          RequestStatus.pending.value,
+          RequestStatus.accepted.value,
+        ])
+        .get();
+    return snap.docs
+        .map((d) => (d.data()['pareja_receptora'] as String?) ?? '')
+        .where((s) => s.isNotEmpty)
+        .toSet();
+  }
+
   /// Pending requests RECEIVED by [myCoupleId].
   static Stream<List<MessageRequest>> streamReceivedPending(
     String myCoupleId,

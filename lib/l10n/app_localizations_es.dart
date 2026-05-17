@@ -995,4 +995,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get verificationIntroHeaderHere => 'Esto es lo que debes hacer:';
+
+  @override
+  String get reportSubmittedWithFollowup =>
+      'Gracias — nuestro equipo revisará tu reporte y te avisaremos cuando tengamos una respuesta.';
 }

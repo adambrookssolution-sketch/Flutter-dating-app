@@ -431,5 +431,6 @@
   "verificationStepLighting": "Good lighting on your face",
   "verificationStepRecordingLength": "Recording lasts about 8 seconds",
   "verificationStepNoFilters": "No filters, no edits — straight from the camera",
-  "verificationIntroHeaderHere": "Here's what you need to do:"
+  "verificationIntroHeaderHere": "Here's what you need to do:",
+  "reportSubmittedWithFollowup": "Thanks — our team will review your report and we will notify you once a decision is made."
 }

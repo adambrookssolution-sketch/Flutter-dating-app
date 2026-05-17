@@ -2,6 +2,7 @@ import 'dart:math' show Random;
 
 import 'package:app/data/datasource/blocks_datasource.dart';
 import 'package:app/data/datasource/conversation_datasource.dart';
+import 'package:app/data/datasource/message_requests_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
 import 'package:app/data/models/couple.dart' as cm;
 import 'package:app/data/models/message_request.dart';
@@ -36,6 +37,10 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
   DocumentSnapshot? _cursor;
   Set<String> _partnerIds = const {};
   Set<String> _blockedIds = const {};
+  /// Couples we've already sent a request to — they should drop out
+  /// of the discovery feed until the request is rejected or accepted.
+  /// Client feedback 2026-05-17 #9.
+  Set<String> _sentRequestIds = const {};
   String? _error;
 
   final ScrollController _scrollController = ScrollController();
@@ -96,9 +101,11 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
       final sideCar = await Future.wait([
         ConversationDatasource.getConversationPartnerIds(myUid),
         BlocksDatasource.getMutualBlockIds(myUid),
+        MessageRequestsDatasource.getSentRequestReceiverIds(myUid),
       ]);
       _partnerIds = sideCar[0];
       _blockedIds = sideCar[1];
+      _sentRequestIds = sideCar[2];
 
       final first = await ProfileDatasource.getProfilesPage(limit: _pageSize);
       _cursor = first.cursor;
@@ -154,7 +161,8 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         .where((p) =>
             p.uid != myUid &&
             !_partnerIds.contains(p.uid) &&
-            !_blockedIds.contains(p.uid))
+            !_blockedIds.contains(p.uid) &&
+            !_sentRequestIds.contains(p.uid))
         .toList();
   }
 
@@ -266,8 +274,15 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     if (!mounted || sent != true) return;
 
     // Hide the card once a Request has been sent (avoid re-selecting the
-    // same couple while in cooldown / pending window).
-    setState(() => _profiles?.remove(profile));
+    // same couple while in cooldown / pending window). Also adds the
+    // receiver to the persistent exclusion set so that pulling to
+    // refresh, or scrolling past the end and re-fetching, doesn't
+    // bring the couple back — they only return if the request is
+    // explicitly rejected (client feedback 2026-05-17 #9).
+    setState(() {
+      _profiles?.remove(profile);
+      _sentRequestIds = {..._sentRequestIds, profile.uid};
+    });
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

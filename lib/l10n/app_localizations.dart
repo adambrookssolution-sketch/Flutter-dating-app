@@ -1885,6 +1885,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Here\'s what you need to do:'**
   String get verificationIntroHeaderHere;
+
+  /// No description provided for @reportSubmittedWithFollowup.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks — our team will review your report and we will notify you once a decision is made.'**
+  String get reportSubmittedWithFollowup;
 }
 
 class _AppLocalizationsDelegate
