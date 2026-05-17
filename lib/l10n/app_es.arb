@@ -396,5 +396,14 @@
   "deleteAccountButton": "Eliminar mi cuenta",
   "deleteAccountError": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
   "deleteAccountDeleting": "Eliminando cuenta...",
-  "errorServiceUnavailable": "Servicio temporalmente no disponible. Vuelve a intentar en un momento."
+  "errorServiceUnavailable": "Servicio temporalmente no disponible. Vuelve a intentar en un momento.",
+  "verificationCueLookAtCamera": "Mira a la cámara",
+  "verificationCueTurnRight": "Gira la cabeza a la derecha",
+  "verificationCueTurnLeft": "Gira la cabeza a la izquierda",
+  "verificationIntroBody": "Mira a la cámara, luego gira la cabeza a la derecha y después a la izquierda",
+  "verificationStepBothPartners": "Idealmente aparecen ambos miembros de la pareja — uno solo también es válido",
+  "verificationStepLighting": "Buena iluminación en el rostro",
+  "verificationStepRecordingLength": "La grabación dura aproximadamente 8 segundos",
+  "verificationStepNoFilters": "Sin filtros ni ediciones — directo desde la cámara",
+  "verificationIntroHeaderHere": "Esto es lo que debes hacer:"
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/verification/video_record_screen.dart';
 
 /// First step of identity verification — explains what the user must record
@@ -53,12 +54,13 @@ class VerificationIntroScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 15, color: Color(0xFF555555)),
               ),
               const SizedBox(height: 24),
-              const Text(
-                "Here's what you need to do:",
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              Text(
+                AppLocalizations.of(context)!.verificationIntroHeaderHere,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: 15),
               ),
               const SizedBox(height: 12),
-              ..._steps.map(
+              ..._stepsLocalized(AppLocalizations.of(context)!).map(
                 (s) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Row(
@@ -125,15 +127,15 @@ class VerificationIntroScreen extends StatelessWidget {
     );
   }
 
-  // Client spec (2026-04-21): keep the prompt minimal so couples actually
-  // complete it. Ideal is both partners in frame, but one is allowed.
-  // The head turn (front → right → left) is the proof-of-life signal the
-  // moderation team uses to confirm it's a real person, not a still photo.
-  static const _steps = [
-    'Ideally both partners appear — one is also allowed',
-    'Good lighting on your face',
-    'Look at the camera, then turn your head to the right, then to the left',
-    'Recording lasts between 3 and 5 seconds',
-    'No filters, no edits — straight from the camera',
-  ];
+  /// Client spec (2026-04-21): keep the prompt minimal so couples
+  /// actually complete it. Now localised (client feedback #7 — mixed
+  /// language) and the timing line was updated to "about 8 seconds"
+  /// to match the new recording window from #8.
+  static List<String> _stepsLocalized(AppLocalizations l10n) => [
+        l10n.verificationStepBothPartners,
+        l10n.verificationStepLighting,
+        l10n.verificationIntroBody,
+        l10n.verificationStepRecordingLength,
+        l10n.verificationStepNoFilters,
+      ];
 }

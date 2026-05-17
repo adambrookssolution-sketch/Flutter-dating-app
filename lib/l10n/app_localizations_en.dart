@@ -949,4 +949,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorServiceUnavailable =>
       'Service temporarily unavailable. Please try again in a moment.';
+
+  @override
+  String get verificationCueLookAtCamera => 'Look at the camera';
+
+  @override
+  String get verificationCueTurnRight => 'Turn your head to the right';
+
+  @override
+  String get verificationCueTurnLeft => 'Turn your head to the left';
+
+  @override
+  String get verificationIntroBody =>
+      'Look at the camera, then turn your head to the right, then to the left';
+
+  @override
+  String get verificationStepBothPartners =>
+      'Ideally both partners appear — one is also allowed';
+
+  @override
+  String get verificationStepLighting => 'Good lighting on your face';
+
+  @override
+  String get verificationStepRecordingLength =>
+      'Recording lasts about 8 seconds';
+
+  @override
+  String get verificationStepNoFilters =>
+      'No filters, no edits — straight from the camera';
+
+  @override
+  String get verificationIntroHeaderHere => 'Here\'s what you need to do:';
 }

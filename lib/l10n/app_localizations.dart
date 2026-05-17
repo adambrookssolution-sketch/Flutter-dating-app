@@ -1831,6 +1831,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Service temporarily unavailable. Please try again in a moment.'**
   String get errorServiceUnavailable;
+
+  /// No description provided for @verificationCueLookAtCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Look at the camera'**
+  String get verificationCueLookAtCamera;
+
+  /// No description provided for @verificationCueTurnRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn your head to the right'**
+  String get verificationCueTurnRight;
+
+  /// No description provided for @verificationCueTurnLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn your head to the left'**
+  String get verificationCueTurnLeft;
+
+  /// No description provided for @verificationIntroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Look at the camera, then turn your head to the right, then to the left'**
+  String get verificationIntroBody;
+
+  /// No description provided for @verificationStepBothPartners.
+  ///
+  /// In en, this message translates to:
+  /// **'Ideally both partners appear — one is also allowed'**
+  String get verificationStepBothPartners;
+
+  /// No description provided for @verificationStepLighting.
+  ///
+  /// In en, this message translates to:
+  /// **'Good lighting on your face'**
+  String get verificationStepLighting;
+
+  /// No description provided for @verificationStepRecordingLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording lasts about 8 seconds'**
+  String get verificationStepRecordingLength;
+
+  /// No description provided for @verificationStepNoFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'No filters, no edits — straight from the camera'**
+  String get verificationStepNoFilters;
+
+  /// No description provided for @verificationIntroHeaderHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Here\'s what you need to do:'**
+  String get verificationIntroHeaderHere;
 }
 
 class _AppLocalizationsDelegate

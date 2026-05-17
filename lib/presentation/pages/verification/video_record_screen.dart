@@ -50,9 +50,10 @@ class _VideoRecordScreenState extends State<VideoRecordScreen> {
   /// 8-second recording the user is. Split into three beats so the
   /// head-turn gesture stays in sync with the prompt.
   String _headTurnPrompt(int elapsed) {
-    if (elapsed < 3) return 'Look at the camera';
-    if (elapsed < 5) return 'Turn your head to the right';
-    return 'Turn your head to the left';
+    final l10n = AppLocalizations.of(context)!;
+    if (elapsed < 3) return l10n.verificationCueLookAtCamera;
+    if (elapsed < 5) return l10n.verificationCueTurnRight;
+    return l10n.verificationCueTurnLeft;
   }
 
   CameraController? _camera;

@@ -625,12 +625,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     fontSize: 14.5,
                     color: Colors.black87,
                   ),
-                  decoration: const InputDecoration(
-                    hintText: 'Type something...',
-                    hintStyle:
-                        TextStyle(color: Colors.black38, fontSize: 14.5),
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.chatInputHint,
+                    hintStyle: const TextStyle(
+                        color: Colors.black38, fontSize: 14.5),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 8),
                     isDense: true,
                   ),
                 ),

@@ -422,5 +422,14 @@
   "deleteAccountButton": "Delete my account",
   "deleteAccountError": "Could not delete account. Please try again.",
   "deleteAccountDeleting": "Deleting account...",
-  "errorServiceUnavailable": "Service temporarily unavailable. Please try again in a moment."
+  "errorServiceUnavailable": "Service temporarily unavailable. Please try again in a moment.",
+  "verificationCueLookAtCamera": "Look at the camera",
+  "verificationCueTurnRight": "Turn your head to the right",
+  "verificationCueTurnLeft": "Turn your head to the left",
+  "verificationIntroBody": "Look at the camera, then turn your head to the right, then to the left",
+  "verificationStepBothPartners": "Ideally both partners appear — one is also allowed",
+  "verificationStepLighting": "Good lighting on your face",
+  "verificationStepRecordingLength": "Recording lasts about 8 seconds",
+  "verificationStepNoFilters": "No filters, no edits — straight from the camera",
+  "verificationIntroHeaderHere": "Here's what you need to do:"
 }

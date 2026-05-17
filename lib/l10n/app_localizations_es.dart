@@ -964,4 +964,35 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get errorServiceUnavailable =>
       'Servicio temporalmente no disponible. Vuelve a intentar en un momento.';
+
+  @override
+  String get verificationCueLookAtCamera => 'Mira a la cámara';
+
+  @override
+  String get verificationCueTurnRight => 'Gira la cabeza a la derecha';
+
+  @override
+  String get verificationCueTurnLeft => 'Gira la cabeza a la izquierda';
+
+  @override
+  String get verificationIntroBody =>
+      'Mira a la cámara, luego gira la cabeza a la derecha y después a la izquierda';
+
+  @override
+  String get verificationStepBothPartners =>
+      'Idealmente aparecen ambos miembros de la pareja — uno solo también es válido';
+
+  @override
+  String get verificationStepLighting => 'Buena iluminación en el rostro';
+
+  @override
+  String get verificationStepRecordingLength =>
+      'La grabación dura aproximadamente 8 segundos';
+
+  @override
+  String get verificationStepNoFilters =>
+      'Sin filtros ni ediciones — directo desde la cámara';
+
+  @override
+  String get verificationIntroHeaderHere => 'Esto es lo que debes hacer:';
 }
