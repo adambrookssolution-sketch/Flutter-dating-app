@@ -3,8 +3,10 @@ import 'package:app/data/datasource/trips_datasource.dart';
 import 'package:app/data/models/trip_model.dart';
 import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
+import 'package:app/data/models/message_request.dart';
 import 'package:app/presentation/pages/chat/chat_screen.dart';
 import 'package:app/presentation/widgets/conversation_row.dart';
+import 'package:app/presentation/widgets/send_request_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -130,13 +132,44 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     });
   }
 
-  void _openOrStartConversation() {
+  /// "Start Conversation" button on the partner-profile detail screen.
+  /// Behaviour matches what the feed card does (client feedback
+  /// 2026-05-17): when no match exists yet the request must go through
+  /// SendRequestDialog so the receiving couple can accept/dismiss it;
+  /// only after the request is accepted does the chat thread open. If
+  /// a match already exists we skip straight into the chat.
+  Future<void> _openOrStartConversation() async {
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     if (myUid == null) return;
 
     final ids = [myUid, widget.profile.uid]..sort();
     final conversationId = ids.join('_');
 
+    if (!_hasMatch) {
+      final displayName =
+          '${widget.profile.hisName} & ${widget.profile.herName}';
+      final firstPhoto = widget.profile.photos.isNotEmpty
+          ? widget.profile.photos.first
+          : null;
+      final visibleInterests = widget.profile.interests.isEmpty
+          ? const <String>[]
+          : widget.profile.interests
+              .split(',')
+              .map((s) => s.trim())
+              .where((s) => s.isNotEmpty)
+              .toList();
+      await SendRequestDialog.show(
+        context,
+        receiverCoupleId: widget.profile.uid,
+        receiverDisplayName: displayName,
+        receiverPhotoUrl: firstPhoto,
+        receiverVisibleInterests: visibleInterests,
+        origen: RequestOrigin.busqueda,
+      );
+      return;
+    }
+
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => ChatScreen(
@@ -151,7 +184,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
             photoUrl: widget.profile.photos.isNotEmpty
                 ? widget.profile.photos.first
                 : null,
-            pendingPartnerUid: _hasMatch ? null : widget.profile.uid,
+            pendingPartnerUid: null,
           ),
           otherProfile: widget.profile,
         ),

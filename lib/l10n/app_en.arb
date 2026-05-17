@@ -421,5 +421,6 @@
   "deleteAccountConfirmWord": "delete",
   "deleteAccountButton": "Delete my account",
   "deleteAccountError": "Could not delete account. Please try again.",
-  "deleteAccountDeleting": "Deleting account..."
+  "deleteAccountDeleting": "Deleting account...",
+  "errorServiceUnavailable": "Service temporarily unavailable. Please try again in a moment."
 }

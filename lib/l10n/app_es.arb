@@ -395,5 +395,6 @@
   "deleteAccountConfirmWord": "eliminar",
   "deleteAccountButton": "Eliminar mi cuenta",
   "deleteAccountError": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
-  "deleteAccountDeleting": "Eliminando cuenta..."
+  "deleteAccountDeleting": "Eliminando cuenta...",
+  "errorServiceUnavailable": "Servicio temporalmente no disponible. Vuelve a intentar en un momento."
 }

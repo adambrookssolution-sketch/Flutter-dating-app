@@ -29,22 +29,39 @@ class _AuthScreenState extends State<AuthScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1500),
     );
 
     _logoAlignment = AlignmentTween(
       begin: Alignment.center,
       end: const Alignment(0, -0.55),
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.5, 1.0, curve: Curves.easeInOut),
+    ));
 
-    _logoSize = Tween<double>(begin: 1.0, end: 0.78).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    // Client feedback 2026-05-17: the splash logo should ZOOM IN
+    // (small → large) at the start, not the shrink-down the previous
+    // build did. First half grows from 0.35× past 1.05× with a small
+    // overshoot, second half settles to 0.85× while sliding to the
+    // upper third of the screen.
+    _logoSize = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.35, end: 1.05)
+            .chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.05, end: 0.85)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+    ]).animate(_controller);
 
     _contentOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
+        curve: const Interval(0.6, 1.0, curve: Curves.easeIn),
       ),
     );
 
@@ -54,11 +71,14 @@ class _AuthScreenState extends State<AuthScreen>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
+        curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
       ),
     );
 
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    // Kick the animation off on the first post-frame callback. The
+    // previous 1.5-second hard delay made the logo look static until
+    // it suddenly jumped, which the client called out as "no animation".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _controller.forward();
     });
   }

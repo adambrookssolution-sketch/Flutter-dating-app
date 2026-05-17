@@ -72,8 +72,24 @@ class _SignInFormState extends State<SignInForm> {
       );
     } catch (e) {
       if (!mounted) return;
+      // Distinguish a transient post-auth Firestore hiccup from a real
+      // sign-in failure. Firebase's "[cloud_firestore/unavailable]"
+      // error fires when the navigateAfterSignIn helper tries to read
+      // the couple doc before the service has fully come back online
+      // — sign-in itself succeeded, so "check your credentials" is the
+      // wrong message. Surface a retry-friendly note instead.
+      final msg = e.toString().toLowerCase();
+      final isTransient = msg.contains('unavailable') ||
+          msg.contains('deadline-exceeded') ||
+          msg.contains('aborted');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${l10n.errorSignIn} (${e.toString()})')),
+        SnackBar(
+          content: Text(
+            isTransient
+                ? l10n.errorServiceUnavailable
+                : '${l10n.errorSignIn} (${e.toString()})',
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

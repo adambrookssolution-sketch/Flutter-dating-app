@@ -1825,6 +1825,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deleting account...'**
   String get deleteAccountDeleting;
+
+  /// No description provided for @errorServiceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Service temporarily unavailable. Please try again in a moment.'**
+  String get errorServiceUnavailable;
 }
 
 class _AppLocalizationsDelegate

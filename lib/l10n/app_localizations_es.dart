@@ -960,4 +960,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get deleteAccountDeleting => 'Eliminando cuenta...';
+
+  @override
+  String get errorServiceUnavailable =>
+      'Servicio temporalmente no disponible. Vuelve a intentar en un momento.';
 }
