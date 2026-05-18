@@ -25,12 +25,16 @@ class ChatMessage {
   /// renders the image above any text (text may be empty for
   /// image-only sends).
   final String? imageUrl;
+  /// Optional attached video URL (client 2026-05-18). When set the
+  /// bubble renders a tap-to-open video tile.
+  final String? videoUrl;
 
   const ChatMessage({
     required this.text,
     required this.time,
     required this.isMe,
     this.imageUrl,
+    this.videoUrl,
   });
 }
 
@@ -143,6 +147,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 time: m.createdAt,
                 isMe: m.senderUid == _myUid,
                 imageUrl: m.imageUrl,
+                videoUrl: m.videoUrl,
               ))
           .toList();
       setState(() {
@@ -237,6 +242,39 @@ class _ChatScreenState extends State<ChatScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Image send failed: $e')),
+      );
+    }
+  }
+
+  /// Companion to [_attachImage] for the video variant (client feedback
+  /// 2026-05-18). Uploads to `chats/{convId}/videos/{ts}.mp4` and sends
+  /// a message with the video_url field set; the bubble renders a
+  /// tap-to-play poster.
+  Future<void> _attachVideo() async {
+    if (_myUid.isEmpty) return;
+    final picked = await ImagePicker().pickVideo(
+      source: ImageSource.gallery,
+      maxDuration: const Duration(seconds: 60),
+    );
+    if (picked == null || !mounted) return;
+    final convId = widget.conversation.conversationId;
+    final stamp = DateTime.now().millisecondsSinceEpoch;
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('chats/$convId/videos/$stamp.mp4');
+    try {
+      await ref.putFile(File(picked.path));
+      final url = await ref.getDownloadURL();
+      await ConversationDatasource.sendMessage(
+        convId,
+        _myUid,
+        '',
+        videoUrl: url,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Video send failed: $e')),
       );
     }
   }
@@ -543,16 +581,29 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 if (msg.text.isNotEmpty) const SizedBox(height: 6),
               ],
-              if (msg.text.isNotEmpty)
-                Text(
-                  msg.text,
-                  style: TextStyle(
-                    color: msg.isMe ? Colors.white : Colors.black87,
-                    fontSize: 14.5,
-                    height: 1.35,
+              if (msg.videoUrl != null && msg.videoUrl!.isNotEmpty) ...[
+                // Video tile — minimal placeholder with a play icon. A
+                // full inline player is a follow-up; for now tapping
+                // the bubble itself opens the link in the system video
+                // viewer via the OS default handler (the URL is a
+                // Firebase Storage download token URL).
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 200,
+                    height: 130,
+                    color: Colors.black.withValues(alpha: 0.6),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.play_circle_fill,
+                      color: Colors.white,
+                      size: 44,
+                    ),
                   ),
-                )
-              else if (msg.imageUrl == null || msg.imageUrl!.isEmpty)
+                ),
+                if (msg.text.isNotEmpty) const SizedBox(height: 6),
+              ],
+              if (msg.text.isNotEmpty)
                 Text(
                   msg.text,
                   style: TextStyle(
@@ -597,8 +648,8 @@ class _ChatScreenState extends State<ChatScreen> {
             GestureDetector(
               onTap: _attachImage,
               child: Container(
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 decoration: const BoxDecoration(
                   color: _inputBg,
                   shape: BoxShape.circle,
@@ -606,7 +657,25 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: const Icon(
                   Icons.image_outlined,
                   color: Color(0xFFB01030),
-                  size: 22,
+                  size: 20,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            // Video attach (client feedback 2026-05-18).
+            GestureDetector(
+              onTap: _attachVideo,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: _inputBg,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.videocam_outlined,
+                  color: Color(0xFFB01030),
+                  size: 20,
                 ),
               ),
             ),

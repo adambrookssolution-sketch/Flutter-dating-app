@@ -127,6 +127,7 @@ class ConversationDatasource {
     String senderUid,
     String text, {
     String? imageUrl,
+    String? videoUrl,
   }) async {
     final db = FirebaseFirestore.instance;
     final convRef = db.collection('conversations').doc(conversationId);
@@ -142,13 +143,20 @@ class ConversationDatasource {
     // (`<uid1>_<uid2>` sorted) gives us the participants list without
     // an extra round-trip.
     final convSnap = await convRef.get();
-    final previewText =
-        text.isNotEmpty ? text : (imageUrl == null ? '' : '📷');
+    // last_message preview falls back to a small icon when the message
+    // is just a media attachment (no text): 📷 for photos, 🎥 for
+    // videos (client feedback 2026-05-18 "habilitemos videos").
+    final previewText = text.isNotEmpty
+        ? text
+        : videoUrl != null && videoUrl.isNotEmpty
+            ? '🎥'
+            : (imageUrl == null ? '' : '📷');
 
     final batch = db.batch();
     batch.set(msgRef, {
       'text': text,
       if (imageUrl != null && imageUrl.isNotEmpty) 'image_url': imageUrl,
+      if (videoUrl != null && videoUrl.isNotEmpty) 'video_url': videoUrl,
       'sender_uid': senderUid,
       'created_at': FieldValue.serverTimestamp(),
     });

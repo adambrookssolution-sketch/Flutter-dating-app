@@ -5,6 +5,7 @@ import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/chat/chat_screen.dart';
 import 'package:app/presentation/widgets/conversation_row.dart';
+import 'package:app/presentation/widgets/secure_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -183,7 +184,8 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     final isSelf = myUid == widget.profile.uid;
 
-    return Scaffold(
+    return SecureView(
+      child: Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: isSelf
           ? null
@@ -313,6 +315,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

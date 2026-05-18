@@ -4,6 +4,7 @@ import 'package:app/presentation/pages/community/community_option.dart';
 import 'package:app/presentation/pages/couples/couples_option.dart';
 import 'package:app/presentation/pages/filters/filters_screen.dart';
 import 'package:app/presentation/widgets/pineapple_filter_button.dart';
+import 'package:app/presentation/widgets/secure_view.dart';
 import 'package:app/providers/filters_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -108,7 +109,16 @@ class _CouplesScreenState extends ConsumerState<CouplesScreen> {
         ),
       ],
       activeTab: NavTab.couples,
-      child: _isCouplesActive ? const CouplesOption() : const CommunityOption(),
+      // Wrap the body in SecureView so screenshots/recordings of the
+      // discovery feed and community feed are blocked — client 2026-05-18
+      // had flagged that user photos could be captured. The toggle is
+      // reference-counted, so nested SecureViews (e.g. chat opened from
+      // here) don't drop the flag prematurely.
+      child: SecureView(
+        child: _isCouplesActive
+            ? const CouplesOption()
+            : const CommunityOption(),
+      ),
     );
   }
 }
