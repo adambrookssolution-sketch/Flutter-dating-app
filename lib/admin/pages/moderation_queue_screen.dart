@@ -130,12 +130,16 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen> {
                     if (bv == null) return -1;
                     return bv.compareTo(av);
                   });
-                  final all = allRaw.where((c) {
-                    final hasVideo =
-                        (c.verification?.videoUrl ?? '').isNotEmpty;
-                    final hasPhotos = c.photos.isNotEmpty;
-                    return hasVideo && hasPhotos;
-                  }).toList();
+                  // Show every pending-review couple — including the
+                  // ones whose video upload silently failed (Storage
+                  // permission, network, etc.). The previous
+                  // `hasVideo && hasPhotos` filter was hiding those
+                  // and leaving the user stuck on "Verification in
+                  // review" forever, because the moderator never saw
+                  // the row to act on (client 2026-05-18: test2 case).
+                  // Incomplete entries surface in the queue and the
+                  // moderator can still reject or approve manually.
+                  final all = allRaw;
                   final filtered = _filter.isEmpty
                       ? all
                       : all.where((c) {

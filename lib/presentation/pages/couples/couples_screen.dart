@@ -74,7 +74,10 @@ class _CouplesScreenState extends ConsumerState<CouplesScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 4),
+          // Client feedback 2026-05-18: the two tab labels were so
+          // close together they read as one word. Widened the gutter
+          // to 16 px so they're visually distinct.
+          const SizedBox(width: 16),
           GestureDetector(
             onTap: () => setState(() => _isCouplesActive = false),
             child: Text(
