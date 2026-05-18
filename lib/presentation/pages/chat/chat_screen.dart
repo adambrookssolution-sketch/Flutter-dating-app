@@ -94,24 +94,27 @@ class _ChatScreenState extends State<ChatScreen> {
     _listenMessages();
   }
 
-  /// Localised quick-reply suggestion for the empty-chat hero. Pulls
-  /// `chatSuggestion1` … `chatSuggestion6` from [AppLocalizations] using
-  /// the per-conversation index chosen in [initState].
-  String _suggestionFor(AppLocalizations l) {
-    switch (_suggestionIndex) {
-      case 0:
-        return l.chatSuggestion1;
-      case 1:
-        return l.chatSuggestion2;
-      case 2:
-        return l.chatSuggestion3;
-      case 3:
-        return l.chatSuggestion4;
-      case 4:
-        return l.chatSuggestion5;
-      default:
-        return l.chatSuggestion6;
-    }
+  /// Three quick-reply suggestions for the empty chat. Agency UX showed
+  /// three side-by-side bubbles in the empty state (client feedback
+  /// 2026-05-17 #3) — we render them all and the user picks one.
+  /// Indexed deterministically off the conversation so the suggestion
+  /// trio stays stable across re-opens.
+  List<String> _suggestionsFor(AppLocalizations l) {
+    const all = 6;
+    final pool = <String Function(AppLocalizations)>[
+      (x) => x.chatSuggestion1,
+      (x) => x.chatSuggestion2,
+      (x) => x.chatSuggestion3,
+      (x) => x.chatSuggestion4,
+      (x) => x.chatSuggestion5,
+      (x) => x.chatSuggestion6,
+    ];
+    final base = _suggestionIndex.abs() % all;
+    return [
+      pool[base](l),
+      pool[(base + 1) % all](l),
+      pool[(base + 2) % all](l),
+    ];
   }
 
   @override
@@ -238,9 +241,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _useSuggestion() {
-    final l10n = AppLocalizations.of(context)!;
-    _textCtrl.text = _suggestionFor(l10n);
+  void _useSuggestion(String suggestion) {
+    _textCtrl.text = suggestion;
     _textCtrl.selection =
         TextSelection.collapsed(offset: _textCtrl.text.length);
     _focusNode.requestFocus();
@@ -396,31 +398,32 @@ class _ChatScreenState extends State<ChatScreen> {
   // ── Empty state ───────────────────────────────────────────────────────────
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
     final timeLabel =
-        'Today  ${DateFormat('HH:mm').format(DateTime.now())}';
+        '${l10n.today}  ${DateFormat('HH:mm').format(DateTime.now())}';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _DateChip(label: timeLabel),
         Expanded(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Start your conversation…\nyour story begins here. 🌟',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.black45,
-                      height: 1.55,
-                    ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.chatEmptyState,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Colors.black45,
+                    height: 1.55,
                   ),
-                  const SizedBox(height: 20),
+                ),
+                const SizedBox(height: 20),
+                for (final suggestion in _suggestionsFor(l10n)) ...[
                   GestureDetector(
-                    onTap: _useSuggestion,
+                    onTap: () => _useSuggestion(suggestion),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 18,
@@ -431,7 +434,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        _suggestionFor(AppLocalizations.of(context)!),
+                        suggestion,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: Colors.white,
@@ -441,8 +444,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 10),
                 ],
-              ),
+              ],
             ),
           ),
         ),

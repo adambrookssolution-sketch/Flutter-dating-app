@@ -5,14 +5,14 @@ import 'package:app/data/datasource/conversation_datasource.dart';
 import 'package:app/data/datasource/message_requests_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
 import 'package:app/data/models/couple.dart' as cm;
-import 'package:app/data/models/message_request.dart';
 import 'package:app/data/models/partner.dart' as pm;
 import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
+import 'package:app/presentation/pages/chat/chat_screen.dart';
 import 'package:app/presentation/pages/inbox/partner_profile_screen.dart';
 import 'package:app/presentation/pages/report/report_screen.dart';
+import 'package:app/presentation/widgets/conversation_row.dart';
 import 'package:app/presentation/widgets/couple_card.dart';
-import 'package:app/presentation/widgets/send_request_dialog.dart';
 import 'package:app/presentation/widgets/sticky_feed_actions.dart';
 import 'package:app/providers/filters_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -252,45 +252,41 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     if (myUid == null) return;
 
-    final displayName = '${profile.hisName} & ${profile.herName}';
-    final visibleInterests = profile.interests.isEmpty
-        ? const <String>[]
-        : profile.interests
-            .split(',')
-            .map((s) => s.trim())
-            .where((s) => s.isNotEmpty)
-            .toList();
-    final firstPhoto = profile.photos.isNotEmpty ? profile.photos.first : null;
+    // Agency-parity request flow (client feedback 2026-05-17 #3):
+    // tapping "Start Conversation" skips the SendRequestDialog modal
+    // and pushes the user straight into the ChatScreen with the
+    // pendingPartnerUid flag set. The ChatScreen's empty state offers
+    // three quick-starter bubbles; the first message the user sends
+    // becomes the request that lands in the other couple's Inbox.
+    final ids = [myUid, profile.uid]..sort();
+    final conversationId = ids.join('_');
 
-    final sent = await SendRequestDialog.show(
-      context,
-      receiverCoupleId: profile.uid,
-      receiverDisplayName: displayName,
-      receiverPhotoUrl: firstPhoto,
-      receiverVisibleInterests: visibleInterests,
-      origen: RequestOrigin.busqueda,
-    );
-
-    if (!mounted || sent != true) return;
-
-    // Hide the card once a Request has been sent (avoid re-selecting the
-    // same couple while in cooldown / pending window). Also adds the
-    // receiver to the persistent exclusion set so that pulling to
-    // refresh, or scrolling past the end and re-fetching, doesn't
-    // bring the couple back — they only return if the request is
-    // explicitly rejected (client feedback 2026-05-17 #9).
+    // Hide the card immediately so the user perceives the action as
+    // taken — the persistent exclusion set keeps the couple out of
+    // the feed even after a refresh, until the request is rejected.
     setState(() {
       _profiles?.remove(profile);
       _sentRequestIds = {..._sentRequestIds, profile.uid};
     });
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.requestSentTo(displayName)),
-        backgroundColor: const Color(0xFFB01030),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 3),
+
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChatScreen(
+          conversation: ConversationModel(
+            conversationId: conversationId,
+            name1: profile.herName,
+            name2: profile.hisName,
+            lastMessage: '',
+            lastMessageTime: DateTime.now(),
+            unreadCount: 0,
+            gradientIndex: conversationId.hashCode.abs(),
+            photoUrl:
+                profile.photos.isNotEmpty ? profile.photos.first : null,
+            pendingPartnerUid: profile.uid,
+          ),
+          otherProfile: profile,
+        ),
       ),
     );
   }

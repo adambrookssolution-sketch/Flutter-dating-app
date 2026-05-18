@@ -101,7 +101,7 @@ class _CoupleCardState extends State<CoupleCard> {
   @override
   Widget build(BuildContext context) {
     final p = widget.profile;
-    final container = Container(
+    return Container(
       decoration: BoxDecoration(
         color: Colors.black,
         border: Border.all(color: _burgundy, width: 4),
@@ -115,48 +115,107 @@ class _CoupleCardState extends State<CoupleCard> {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          _buildPhotoLayer(p),
-          _buildBottomGradient(),
-          // Heart (favourite) button, centred near the top.
-          Positioned(
-            top: 16,
-            left: 0,
-            right: 0,
-            child: Center(child: _favouriteBubble()),
-          ),
-          // Top-right: only the overflow menu (block / report). Client
-          // feedback 2026-05-17 #4: tapping the card already opens the
-          // partner-profile detail, so the separate ⓘ button was
-          // redundant and we removed it. The heart bubble stays centred
-          // at the top via the Positioned row above.
-          if (widget.onBlock != null || widget.onReport != null)
-            Positioned(
-              top: 12,
-              right: 12,
-              child: _overflowMenu(context),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Agency-parity tap zones (client feedback 2026-05-17 #5):
+          // tapping the LEFT half of the photo area goes to the
+          // previous photo, the RIGHT half goes to the next photo, and
+          // the bottom info block opens the partner-profile detail.
+          // This means we no longer wrap the whole card in one tap
+          // handler — each zone owns its own gesture.
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: (d) {
+              if (d.localPosition.dx < constraints.maxWidth / 2) {
+                _navigatePhoto(false);
+              } else {
+                _navigatePhoto(true);
+              }
+            },
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _buildPhotoLayer(p),
+                _buildBottomGradient(),
+                // Instagram-style indicator strip — one bar per photo,
+                // active bar fills white. Sits above the heart/overflow
+                // row so it never overlaps them.
+                if (p.photos.length > 1)
+                  Positioned(
+                    top: 6,
+                    left: 12,
+                    right: 12,
+                    child: _buildPhotoIndicators(p.photos.length),
+                  ),
+                // Heart (favourite) button, centred near the top.
+                Positioned(
+                  top: 16,
+                  left: 0,
+                  right: 0,
+                  child: Center(child: _favouriteBubble()),
+                ),
+                // Top-right overflow menu (block / report).
+                if (widget.onBlock != null || widget.onReport != null)
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: _overflowMenu(context),
+                  ),
+                // Bottom info block — names, location, trip dates,
+                // description, tags. Owns its own tap handler so the
+                // user opens the partner-profile detail by tapping
+                // anywhere on the names/description area, while the
+                // photo zone above still handles left/right photo nav.
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: GestureDetector(
+                    onTap: widget.onTap,
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                      child: _buildInfoBlock(p),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          // Bottom text block — names, location, trip dates, description,
-          // tags. Sits on the gradient so white text always reads.
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-              child: _buildInfoBlock(p),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
-    if (widget.onTap == null) return container;
-    return GestureDetector(
-      onTap: widget.onTap,
-      behavior: HitTestBehavior.opaque,
-      child: container,
+  }
+
+  void _navigatePhoto(bool next) {
+    final p = widget.profile;
+    if (p.photos.isEmpty) return;
+    final count = p.photos.length;
+    setState(() {
+      _currentPhoto = next
+          ? (_currentPhoto + 1) % count
+          : (_currentPhoto - 1 + count) % count;
+    });
+  }
+
+  Widget _buildPhotoIndicators(int count) {
+    return Row(
+      children: List.generate(count, (i) {
+        return Expanded(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            height: 3,
+            margin: EdgeInsets.only(right: i < count - 1 ? 4 : 0),
+            decoration: BoxDecoration(
+              color: i == _currentPhoto
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.45),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        );
+      }),
     );
   }
 
@@ -167,32 +226,33 @@ class _CoupleCardState extends State<CoupleCard> {
         decoration: BoxDecoration(color: Colors.black),
       );
     }
-    final url = p.photos[_currentPhoto % p.photos.length];
-    // Client feedback 2026-05-16: photos must fill the card 100%. The
-    // earlier #11 patch switched to BoxFit.contain to "preserve" the
-    // image but produced very large black bars on tall portrait cards,
-    // which the client reported as worse than gentle side-cropping. We
-    // restore BoxFit.cover here; the wider card insets (4px instead of
-    // 16px) from the same #11 fix already minimise the crop, and the
-    // bottom-gradient + name block sit on top of the photo so the
-    // composition still matches the agency reference.
-    return Image.network(
-      url,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) =>
-          const DecoratedBox(decoration: BoxDecoration(color: Colors.black)),
-      loadingBuilder: (ctx, child, progress) {
-        if (progress == null) return child;
-        return const ColoredBox(
-          color: Colors.black,
-          child: Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
+    final idx = _currentPhoto % p.photos.length;
+    final url = p.photos[idx];
+    // Wrapped in AnimatedSwitcher so the photo cross-fades when the
+    // user taps left/right (agency parity, 2026-05-17 #5). BoxFit.cover
+    // and the 4-px card insets from #11 keep the photo edge-to-edge.
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      child: Image.network(
+        url,
+        key: ValueKey(idx),
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const DecoratedBox(
+          decoration: BoxDecoration(color: Colors.black),
+        ),
+        loadingBuilder: (ctx, child, progress) {
+          if (progress == null) return child;
+          return const ColoredBox(
+            color: Colors.black,
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
