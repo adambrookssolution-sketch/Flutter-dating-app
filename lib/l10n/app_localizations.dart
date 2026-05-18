@@ -1891,6 +1891,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Thanks — our team will review your report and we will notify you once a decision is made.'**
   String get reportSubmittedWithFollowup;
+
+  /// No description provided for @communityMarkExplicitTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark this post as explicit content (18+)'**
+  String get communityMarkExplicitTag;
+
+  /// No description provided for @communityFilterCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get communityFilterCountry;
+
+  /// No description provided for @communityShowExplicit.
+  ///
+  /// In en, this message translates to:
+  /// **'Show explicit feed'**
+  String get communityShowExplicit;
 }
 
 class _AppLocalizationsDelegate

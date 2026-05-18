@@ -984,4 +984,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reportSubmittedWithFollowup =>
       'Thanks — our team will review your report and we will notify you once a decision is made.';
+
+  @override
+  String get communityMarkExplicitTag =>
+      'Mark this post as explicit content (18+)';
+
+  @override
+  String get communityFilterCountry => 'Country';
+
+  @override
+  String get communityShowExplicit => 'Show explicit feed';
 }

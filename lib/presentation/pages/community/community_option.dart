@@ -39,6 +39,11 @@ class _CommunityOptionState extends State<CommunityOption> {
   List<CommunityPost> _posts = [];
   bool _loading = true;
   bool _hasError = false;
+  /// Client feedback 2026-05-17 #7: the explicit-content filter lives
+  /// here on the community feed (it was previously misplaced on the
+  /// Couples filter). When true the feed shows ONLY posts tagged
+  /// explicit; when false (default) explicit posts are hidden.
+  bool _showExplicitFeed = false;
   final Set<String> _processingLikes = {};
   final Map<String, String?> _profilePhotoCache = {};
 
@@ -106,7 +111,7 @@ class _CommunityOptionState extends State<CommunityOption> {
     } catch (_) {}
   }
 
-  Future<void> _onPost(String text, XFile? image) async {
+  Future<void> _onPost(String text, XFile? image, bool isExplicit) async {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     final authorPhotoUrl = (_profile != null && _profile!.photos.isNotEmpty)
         ? _profile!.photos.first
@@ -119,6 +124,7 @@ class _CommunityOptionState extends State<CommunityOption> {
       authorPhotoUrl: authorPhotoUrl,
       text: text,
       image: image,
+      explicit: isExplicit,
     );
     await _fetchPosts();
   }
@@ -206,10 +212,67 @@ class _CommunityOptionState extends State<CommunityOption> {
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
 
+    // Apply the explicit-feed split (client 2026-05-17 #7):
+    // _showExplicitFeed=false  → only non-explicit posts (default feed)
+    // _showExplicitFeed=true   → only explicit posts (opt-in surface)
+    final visiblePosts = _posts
+        .where((p) => p.explicit == _showExplicitFeed)
+        .toList(growable: false);
+
     return Column(
       children: [
         const SizedBox(height: 8),
         _FloatingComposer(onPost: _onPost),
+        const SizedBox(height: 6),
+        // Explicit-feed toggle. Sits between the composer and the feed
+        // so the surface change is obvious. When OFF (default) the
+        // main feed shows non-explicit posts; when ON it switches to
+        // the dedicated explicit-only view.
+        GestureDetector(
+          onTap: () =>
+              setState(() => _showExplicitFeed = !_showExplicitFeed),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: _showExplicitFeed
+                  ? const Color(0xFFB31637)
+                  : const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _showExplicitFeed
+                      ? Icons.visibility
+                      : Icons.visibility_outlined,
+                  size: 18,
+                  color: _showExplicitFeed
+                      ? Colors.white
+                      : Colors.black54,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context)!.communityShowExplicit,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: _showExplicitFeed
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: _showExplicitFeed,
+                  onChanged: (v) => setState(() => _showExplicitFeed = v),
+                  activeThumbColor: Colors.white,
+                  activeTrackColor: Colors.black26,
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 8),
         Expanded(
           child: RefreshIndicator(
@@ -223,30 +286,35 @@ class _CommunityOptionState extends State<CommunityOption> {
                   )
                 : _hasError
                     ? _buildError()
-                    : _posts.isEmpty
+                    : visiblePosts.isEmpty
                         ? _buildEmpty()
                         : ListView.separated(
                             physics: const AlwaysScrollableScrollPhysics(),
                             padding: const EdgeInsets.only(bottom: 24),
-                            itemCount: _posts.length,
+                            itemCount: visiblePosts.length,
                             separatorBuilder: (_, __) => const SizedBox(
                               height: 10,
                               child: ColoredBox(color: Color(0xFFF5F5F5)),
                             ),
                             itemBuilder: (context, i) => _PostCard(
-                              post: _posts[i],
+                              post: visiblePosts[i],
                               gradients: _gradients,
-                              gradientIndex: _gradientFor(_posts[i].uid),
+                              gradientIndex:
+                                  _gradientFor(visiblePosts[i].uid),
                               currentUid: uid,
-                              commentCount: _posts[i].commentsCount,
+                              commentCount: visiblePosts[i].commentsCount,
                               authorPhotoUrl:
-                                  _profilePhotoCache[_posts[i].uid] ??
-                                      _posts[i].authorPhotoUrl,
-                              onLike: () => _toggleLike(i),
-                              onComment: () => _openComments(_posts[i]),
-                              onAvatarTap: () => _openProfile(_posts[i].uid),
-                              onDelete: _posts[i].uid == uid
-                                  ? () => _deletePost(i)
+                                  _profilePhotoCache[visiblePosts[i].uid] ??
+                                      visiblePosts[i].authorPhotoUrl,
+                              onLike: () => _toggleLike(
+                                  _posts.indexOf(visiblePosts[i])),
+                              onComment: () =>
+                                  _openComments(visiblePosts[i]),
+                              onAvatarTap: () =>
+                                  _openProfile(visiblePosts[i].uid),
+                              onDelete: visiblePosts[i].uid == uid
+                                  ? () => _deletePost(
+                                      _posts.indexOf(visiblePosts[i]))
                                   : null,
                             ),
                           ),
@@ -1286,7 +1354,8 @@ class _ReplyRow extends StatelessWidget {
 // ── Floating Composer ─────────────────────────────────────────────────────────
 
 class _FloatingComposer extends StatefulWidget {
-  final Future<void> Function(String text, XFile? image) onPost;
+  final Future<void> Function(String text, XFile? image, bool isExplicit)
+      onPost;
 
   const _FloatingComposer({required this.onPost});
 
@@ -1298,6 +1367,11 @@ class _FloatingComposerState extends State<_FloatingComposer> {
   bool _expanded = false;
   bool _isPosting = false;
   XFile? _pickedImage;
+  /// Client feedback 2026-05-17 #7: posts must be tagged as explicit
+  /// when applicable, so the community feed can split them into the
+  /// dedicated explicit surface. Defaults to false; the user toggles
+  /// it on if their post belongs there.
+  bool _isExplicit = false;
   final TextEditingController _ctrl = TextEditingController();
   final FocusNode _focus = FocusNode();
 
@@ -1318,6 +1392,7 @@ class _FloatingComposerState extends State<_FloatingComposer> {
     setState(() {
       _expanded = false;
       _pickedImage = null;
+      _isExplicit = false;
       _isPosting = false;
       _ctrl.clear();
     });
@@ -1329,7 +1404,7 @@ class _FloatingComposerState extends State<_FloatingComposer> {
     if (text.isEmpty && _pickedImage == null) return;
     setState(() => _isPosting = true);
     try {
-      await widget.onPost(text, _pickedImage);
+      await widget.onPost(text, _pickedImage, _isExplicit);
       if (mounted) _collapse();
     } catch (e) {
       if (mounted) {
@@ -1538,6 +1613,50 @@ class _FloatingComposerState extends State<_FloatingComposer> {
                 padding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
+          const SizedBox(height: 12),
+
+          // Explicit-content tag (client feedback 2026-05-17 #7).
+          // Posts marked here go to the dedicated explicit feed only;
+          // the main community feed filters them out by default.
+          GestureDetector(
+            onTap: _isPosting
+                ? null
+                : () => setState(() => _isExplicit = !_isExplicit),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _isExplicit
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)!
+                          .communityMarkExplicitTag,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 10),
 
           // Share button

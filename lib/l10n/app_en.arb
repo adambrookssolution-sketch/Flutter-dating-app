@@ -432,5 +432,8 @@
   "verificationStepRecordingLength": "Recording lasts about 8 seconds",
   "verificationStepNoFilters": "No filters, no edits — straight from the camera",
   "verificationIntroHeaderHere": "Here's what you need to do:",
-  "reportSubmittedWithFollowup": "Thanks — our team will review your report and we will notify you once a decision is made."
+  "reportSubmittedWithFollowup": "Thanks — our team will review your report and we will notify you once a decision is made.",
+  "communityMarkExplicitTag": "Mark this post as explicit content (18+)",
+  "communityFilterCountry": "Country",
+  "communityShowExplicit": "Show explicit feed"
 }

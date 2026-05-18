@@ -2,6 +2,7 @@ import 'dart:math' show Random;
 
 import 'package:app/data/datasource/blocks_datasource.dart';
 import 'package:app/data/datasource/conversation_datasource.dart';
+import 'package:app/data/datasource/favorite_datasource.dart';
 import 'package:app/data/datasource/message_requests_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
 import 'package:app/data/models/couple.dart' as cm;
@@ -41,6 +42,13 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
   /// of the discovery feed until the request is rejected or accepted.
   /// Client feedback 2026-05-17 #9.
   Set<String> _sentRequestIds = const {};
+  /// My own interest tokens (lower-cased) for the personalisation
+  /// scorer. Client feedback 2026-05-17 #3 — feed should prioritise
+  /// couples with overlapping interests.
+  Set<String> _myInterests = const {};
+  /// Couples I've favourited. They get a strong boost so they
+  /// resurface near the top of the feed (#3 — favourites first).
+  Set<String> _favoriteIds = const {};
   String? _error;
 
   final ScrollController _scrollController = ScrollController();
@@ -102,10 +110,15 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         ConversationDatasource.getConversationPartnerIds(myUid),
         BlocksDatasource.getMutualBlockIds(myUid),
         MessageRequestsDatasource.getSentRequestReceiverIds(myUid),
+        FavoriteDatasource.getFavoriteIds(myUid),
+        ProfileDatasource.getProfile(myUid),
       ]);
-      _partnerIds = sideCar[0];
-      _blockedIds = sideCar[1];
-      _sentRequestIds = sideCar[2];
+      _partnerIds = sideCar[0] as Set<String>;
+      _blockedIds = sideCar[1] as Set<String>;
+      _sentRequestIds = sideCar[2] as Set<String>;
+      _favoriteIds = sideCar[3] as Set<String>;
+      final me = sideCar[4] as UserProfile?;
+      _myInterests = _tokenise(me?.interests ?? '');
 
       final first = await ProfileDatasource.getProfilesPage(limit: _pageSize);
       _cursor = first.cursor;
@@ -166,19 +179,50 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         .toList();
   }
 
-  /// Session-stable shuffle + dedupe. Pages loaded later in the same
-  /// session use the same seed, so the combined feed stays a single
-  /// pseudo-random stream without ever showing the same couple twice.
-  ///
-  /// This is the behaviour the client calls "Couple Speed" (randomises
-  /// and doesn't repeat) on the 2026-04-20 feedback message.
+  /// Personalisation scorer (client feedback 2026-05-17 #3):
+  ///  • Favourited couples float to the very top (+100).
+  ///  • Interest-overlap adds +10 per shared tag with my own
+  ///    UserProfile.interests (CSV tokens, case-insensitive).
+  ///  • Same session-stable RNG noise is added so couples with
+  ///    identical scores still shuffle without flickering across
+  ///    pagination calls.
+  /// Higher scores come first.
+  int _scoreFor(UserProfile p) {
+    var score = 0;
+    if (_favoriteIds.contains(p.uid)) score += 100;
+    if (_myInterests.isNotEmpty) {
+      final theirs = _tokenise(p.interests);
+      final overlap =
+          theirs.where((t) => _myInterests.contains(t)).length;
+      score += overlap * 10;
+    }
+    return score;
+  }
+
+  static Set<String> _tokenise(String csv) {
+    if (csv.isEmpty) return const {};
+    return csv
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .where((s) => s.isNotEmpty)
+        .toSet();
+  }
+
+  /// Session-stable shuffle + dedupe + personalisation. Pages loaded
+  /// later in the same session use the same seed, so the combined
+  /// feed stays a single pseudo-random stream without ever showing
+  /// the same couple twice. After de-duping, profiles are ordered by
+  /// the personalisation score (favourites first, then interest
+  /// overlap), with random noise breaking ties.
   List<UserProfile> _shuffleAndDedupe(List<UserProfile> input) {
     final fresh = <UserProfile>[];
     for (final p in input) {
       if (_seenUids.add(p.uid)) fresh.add(p);
     }
     final rng = Random(_shuffleSeed + _seenUids.length);
+    // Score-aware sort with random tiebreaker.
     fresh.shuffle(rng);
+    fresh.sort((a, b) => _scoreFor(b).compareTo(_scoreFor(a)));
     return fresh;
   }
 

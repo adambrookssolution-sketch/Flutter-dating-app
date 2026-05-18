@@ -25,6 +25,7 @@ class CommunityDatasource {
     String? authorPhotoUrl,
     String? text,
     XFile? image,
+    bool explicit = false,
   }) async {
     final currentUser = FirebaseAuth.instance.currentUser;
     log('CommunityDatasource.createPost '
@@ -54,6 +55,11 @@ class CommunityDatasource {
         'created_at': FieldValue.serverTimestamp(),
         'likes_count': 0,
         'liked_by': <String>[],
+        // Explicit-content flag (client feedback 2026-05-17 #7).
+        // Posts marked explicit are surfaced only in the dedicated
+        // explicit-feed view; the main community feed filters them
+        // out by default.
+        'explicit': explicit,
       });
       log('Post created successfully');
     } catch (e, st) {

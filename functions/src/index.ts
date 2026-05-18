@@ -56,6 +56,10 @@ export { onTripCreated } from "./travel/onTripCreated";
 export { tripReminder } from "./travel/tripReminder";
 export { expireRequests } from "./requests/expireRequests";
 
+// Push notifications — client feedback 2026-05-17 #10.
+export { onMessageCreated } from "./notifications/onMessageCreated";
+export { onFavoriteAdded } from "./notifications/onFavoriteAdded";
+
 // Subscriptions module — Stripe wiring.
 // Temporarily disabled in production until STRIPE_* secrets are populated
 // in Secret Manager. Re-enable by uncommenting these exports once secrets

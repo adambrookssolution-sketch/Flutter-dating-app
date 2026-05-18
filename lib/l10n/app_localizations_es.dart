@@ -999,4 +999,14 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get reportSubmittedWithFollowup =>
       'Gracias — nuestro equipo revisará tu reporte y te avisaremos cuando tengamos una respuesta.';
+
+  @override
+  String get communityMarkExplicitTag =>
+      'Marcar este post como contenido explícito (18+)';
+
+  @override
+  String get communityFilterCountry => 'País';
+
+  @override
+  String get communityShowExplicit => 'Mostrar feed explícito';
 }

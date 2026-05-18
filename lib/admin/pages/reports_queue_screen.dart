@@ -18,9 +18,14 @@ class ReportsQueueScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      // Reports are timestamped on the `fecha` field, not `created_at`
+      // (see [Report.toMap]). The previous orderBy('created_at')
+      // silently dropped every document because Firestore excludes
+      // docs missing the ordered field — that's why submitted reports
+      // appeared to vanish on the admin side (client 2026-05-17 #2).
       stream: FirebaseFirestore.instance
           .collection('reports')
-          .orderBy('created_at', descending: true)
+          .orderBy('fecha', descending: true)
           .limit(200)
           .snapshots(),
       builder: (context, snap) {
@@ -65,11 +70,17 @@ class _ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Field names match Report.toMap: snake_case but without the
+    // `_id` suffix the older admin-card draft expected, and timestamps
+    // live on `fecha` rather than `created_at`. Aligning these
+    // resolved client 2026-05-17 #2 (submitted reports never showed up
+    // in the admin queue — the read paths simply didn't match the
+    // write paths).
     final category = (data['categoria'] as String?) ?? '—';
     final reason = (data['descripcion'] as String?) ?? '';
-    final reporter = (data['reporter_couple_id'] as String?) ?? '';
-    final reported = (data['reported_couple_id'] as String?) ?? '';
-    final created = (data['created_at'] as Timestamp?)?.toDate();
+    final reporter = (data['reporter_couple'] as String?) ?? '';
+    final reported = (data['reported_couple'] as String?) ?? '';
+    final created = (data['fecha'] as Timestamp?)?.toDate();
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(

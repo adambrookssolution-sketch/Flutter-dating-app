@@ -12,6 +12,11 @@ class CommunityPost {
   final int likesCount;
   final List<String> likedBy;
   final int commentsCount;
+  /// Flagged when the publishing couple ticked "Mark as explicit" on
+  /// the post composer (client feedback 2026-05-17 #7). Posts marked
+  /// explicit only appear in the explicit-feed view; the default
+  /// community feed filters them out.
+  final bool explicit;
 
   const CommunityPost({
     required this.id,
@@ -25,6 +30,7 @@ class CommunityPost {
     required this.likesCount,
     required this.likedBy,
     required this.commentsCount,
+    this.explicit = false,
   });
 
   CommunityPost copyWith({
@@ -44,6 +50,7 @@ class CommunityPost {
         likesCount: likesCount ?? this.likesCount,
         likedBy: likedBy ?? this.likedBy,
         commentsCount: commentsCount ?? this.commentsCount,
+        explicit: explicit,
       );
 
   factory CommunityPost.fromDoc(
@@ -62,6 +69,7 @@ class CommunityPost {
       likesCount: m['likes_count'] as int? ?? 0,
       likedBy: List<String>.from(m['liked_by'] as List? ?? []),
       commentsCount: m['comments_count'] as int? ?? 0,
+      explicit: m['explicit'] as bool? ?? false,
     );
   }
 }
