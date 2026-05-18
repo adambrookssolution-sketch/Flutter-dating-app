@@ -27,28 +27,44 @@ Future<void> navigateAfterSignIn(BuildContext context, String uid) async {
   final couple = await CouplesDatasource.getCouple(uid);
 
   if (couple != null) {
-    Widget? next;
+    final Widget gate;
     switch (couple.status) {
       case CoupleStatus.pendingDeletion:
-        next = CancelDeletionScreen(couple: couple);
+        gate = CancelDeletionScreen(couple: couple);
       case CoupleStatus.pendingReview:
       case CoupleStatus.suspended:
       case CoupleStatus.underReview:
-        next = const VerificationPendingScreen();
+        gate = const VerificationPendingScreen();
       case CoupleStatus.rejected:
-        next = VerificationRejectedScreen(couple: couple);
+        gate = VerificationRejectedScreen(couple: couple);
       case CoupleStatus.approved:
-        next = null; // fall through to legacy / feed
+        // Already approved — go straight to the feed. We deliberately
+        // skip the legacy "profileExists?" check (client 2026-05-18:
+        // an approved account from yesterday was landing back in
+        // ProfileSetup because their profiles/{uid} doc was missing,
+        // and the setup form then OVERWROTE the approved couple doc
+        // with status=pending_review again). Couple data lives on
+        // couples/{uid} since the Dynamics refactor, so an approved
+        // couple is always safe to drop into the feed directly.
+        if (!context.mounted) return;
+        await Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const CouplesScreen()),
+          (route) => false,
+        );
+        if (!context.mounted) return;
+        await RecoveryAttemptsDialog.maybeShow(context);
+        // ignore: unawaited_futures
+        FcmService.register();
+        return;
     }
-    if (next != null) {
-      if (!context.mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => next!),
-        (route) => false,
-      );
-      return;
-    }
+    if (!context.mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => gate),
+      (route) => false,
+    );
+    return;
   }
 
   final hasProfile = await ProfileDatasource.profileExists(uid);

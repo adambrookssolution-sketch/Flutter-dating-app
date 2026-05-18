@@ -30,25 +30,30 @@ class RecoveryDatasource {
     final normalised = email.trim().toLowerCase();
     if (normalised.isEmpty) return;
 
+    // Try the custom Cloud Function first — when its email transport is
+    // wired up it gives a shorter TTL, neutral subject and an audit
+    // entry in `account_recovery_attempts/`. Failures are swallowed to
+    // preserve the no-enumeration contract.
     try {
       final callable = _fn.httpsCallable('sendCustomReset');
       await callable.call<Map<String, dynamic>>({'email': normalised});
-      return;
     } on FirebaseFunctionsException catch (e) {
-      // `unavailable` (503) means the function isn't deployed yet — fall back.
-      // `not-found` would mean we never deployed under that name.
       if (e.code != 'unavailable' && e.code != 'not-found') {
-        // Other errors are still swallowed to preserve the no-enumeration
-        // contract; logged so devs can spot real failures during testing.
         // ignore: avoid_print
         print('sendCustomReset failed (${e.code}): ${e.message}');
-        return;
       }
     } catch (_) {
-      // Same enumeration-protection rationale.
+      // no-op
     }
 
-    // Fallback path
+    // Always call Firebase Auth's built-in reset as well. The custom
+    // Cloud Function currently has a stub `sendEmail()` that does not
+    // dispatch the message yet (client 2026-05-18: "el correo de
+    // recuperación no llega"), so without this fallback the user
+    // waited forever for an email that never arrives. The built-in
+    // path uses the noreply@<project>.firebaseapp.com sender — not
+    // ideal for deliverability, but reliable and works without any
+    // SMTP wiring.
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: normalised);
     } catch (_) {

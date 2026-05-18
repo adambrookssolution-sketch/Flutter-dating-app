@@ -86,11 +86,18 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen> {
             ),
             Expanded(
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                // No orderBy at the server: Firestore drops every doc
+                // that doesn't have the indexed field, so couples whose
+                // `verification.sent_at` was never written (e.g. a
+                // pending-review doc that the user never advanced past
+                // the video step) used to be invisible to the admin
+                // panel — exactly what the client hit on 2026-05-18.
+                // Sort in memory below; the queue is bounded to
+                // `pending_review` so the result set stays small.
                 stream: FirebaseFirestore.instance
                     .collection('couples')
                     .where('status',
                         isEqualTo: CoupleStatus.pendingReview.value)
-                    .orderBy('verification.sent_at')
                     .snapshots(),
                 builder: (context, snap) {
                   if (snap.hasError) {
@@ -110,6 +117,19 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen> {
                   // moderator queue.
                   final allRaw =
                       snap.data!.docs.map(Couple.fromDoc).toList();
+                  // Sort newest-first by verification.sent_at when
+                  // present, falling back to created_at, so partially
+                  // submitted couples still surface (they used to
+                  // disappear when the server-side orderBy excluded
+                  // them).
+                  allRaw.sort((a, b) {
+                    final av = a.verification?.sentAt ?? a.createdAt;
+                    final bv = b.verification?.sentAt ?? b.createdAt;
+                    if (av == null && bv == null) return 0;
+                    if (av == null) return 1;
+                    if (bv == null) return -1;
+                    return bv.compareTo(av);
+                  });
                   final all = allRaw.where((c) {
                     final hasVideo =
                         (c.verification?.videoUrl ?? '').isNotEmpty;
