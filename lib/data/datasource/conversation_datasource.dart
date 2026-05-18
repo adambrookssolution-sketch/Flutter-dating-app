@@ -132,6 +132,19 @@ class ConversationDatasource {
     final convRef = db.collection('conversations').doc(conversationId);
     final msgRef = convRef.collection('messages').doc();
 
+    // First-send guard (client report 2026-05-17): the agency-parity
+    // flow opens the chat with `pendingPartnerUid` BEFORE the
+    // conversation doc exists, so the very first message used to fail
+    // server-side (batch.update against a missing doc → rejection,
+    // and the optimistic local message vanished a few seconds later
+    // when the stream re-syncs). Probe once and seed the doc when it
+    // doesn't exist; the deterministic conversationId
+    // (`<uid1>_<uid2>` sorted) gives us the participants list without
+    // an extra round-trip.
+    final convSnap = await convRef.get();
+    final previewText =
+        text.isNotEmpty ? text : (imageUrl == null ? '' : '📷');
+
     final batch = db.batch();
     batch.set(msgRef, {
       'text': text,
@@ -139,14 +152,26 @@ class ConversationDatasource {
       'sender_uid': senderUid,
       'created_at': FieldValue.serverTimestamp(),
     });
-    final previewText =
-        text.isNotEmpty ? text : (imageUrl == null ? '' : '📷');
-    batch.update(convRef, {
-      'last_message': previewText,
-      'last_message_time': FieldValue.serverTimestamp(),
-      'last_message_by': senderUid,
-      'replied_by': FieldValue.arrayUnion([senderUid]),
-    });
+
+    if (!convSnap.exists) {
+      batch.set(convRef, {
+        'participants': conversationId.split('_'),
+        'initiated_by': senderUid,
+        'created_at': FieldValue.serverTimestamp(),
+        'last_message': previewText,
+        'last_message_time': FieldValue.serverTimestamp(),
+        'last_message_by': senderUid,
+        'replied_by': [senderUid],
+      });
+    } else {
+      batch.update(convRef, {
+        'last_message': previewText,
+        'last_message_time': FieldValue.serverTimestamp(),
+        'last_message_by': senderUid,
+        'replied_by': FieldValue.arrayUnion([senderUid]),
+      });
+    }
+
     await batch.commit();
   }
 }

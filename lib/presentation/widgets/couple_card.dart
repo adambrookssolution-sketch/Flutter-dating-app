@@ -229,14 +229,27 @@ class _CoupleCardState extends State<CoupleCard> {
     final idx = _currentPhoto % p.photos.length;
     final url = p.photos[idx];
     // Wrapped in AnimatedSwitcher so the photo cross-fades when the
-    // user taps left/right (agency parity, 2026-05-17 #5). BoxFit.cover
-    // and the 4-px card insets from #11 keep the photo edge-to-edge.
+    // user taps left/right (agency parity, 2026-05-17 #5). Default
+    // layoutBuilder lays children in a Stack with StackFit.loose,
+    // which centred the image at its intrinsic size and produced
+    // black bars above / below the photo (client report on build #80).
+    // Override with StackFit.expand so each Image.network actually
+    // fills the card.
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 220),
+      layoutBuilder: (current, previous) => Stack(
+        fit: StackFit.expand,
+        children: [
+          ...previous,
+          if (current != null) current,
+        ],
+      ),
       child: Image.network(
         url,
         key: ValueKey(idx),
         fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
         errorBuilder: (_, __, ___) => const DecoratedBox(
           decoration: BoxDecoration(color: Colors.black),
         ),
