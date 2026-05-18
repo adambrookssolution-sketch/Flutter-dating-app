@@ -43,6 +43,20 @@ class FcmService {
       // Refresh token subscription — fires when FCM rotates the token.
       FirebaseMessaging.instance.onTokenRefresh
           .listen((t) => _writeToken(uid, t));
+
+      // Foreground listener — FCM only auto-displays a system banner
+      // when the app is in the background. When a push lands while
+      // the user is actively using the app, the OS hands the payload
+      // to `onMessage` and we have to surface it ourselves. We just
+      // log it for now; the in-app inbox badge already reflects new
+      // messages/requests via the Firestore stream so the user has
+      // a real-time signal without an extra banner. Adding a proper
+      // in-app banner is a flutter_local_notifications follow-up.
+      FirebaseMessaging.onMessage.listen((msg) {
+        // ignore: avoid_print
+        print('FCM foreground: ${msg.notification?.title ?? "(no title)"}'
+            ' / ${msg.notification?.body ?? "(no body)"}');
+      });
     }
 
     final token = await FirebaseMessaging.instance.getToken(
