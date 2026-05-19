@@ -255,6 +255,32 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
     }
   }
 
+  /// Heart-tap handler — toggles the favourite on Firestore and
+  /// keeps the local `_favoriteIds` set in sync so the next render
+  /// of the card reflects the correct state without a refetch.
+  /// Client 2026-05-19 #2: heart only flipped visually before this.
+  Future<void> _toggleFavorite(UserProfile profile) async {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    if (myUid == null) return;
+    final wasFav = _favoriteIds.contains(profile.uid);
+    setState(() {
+      _favoriteIds = wasFav
+          ? (_favoriteIds.toSet()..remove(profile.uid))
+          : (_favoriteIds.toSet()..add(profile.uid));
+    });
+    try {
+      await FavoriteDatasource.toggleFavorite(myUid, profile.uid);
+    } catch (e) {
+      if (!mounted) return;
+      // Revert on failure so the heart matches Firestore again.
+      setState(() {
+        _favoriteIds = wasFav
+            ? (_favoriteIds.toSet()..add(profile.uid))
+            : (_favoriteIds.toSet()..remove(profile.uid));
+      });
+    }
+  }
+
   Future<void> _reportCouple(UserProfile profile) async {
     if (!mounted) return;
     // Lift the UserProfile fields into the Couple shape ReportScreen needs
@@ -380,6 +406,23 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
         if (!wants.any(profileTags.contains)) return false;
       }
 
+      // Looking-for chips (Dynamics-split filters). Until the feed
+      // migrates from UserProfile to the Couple doc (next sprint),
+      // we apply these by substring-matching against the legacy
+      // interests CSV. Approximate — a couple that hasn't authored
+      // their dynamics_interests list won't be picked up — but at
+      // least the chips now actively narrow the feed instead of
+      // silently doing nothing (client 2026-05-19 #4).
+      final lookingForAll = <String>[
+        ...f.lookingForInterests,
+        ...f.lookingForExperience,
+        ...f.lookingForInteraction,
+      ].map((s) => s.toLowerCase()).toList();
+      if (lookingForAll.isNotEmpty) {
+        final hay = p.interests.toLowerCase();
+        if (!lookingForAll.any(hay.contains)) return false;
+      }
+
       return true;
     }).toList();
   }
@@ -503,6 +546,8 @@ class _CouplesOptionState extends ConsumerState<CouplesOption> {
                       const EdgeInsets.fromLTRB(4, 8, 4, 0),
                   child: CoupleCard(
                     profile: coupleProfile,
+                    isFavorite: _favoriteIds.contains(profile.uid),
+                    onToggleFavorite: () => _toggleFavorite(profile),
                     onStartConversation: () => _startConversation(profile),
                     onBlock: () => _blockCouple(profile),
                     onReport: () => _reportCouple(profile),

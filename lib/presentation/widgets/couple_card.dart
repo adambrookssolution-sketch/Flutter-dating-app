@@ -290,8 +290,27 @@ class _CoupleCardState extends State<CoupleCard> {
   }
 
   Widget _favouriteBubble() {
+    // Heart bubble persists state through the parent — onToggleFavorite
+    // is invoked when the user taps. The visual toggle uses
+    // widget.isFavorite (passed from the parent) when present, falling
+    // back to the local flag for screens that haven't wired it up yet
+    // (e.g. the legacy preview cards).
+    // Before this fix the onTap only flipped a local boolean and never
+    // hit Firestore, so the heart visually changed colour but nothing
+    // persisted — client 2026-05-19 #2.
+    final isOn = widget.onToggleFavorite != null
+        ? widget.isFavorite ^ _isFavorite
+        : _isFavorite;
     return GestureDetector(
-      onTap: () => setState(() => _isFavorite = !_isFavorite),
+      onTap: () {
+        if (widget.onToggleFavorite != null) {
+          // Optimistic flip while the parent persists the change.
+          setState(() => _isFavorite = !_isFavorite);
+          widget.onToggleFavorite!();
+        } else {
+          setState(() => _isFavorite = !_isFavorite);
+        }
+      },
       child: Container(
         width: 44,
         height: 44,
@@ -301,7 +320,7 @@ class _CoupleCardState extends State<CoupleCard> {
         ),
         alignment: Alignment.center,
         child: Icon(
-          _isFavorite ? Icons.favorite : Icons.favorite_border,
+          isOn ? Icons.favorite : Icons.favorite_border,
           color: _burgundy,
           size: 22,
         ),
