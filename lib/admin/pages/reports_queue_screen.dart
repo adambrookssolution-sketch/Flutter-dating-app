@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:app/admin/admin_app.dart';
+import 'package:app/data/datasource/reports_datasource.dart';
+import 'package:app/data/models/report.dart';
 
 /// Reports queue — every report submitted by users, newest first.
 ///
@@ -57,7 +60,8 @@ class ReportsQueueScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           itemCount: docs.length,
           separatorBuilder: (_, __) => const SizedBox(height: 8),
-          itemBuilder: (_, i) => _ReportCard(data: docs[i].data()),
+          itemBuilder: (_, i) =>
+              _ReportCard(id: docs[i].id, data: docs[i].data()),
         );
       },
     );
@@ -65,8 +69,9 @@ class ReportsQueueScreen extends StatelessWidget {
 }
 
 class _ReportCard extends StatelessWidget {
+  final String id;
   final Map<String, dynamic> data;
-  const _ReportCard({required this.data});
+  const _ReportCard({required this.id, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +86,8 @@ class _ReportCard extends StatelessWidget {
     final reporter = (data['reporter_couple'] as String?) ?? '';
     final reported = (data['reported_couple'] as String?) ?? '';
     final created = (data['fecha'] as Timestamp?)?.toDate();
+    final estado = (data['estado'] as String?) ?? 'pending';
+    final reviewed = estado != 'pending';
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -132,10 +139,88 @@ class _ReportCard extends StatelessWidget {
                 _kv('Reportante', reporter),
               ],
             ),
+            const SizedBox(height: 12),
+            // Action row — moderator picks how to resolve the report.
+            // The Cloud Function `onReportStatusChanged` watches the
+            // `estado` field and pushes a notification to the
+            // reporter so they know their case was acted on (client
+            // 2026-05-17 #2 — report workflow).
+            if (reviewed)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AdminApp.bgRaised,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                      color: AdminApp.textMuted.withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  estado == 'reviewed'
+                      ? 'Aprobado'
+                      : estado == 'dismissed'
+                          ? 'Rechazado'
+                          : estado,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AdminApp.textMuted,
+                  ),
+                ),
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _setStatus(
+                        context,
+                        ReportStatus.reviewed,
+                        ReportAction.tempSuspension,
+                      ),
+                      icon: const Icon(Icons.check_circle_outline,
+                          size: 16),
+                      label: const Text('Aprobar'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _setStatus(
+                        context,
+                        ReportStatus.dismissed,
+                        ReportAction.none,
+                      ),
+                      icon: const Icon(Icons.cancel_outlined, size: 16),
+                      label: const Text('Rechazar'),
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _setStatus(
+    BuildContext context,
+    ReportStatus status,
+    ReportAction action,
+  ) async {
+    final me = FirebaseAuth.instance.currentUser?.uid ?? '';
+    try {
+      await ReportsDatasource.setReviewedByAdmin(
+        reportId: id,
+        status: status,
+        action: action,
+        moderatorUid: me,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo actualizar: $e')),
+      );
+    }
   }
 
   Widget _kv(String label, String value) => Row(

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 /// Handles FCM token lifecycle: request permission, acquire the token,
 /// write it to `couples/{myId}/fcm_tokens/{deviceId}`, and refresh on
@@ -22,6 +23,12 @@ class FcmService {
   FcmService._();
 
   static bool _initialised = false;
+
+  /// Global ScaffoldMessenger handle so the foreground-message listener
+  /// can show a SnackBar without needing a BuildContext. Wired to the
+  /// MaterialApp's `scaffoldMessengerKey` in `main.dart`.
+  static final GlobalKey<ScaffoldMessengerState> messengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   /// Should be called after the user has signed in AND has an approved
   /// couple doc. Safe to call multiple times — first call does the
@@ -56,6 +63,48 @@ class FcmService {
         // ignore: avoid_print
         print('FCM foreground: ${msg.notification?.title ?? "(no title)"}'
             ' / ${msg.notification?.body ?? "(no body)"}');
+        // Surface the push as a SnackBar so the user notices new
+        // messages / requests / favourites without leaving the app.
+        // FCM auto-displays a banner only when the app is in the
+        // background; in the foreground we have to do it ourselves.
+        final body = msg.notification?.body?.trim();
+        final title = msg.notification?.title?.trim();
+        if ((body == null || body.isEmpty) &&
+            (title == null || title.isEmpty)) return;
+        final messenger = messengerKey.currentState;
+        if (messenger == null) return;
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: const Color(0xFF1A0A0E),
+              duration: const Duration(seconds: 4),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (title != null && title.isNotEmpty)
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                  if (body != null && body.isNotEmpty)
+                    Text(
+                      body,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
       });
     }
 

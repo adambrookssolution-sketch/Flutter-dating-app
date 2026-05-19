@@ -48,6 +48,7 @@ export { executeDeletion } from "./deletion/executeDeletion";
 export { moderateVerification } from "./verification/moderateVerification";
 export { cleanupExpiredVideos } from "./verification/cleanupExpiredVideos";
 export { onReportCreated } from "./reports/onReportCreated";
+export { onReportStatusChanged } from "./reports/onReportStatusChanged";
 export { onSuspension } from "./moderation/onSuspension";
 
 // Week 3 — Travel Match + Requests

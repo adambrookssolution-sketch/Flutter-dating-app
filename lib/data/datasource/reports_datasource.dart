@@ -53,6 +53,26 @@ class ReportsDatasource {
     return reportRef.id;
   }
 
+  /// Admin-only: mark a report as `reviewed` (kept and action taken)
+  /// or `dismissed` (rejected, no action). The accompanying
+  /// `accion_tomada` records the moderator's choice (none / warning /
+  /// temp_suspension / permanent_ban). Stamps the moderator UID +
+  /// review timestamp so the reporter's notification can quote the
+  /// exact wording later (client 2026-05-17 #2 — report workflow).
+  static Future<void> setReviewedByAdmin({
+    required String reportId,
+    required ReportStatus status,
+    required ReportAction action,
+    required String moderatorUid,
+  }) async {
+    await _db.collection('reports').doc(reportId).update({
+      'estado': status.value,
+      'accion_tomada': action.value,
+      'moderador_id': moderatorUid,
+      'reviewed_at': FieldValue.serverTimestamp(),
+    });
+  }
+
   /// History of reports submitted BY the current couple.
   /// (We never expose reports filed AGAINST us — DECISIONS_LOG Point 5
   /// total reporter confidentiality.)

@@ -1,3 +1,4 @@
+import 'package:app/core/notifications/fcm_service.dart';
 import 'package:app/presentation/pages/auth/auth_screen.dart';
 import 'package:app/presentation/pages/pages.dart';
 import 'package:app/presentation/router/app_routes.dart';
@@ -40,6 +41,9 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
     return MaterialApp(
+      // Shared key so background services (FCM foreground listener,
+      // etc.) can pop a SnackBar without holding a BuildContext.
+      scaffoldMessengerKey: FcmService.messengerKey,
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       locale: locale,
       localizationsDelegates: const [
