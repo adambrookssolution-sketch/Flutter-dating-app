@@ -3,8 +3,10 @@ import 'package:app/data/datasource/profile_datasource.dart';
 import 'package:app/data/models/user_profile.dart';
 import 'package:app/presentation/constants/app_colors.dart';
 import 'package:app/presentation/pages/chat/chat_screen.dart';
+import 'package:app/presentation/pages/inbox/partner_profile_screen.dart';
 import 'package:app/presentation/widgets/conversation_row.dart';
 import 'package:app/presentation/widgets/custom_button.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -26,11 +28,16 @@ class _RequestMatchScreenState extends State<RequestMatchScreen> {
   UserProfile? _myProfile;
   bool _loading = true;
   bool _accepting = false;
+  /// Client feedback 2026-05-19 #3: the request screen must surface the
+  /// message Pareja A sent, not just the photos + interests. We fetch
+  /// the conversation's earliest message once on mount.
+  String? _firstMessage;
 
   @override
   void initState() {
     super.initState();
     _loadMyProfile();
+    _loadFirstMessage();
   }
 
   Future<void> _loadMyProfile() async {
@@ -46,6 +53,33 @@ class _RequestMatchScreenState extends State<RequestMatchScreen> {
     } else {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _loadFirstMessage() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(widget.conversationId)
+          .collection('messages')
+          .orderBy('created_at')
+          .limit(1)
+          .get();
+      if (!mounted || snap.docs.isEmpty) return;
+      final text = (snap.docs.first.data()['text'] as String?)?.trim();
+      if (text != null && text.isNotEmpty) {
+        setState(() => _firstMessage = text);
+      }
+    } catch (_) {
+      // Non-fatal — the screen still works without the message line.
+    }
+  }
+
+  void _openPartnerProfile() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PartnerProfileScreen(profile: widget.otherProfile),
+      ),
+    );
   }
 
   Future<void> _openConversation() async {
@@ -159,10 +193,47 @@ class _RequestMatchScreenState extends State<RequestMatchScreen> {
 
         const SizedBox(height: 40),
 
-        // Overlapping avatars
-        _buildAvatarStack(),
+        // Overlapping avatars — tappable so the receiver can open the
+        // partner profile detail (photos + interests + everything) and
+        // make an informed decision before accepting. Client feedback
+        // 2026-05-19 #3.
+        GestureDetector(
+          onTap: _openPartnerProfile,
+          behavior: HitTestBehavior.opaque,
+          child: _buildAvatarStack(),
+        ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 18),
+
+        // First message from Pareja A (the request copy). Surfaces what
+        // they actually wrote so the receiver knows the vibe before
+        // accepting, instead of just two photos + tags.
+        if (_firstMessage != null && _firstMessage!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.35),
+                ),
+              ),
+              child: Text(
+                _firstMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ),
+
+        const SizedBox(height: 18),
 
         // Tags
         if (tags.isNotEmpty)
