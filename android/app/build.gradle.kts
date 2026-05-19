@@ -32,6 +32,24 @@ android {
         versionName = flutter.versionName
     }
 
+    // Explicit override of the built-in `debug` signing config (client
+    // 2026-05-19 #1). Without this, AGP would auto-generate a fresh
+    // keystore inside the project's build/ directory on each clean
+    // build — the apksigner audit on build #95 confirmed the APK was
+    // signed with cert SHA c4259470… instead of the pinned keystore's
+    // 7b109bf6… that we registered in Firebase, so Google Sign-In
+    // failed with DEVELOPER_ERROR on the device. Pointing the debug
+    // signingConfig at the same ~/.android/debug.keystore the CI
+    // workflow places forces AGP to use OUR pinned cert.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
