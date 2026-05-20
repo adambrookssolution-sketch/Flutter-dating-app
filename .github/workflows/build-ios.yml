@@ -1,0 +1,69 @@
+name: Build iOS (smoke test)
+
+# Parallels build-apk.yml on the iOS side. For now this is a smoke
+# test only — we compile the Flutter app for an iOS target using
+# `--no-codesign` so we don't yet need provisioning profiles or
+# distribution certificates uploaded as repo secrets. The job catches
+# iOS-specific compile / pod / dependency issues early so we don't
+# discover them the day we try to ship to TestFlight.
+#
+# Phase 2 (after Felix's Individual Apple Developer enrolment is
+# confirmed): add a release job that uses fastlane match (or stored
+# .p12 + provisioning profile secrets) to produce a signed IPA and
+# upload it to TestFlight via App Store Connect API.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, main]
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'
+          channel: stable
+          cache: true
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Install pub dependencies
+        run: flutter pub get
+
+      - name: Regenerate iOS scaffolding if Podfile is missing
+        # Our repo started Android-only so the ios/Podfile got stripped
+        # at some point. Re-running `flutter create --platforms=ios .`
+        # against the existing project is a no-op for everything we
+        # already have but re-creates the Podfile / pubspec wiring
+        # CocoaPods needs. Safe to run every build — Flutter detects
+        # the existing app and only regenerates platform glue.
+        run: |
+          if [ ! -f ios/Podfile ]; then
+            flutter create . \
+              --platforms=ios \
+              --org=com.affinitysocialclub \
+              --project-name=app
+          fi
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: |
+          pod install --repo-update
+
+      - name: Build iOS (no codesign — smoke test)
+        env:
+          APPLE_SERVICE_ID: ${{ secrets.APPLE_SERVICE_ID }}
+        run: |
+          # Same dart-define wiring as the APK build so Apple Sign-In's
+          # web/OAuth path stays consistent between platforms.
+          flutter build ios --release --no-codesign \
+            --dart-define=APPLE_SERVICE_ID="${APPLE_SERVICE_ID}"
