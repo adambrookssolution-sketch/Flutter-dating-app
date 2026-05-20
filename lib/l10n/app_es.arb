@@ -409,5 +409,6 @@
   "reportSubmittedWithFollowup": "Gracias — nuestro equipo revisará tu reporte y te avisaremos cuando tengamos una respuesta.",
   "communityMarkExplicitTag": "Marcar este post como contenido explícito (18+)",
   "communityFilterCountry": "País",
-  "communityShowExplicit": "Mostrar feed explícito"
+  "communityShowExplicit": "Mostrar feed explícito",
+  "requestMatchNoInterestsListed": "Esta pareja todavía no listó sus intereses."
 }

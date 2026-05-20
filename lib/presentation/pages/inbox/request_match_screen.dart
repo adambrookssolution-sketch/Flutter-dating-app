@@ -1,6 +1,8 @@
 import 'package:app/data/datasource/conversation_datasource.dart';
+import 'package:app/data/datasource/couples_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
 import 'package:app/data/models/user_profile.dart';
+import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/constants/app_colors.dart';
 import 'package:app/presentation/pages/chat/chat_screen.dart';
 import 'package:app/presentation/pages/inbox/partner_profile_screen.dart';
@@ -32,12 +34,39 @@ class _RequestMatchScreenState extends State<RequestMatchScreen> {
   /// message Pareja A sent, not just the photos + interests. We fetch
   /// the conversation's earliest message once on mount.
   String? _firstMessage;
+  /// Client feedback 2026-05-20: the interests row sometimes came back
+  /// empty because UserProfile.interests is the legacy CSV string and
+  /// couples that filled in the new Dynamics-split fields write to
+  /// the Couple doc instead. Fetch the Couple doc for the other party
+  /// and merge `interests`, `dynamicsInterests` and `experience` into
+  /// the displayed tag list — far more likely to surface something
+  /// the viewer can actually decide on.
+  List<String> _otherCoupleTags = const [];
 
   @override
   void initState() {
     super.initState();
     _loadMyProfile();
     _loadFirstMessage();
+    _loadOtherCoupleTags();
+  }
+
+  Future<void> _loadOtherCoupleTags() async {
+    try {
+      final couple =
+          await CouplesDatasource.getCouple(widget.otherProfile.uid);
+      if (!mounted || couple == null) return;
+      final merged = <String>{
+        ...couple.interests,
+        ...couple.dynamicsInterests,
+        ...couple.experience,
+      };
+      if (merged.isNotEmpty) {
+        setState(() => _otherCoupleTags = merged.toList(growable: false));
+      }
+    } catch (_) {
+      // Non-fatal — fall back to UserProfile.interests CSV if available.
+    }
   }
 
   Future<void> _loadMyProfile() async {
@@ -136,13 +165,20 @@ class _RequestMatchScreenState extends State<RequestMatchScreen> {
 
   Widget _buildContent() {
     final other = widget.otherProfile;
-    final tags = other.interests.isNotEmpty
-        ? other.interests
+    // Prefer the richer Couple-doc tags (loaded on mount); fall back to
+    // the legacy CSV in UserProfile when the Couple fetch hasn't
+    // arrived yet or the doc has no interests filled. Either way the
+    // section always renders so the viewer can use it to decide
+    // whether to connect (client feedback 2026-05-20).
+    final legacyTags = other.interests.isEmpty
+        ? const <String>[]
+        : other.interests
             .split(',')
             .map((t) => t.trim())
             .where((t) => t.isNotEmpty)
-            .toList()
-        : <String>[];
+            .toList();
+    final tags =
+        _otherCoupleTags.isNotEmpty ? _otherCoupleTags : legacyTags;
 
     return Column(
       children: [
@@ -235,17 +271,30 @@ class _RequestMatchScreenState extends State<RequestMatchScreen> {
 
         const SizedBox(height: 18),
 
-        // Tags
-        if (tags.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: tags.map(_buildTag).toList(),
-            ),
-          ),
+        // Tags — always rendered (client 2026-05-20). When the other
+        // couple hasn't authored any interests yet, surface a soft
+        // placeholder instead of just hiding the row, so the viewer
+        // doesn't wonder whether the data simply hasn't loaded.
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: tags.isNotEmpty
+              ? Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: tags.map(_buildTag).toList(),
+                )
+              : Text(
+                  AppLocalizations.of(context)!
+                      .requestMatchNoInterestsListed,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 13,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+        ),
 
         const Spacer(flex: 3),
 

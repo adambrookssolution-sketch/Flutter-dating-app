@@ -994,4 +994,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityShowExplicit => 'Show explicit feed';
+
+  @override
+  String get requestMatchNoInterestsListed =>
+      'This couple has not listed their interests yet.';
 }

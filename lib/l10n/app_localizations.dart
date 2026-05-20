@@ -1909,6 +1909,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show explicit feed'**
   String get communityShowExplicit;
+
+  /// No description provided for @requestMatchNoInterestsListed.
+  ///
+  /// In en, this message translates to:
+  /// **'This couple has not listed their interests yet.'**
+  String get requestMatchNoInterestsListed;
 }
 
 class _AppLocalizationsDelegate

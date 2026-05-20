@@ -435,5 +435,6 @@
   "reportSubmittedWithFollowup": "Thanks — our team will review your report and we will notify you once a decision is made.",
   "communityMarkExplicitTag": "Mark this post as explicit content (18+)",
   "communityFilterCountry": "Country",
-  "communityShowExplicit": "Show explicit feed"
+  "communityShowExplicit": "Show explicit feed",
+  "requestMatchNoInterestsListed": "This couple has not listed their interests yet."
 }
