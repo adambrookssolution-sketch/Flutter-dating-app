@@ -39,6 +39,109 @@ jobs:
       - name: Install pub dependencies
         run: flutter pub get
 
+      - name: Write SA key + auth gcloud
+        env:
+          SA_KEY: ${{ secrets.FIREBASE_SA_KEY_PROD }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SA_KEY" ]; then
+            echo "::error::FIREBASE_SA_KEY_PROD secret is not set."
+            exit 1
+          fi
+          echo "$SA_KEY" > "$RUNNER_TEMP/sa-prod.json"
+          gcloud auth activate-service-account --key-file="$RUNNER_TEMP/sa-prod.json"
+          gcloud config set project affinity-dating-app-cf807
+
+      - name: Sync iOS GoogleService-Info.plist from Firebase
+        # The plist is required at app launch — Firebase.initializeApp()
+        # throws if it can't find it in the bundle. We register it in
+        # project.pbxproj's PBXResourcesBuildPhase so the build copies it
+        # into the .app, and fetch the latest contents from the Firebase
+        # Management API here so we never ship a stale config. The Android
+        # side uses the same pattern (build-apk.yml's "Register SHA-1 +
+        # sync google-services.json" step).
+        #
+        # If no iOS app is yet registered in the Firebase project with
+        # bundleId com.affinitysocialclub.app, we create one — this is
+        # idempotent so subsequent runs no-op. Phase 2 will mirror the
+        # Android SHA-registration trick for iOS APNs auth keys.
+        run: |
+          set -uo pipefail
+          PROJECT_ID="affinity-dating-app-cf807"
+          BUNDLE_ID="com.affinitysocialclub.app"
+          TOKEN=$(gcloud auth print-access-token)
+
+          # ── find existing iOS app for this bundle id ────────────────
+          curl -sS -H "Authorization: Bearer ${TOKEN}" \
+            "https://firebase.googleapis.com/v1beta1/projects/${PROJECT_ID}/iosApps" \
+            > /tmp/ios-apps.json
+          APP_NAME=$(python3 -c "
+          import json, sys
+          d = json.load(open('/tmp/ios-apps.json'))
+          for app in d.get('apps', []):
+              if app.get('bundleId') == '${BUNDLE_ID}':
+                  print(app.get('name', ''))
+                  break
+          ")
+
+          # ── create one if missing ───────────────────────────────────
+          if [ -z "$APP_NAME" ]; then
+            echo "No iOS app for bundle ${BUNDLE_ID} — creating."
+            CREATE_STATUS=$(curl -sS -o /tmp/ios-create.json -w "%{http_code}" -X POST \
+              -H "Authorization: Bearer ${TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"bundleId\":\"${BUNDLE_ID}\",\"displayName\":\"Affinity iOS\"}" \
+              "https://firebase.googleapis.com/v1beta1/projects/${PROJECT_ID}/iosApps")
+            if [ "${CREATE_STATUS}" != "200" ]; then
+              echo "::error::iOS app creation returned HTTP ${CREATE_STATUS}:"
+              cat /tmp/ios-create.json || true
+              exit 1
+            fi
+            # The create response is a long-running operation; poll for
+            # completion (usually <5s).
+            OP_NAME=$(python3 -c "import json; print(json.load(open('/tmp/ios-create.json')).get('name',''))")
+            for i in $(seq 1 30); do
+              curl -sS -H "Authorization: Bearer ${TOKEN}" \
+                "https://firebase.googleapis.com/v1beta1/${OP_NAME}" > /tmp/op.json
+              DONE=$(python3 -c "import json; print(json.load(open('/tmp/op.json')).get('done', False))")
+              if [ "$DONE" = "True" ]; then
+                APP_NAME=$(python3 -c "import json; d=json.load(open('/tmp/op.json')).get('response', {}); print(d.get('name', ''))")
+                break
+              fi
+              sleep 2
+            done
+            if [ -z "$APP_NAME" ]; then
+              echo "::error::iOS app creation didn't complete in time."
+              cat /tmp/op.json || true
+              exit 1
+            fi
+          fi
+          echo "iOS app: ${APP_NAME}"
+
+          # ── fetch the config plist ──────────────────────────────────
+          CFG_STATUS=$(curl -sS -o /tmp/ios-cfg.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            "https://firebase.googleapis.com/v1beta1/${APP_NAME}/config")
+          if [ "${CFG_STATUS}" != "200" ]; then
+            echo "::error::Could not fetch GoogleService-Info.plist (HTTP ${CFG_STATUS}):"
+            cat /tmp/ios-cfg.json || true
+            exit 1
+          fi
+          # `configFileContents` is base64-encoded plist XML.
+          python3 -c "
+          import json, base64, sys
+          d = json.load(open('/tmp/ios-cfg.json'))
+          contents = base64.b64decode(d['configFileContents'])
+          open('ios/Runner/GoogleService-Info.plist', 'wb').write(contents)
+          print(f'Wrote ios/Runner/GoogleService-Info.plist ({len(contents)} bytes)')
+          "
+          # Sanity: the plist MUST declare the right bundle id, otherwise
+          # Firebase init will silently fail to authenticate on launch.
+          if ! grep -q "${BUNDLE_ID}" ios/Runner/GoogleService-Info.plist; then
+            echo "::error::Synced plist doesn't reference ${BUNDLE_ID}."
+            exit 1
+          fi
+
       - name: Install CocoaPods
         # ios/Podfile is committed (pinned to platform 14.0). We do NOT
         # regenerate it via `flutter create` — that writes platform 12.0
