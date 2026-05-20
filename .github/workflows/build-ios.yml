@@ -39,22 +39,11 @@ jobs:
       - name: Install pub dependencies
         run: flutter pub get
 
-      - name: Regenerate iOS scaffolding if Podfile is missing
-        # Our repo started Android-only so the ios/Podfile got stripped
-        # at some point. Re-running `flutter create --platforms=ios .`
-        # against the existing project is a no-op for everything we
-        # already have but re-creates the Podfile / pubspec wiring
-        # CocoaPods needs. Safe to run every build — Flutter detects
-        # the existing app and only regenerates platform glue.
-        run: |
-          if [ ! -f ios/Podfile ]; then
-            flutter create . \
-              --platforms=ios \
-              --org=com.affinitysocialclub \
-              --project-name=app
-          fi
-
       - name: Install CocoaPods
+        # ios/Podfile is committed (pinned to platform 14.0). We do NOT
+        # regenerate it via `flutter create` — that writes platform 12.0
+        # which fails to resolve modern firebase_messaging /
+        # video_player_avfoundation pods (build-ios run 26183292622).
         working-directory: ios
         run: |
           pod install --repo-update
