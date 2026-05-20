@@ -48,13 +48,38 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // Release signing pulls credentials from CI env (set by the
+        // production workflow from GitHub Secrets) or from a local
+        // `android/key.properties` file (gitignored). When neither is
+        // present we leave the release signingConfig unset and the
+        // `release` build type falls back to the debug keystore — fine
+        // for local `flutter run --release` smoke tests but Play Store
+        // upload will refuse a debug-signed AAB.
+        create("release") {
+            val keystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
+            val keystorePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+            val keyAliasEnv = System.getenv("RELEASE_KEY_ALIAS")
+            val keyPasswordEnv = System.getenv("RELEASE_KEY_PASSWORD")
+            if (!keystorePath.isNullOrBlank() && file(keystorePath).exists()) {
+                storeFile = file(keystorePath)
+                storePassword = keystorePassword
+                keyAlias = keyAliasEnv
+                keyPassword = keyPasswordEnv
+            }
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // If the release signing config has a storeFile (i.e. CI
+            // supplied secrets), use it. Otherwise fall back to debug so
+            // `flutter run --release` still works locally without
+            // requiring every dev to provision a release keystore.
+            signingConfig = if (signingConfigs.getByName("release").storeFile != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

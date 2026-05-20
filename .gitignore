@@ -63,6 +63,16 @@ assets/branding/source/
 .env.*
 !.env.example
 
+# Android release signing — keystore files and the key.properties that
+# carries the password / alias. These are equivalent to the Apple .p8:
+# anyone with the keystore can ship malware as our app on Play Store.
+# Real release keystore lives in GitHub Secrets / 1Password; only debug
+# keystores ever sit on disk.
+android/key.properties
+*.jks
+*.keystore
+!debug.keystore
+
 # Apple Sign-In private signing keys (.p8). These are issued per-account
 # from Apple Developer and grant the holder the ability to mint JWTs as
 # our app's Apple Sign-In service — they MUST NEVER be committed even
