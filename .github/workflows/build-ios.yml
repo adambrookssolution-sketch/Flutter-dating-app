@@ -156,6 +156,29 @@ jobs:
             exit 1
           fi
 
+      - name: Patch Info.plist with REVERSED_CLIENT_ID for Google Sign-In
+        # Info.plist registers `$(REVERSED_CLIENT_ID)` as a custom URL
+        # scheme so Google Sign-In's OAuth redirect lands back in the
+        # app. The token between $( ) is meant to be a build setting,
+        # but nothing defines REVERSED_CLIENT_ID in our xcconfigs — so
+        # Xcode leaves the literal string in, and OAuth redirects 404
+        # back to Safari instead of opening the app. We resolve it
+        # ourselves from the just-synced GoogleService-Info.plist.
+        run: |
+          set -euo pipefail
+          REV_ID=$(python3 -c "
+          import plistlib
+          with open('ios/Runner/GoogleService-Info.plist', 'rb') as f:
+              print(plistlib.load(f).get('REVERSED_CLIENT_ID', ''))
+          ")
+          if [ -z "$REV_ID" ]; then
+            echo "::error::REVERSED_CLIENT_ID missing from GoogleService-Info.plist."
+            exit 1
+          fi
+          # macOS sed requires an empty -i argument.
+          sed -i '' "s|\$(REVERSED_CLIENT_ID)|${REV_ID}|g" ios/Runner/Info.plist
+          echo "Patched Info.plist URL scheme: ${REV_ID}"
+
       - name: Install CocoaPods
         # ios/Podfile is committed (pinned to platform 14.0). We do NOT
         # regenerate it via `flutter create` — that writes platform 12.0

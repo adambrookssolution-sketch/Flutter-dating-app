@@ -53,6 +53,16 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Required for FCM on iOS: without remote-notification iOS will
+	     never deliver wake-up pushes to the app even after the APNs
+	     auth key is uploaded to Firebase. `fetch` covers Apple's
+	     periodic background-app-refresh; firebase_messaging plugs
+	     into both. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
