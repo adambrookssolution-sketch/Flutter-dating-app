@@ -1,7 +1,8 @@
-# Pinned to iOS 14.0 — modern firebase_messaging / video_player_avfoundation
-# pods refuse to resolve against 12.0 (default that `flutter create` writes).
-# 14.0 covers iPhone 6s+, which is well below our actual target audience.
-platform :ios, '14.0'
+# Pinned to iOS 15.0 — Firebase iOS SDK 12.x (firebase_core 4.x ships
+# with 12.8.0) requires 15.0 as a hard floor; cloud_firestore in
+# particular refuses to resolve against 14.0 (build-ios run
+# 26184210682). 15.0 still covers iPhone 6s+, well below our audience.
+platform :ios, '15.0'
 
 # CocoaPods analytics sends network stats synchronously, slowing builds.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -42,11 +43,11 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     # Force every pod target to also build for iOS 14 so a pod that
-    # ignores the global `platform :ios, '14.0'` (a known CocoaPods
+    # ignores the global `platform :ios, '15.0'` (a known CocoaPods
     # quirk where pods inherit Xcode's default 9.0) doesn't reintroduce
     # the deployment-target mismatch.
     target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
     end
   end
 end
