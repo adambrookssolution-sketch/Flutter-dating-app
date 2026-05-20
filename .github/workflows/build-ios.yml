@@ -39,18 +39,21 @@ jobs:
       - name: Install pub dependencies
         run: flutter pub get
 
-      - name: Write SA key + auth gcloud
-        env:
-          SA_KEY: ${{ secrets.FIREBASE_SA_KEY_PROD }}
-        run: |
-          set -euo pipefail
-          if [ -z "$SA_KEY" ]; then
-            echo "::error::FIREBASE_SA_KEY_PROD secret is not set."
-            exit 1
-          fi
-          echo "$SA_KEY" > "$RUNNER_TEMP/sa-prod.json"
-          gcloud auth activate-service-account --key-file="$RUNNER_TEMP/sa-prod.json"
-          gcloud config set project affinity-dating-app-cf807
+      - name: Auth to Google Cloud
+        # macos-latest runners (unlike ubuntu-latest) ship without
+        # gcloud. The official `auth` + `setup-gcloud` actions install
+        # the SDK AND wire the service-account credentials in one shot
+        # — equivalent to the build-apk.yml pattern of
+        # `gcloud auth activate-service-account --key-file=...` but
+        # portable to the macOS runner.
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SA_KEY_PROD }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: affinity-dating-app-cf807
 
       - name: Sync iOS GoogleService-Info.plist from Firebase
         # The plist is required at app launch — Firebase.initializeApp()
