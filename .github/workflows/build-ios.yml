@@ -39,6 +39,17 @@ jobs:
       - name: Install pub dependencies
         run: flutter pub get
 
+      - name: Generate launcher icons + native splash
+        # Matches the Android workflow. flutter_launcher_icons writes
+        # the Affinity brand icon into ios/Runner/Assets.xcassets/
+        # AppIcon.appiconset/, overwriting Flutter's default beige
+        # scaffolding (which is what was committed). Without this step
+        # the App Store build would ship the Flutter logo as our app
+        # icon, which would also fail App Review.
+        run: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+
       - name: Auth to Google Cloud
         # macos-latest runners (unlike ubuntu-latest) ship without
         # gcloud. The official `auth` + `setup-gcloud` actions install
