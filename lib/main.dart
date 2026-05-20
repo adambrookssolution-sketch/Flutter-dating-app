@@ -41,9 +41,13 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
     return MaterialApp(
-      // Shared key so background services (FCM foreground listener,
-      // etc.) can pop a SnackBar without holding a BuildContext.
+      // Shared keys so background services (FCM foreground listener,
+      // etc.) can pop a SnackBar AND navigate without holding a
+      // BuildContext. messengerKey backs the SnackBar; navigatorKey
+      // backs the "Ver" action that opens Inbox / Profile based on
+      // the push payload's `kind`.
       scaffoldMessengerKey: FcmService.messengerKey,
+      navigatorKey: FcmService.navigatorKey,
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       locale: locale,
       localizationsDelegates: const [
