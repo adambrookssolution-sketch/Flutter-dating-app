@@ -1,0 +1,299 @@
+name: Release IPA (TestFlight)
+
+# Produces a signed iOS App archive (.ipa) and optionally uploads it
+# to TestFlight via the App Store Connect API. Manually triggered.
+# Mirror of release-aab.yml on the iOS side.
+#
+# Required GitHub Secrets (all four must be set or the workflow exits
+# early with a clear message — no half-configured runs that fail deep
+# in xcodebuild):
+#
+#   IOS_DIST_CERT_P12_BASE64   — base64 of the distribution .p12
+#                                (cert + private key, exported from
+#                                Keychain). Produce with:
+#                                  base64 -w0 dist.p12
+#   IOS_DIST_CERT_PASSWORD     — password protecting the .p12
+#   IOS_PROVISIONING_PROFILE_BASE64
+#                              — base64 of the .mobileprovision created
+#                                in Apple Developer for bundle id
+#                                com.affinitysocialclub.app
+#   IOS_TEAM_ID                — Apple Developer Team ID (VTP3W3Y6FA)
+#
+# Optional (enables automatic TestFlight upload — without these the
+# workflow stops after producing the .ipa and uploads it to Firebase
+# Storage so you can drop it into Transporter manually):
+#
+#   APP_STORE_CONNECT_API_KEY_BASE64  — base64 of the .p8 issued in
+#                                       App Store Connect → Users and
+#                                       Access → Keys
+#   APP_STORE_CONNECT_KEY_ID          — that key's Key ID
+#   APP_STORE_CONNECT_ISSUER_ID       — issuer ID from the same page
+#
+# Reused from build-ios.yml:
+#   FIREBASE_SA_KEY_PROD       — for GoogleService-Info.plist sync
+#   APPLE_SERVICE_ID           — Apple Sign-In Service ID
+
+on:
+  workflow_dispatch:
+    inputs:
+      destination:
+        description: 'Where to send the IPA'
+        type: choice
+        default: testflight
+        options: [testflight, firebase-storage-only]
+
+jobs:
+  ipa:
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Pre-flight — verify signing secrets are configured
+        # We refuse to run unless the four signing secrets are present,
+        # so the build can't half-fail deep in xcodebuild after burning
+        # 20+ minutes on a macos-latest runner.
+        env:
+          P12: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          P12_PW: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          missing=0
+          for v in P12 P12_PW PROFILE TEAM_ID; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Required secret IOS_${v} is not set."
+              missing=$((missing+1))
+            fi
+          done
+          if [ $missing -gt 0 ]; then
+            echo "::error::Configure the missing secrets in repo Settings → Secrets, then re-run."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.7'
+          channel: stable
+          cache: true
+
+      - name: Install pub dependencies
+        run: flutter pub get
+
+      - name: Generate launcher icons + native splash
+        run: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+
+      - name: Auth to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SA_KEY_PROD }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: affinity-dating-app-cf807
+
+      - name: Sync iOS GoogleService-Info.plist from Firebase
+        # Same logic as build-ios.yml — keep the source of truth in one
+        # place (Firebase Console) and pull at build time so the
+        # release build can't ship a stale config.
+        run: |
+          set -uo pipefail
+          PROJECT_ID="affinity-dating-app-cf807"
+          BUNDLE_ID="com.affinitysocialclub.app"
+          TOKEN=$(gcloud auth print-access-token)
+          curl -sS -H "Authorization: Bearer ${TOKEN}" \
+            "https://firebase.googleapis.com/v1beta1/projects/${PROJECT_ID}/iosApps" \
+            > /tmp/ios-apps.json
+          APP_NAME=$(python3 -c "
+          import json
+          d = json.load(open('/tmp/ios-apps.json'))
+          for app in d.get('apps', []):
+              if app.get('bundleId') == '${BUNDLE_ID}':
+                  print(app.get('name', ''))
+                  break
+          ")
+          if [ -z "$APP_NAME" ]; then
+            echo "::error::No Firebase iOS app for ${BUNDLE_ID}. Run build-ios once first to provision it."
+            exit 1
+          fi
+          curl -sS -H "Authorization: Bearer ${TOKEN}" \
+            "https://firebase.googleapis.com/v1beta1/${APP_NAME}/config" > /tmp/ios-cfg.json
+          python3 -c "
+          import json, base64
+          d = json.load(open('/tmp/ios-cfg.json'))
+          open('ios/Runner/GoogleService-Info.plist','wb').write(base64.b64decode(d['configFileContents']))
+          "
+          REV_ID=$(python3 -c "
+          import plistlib
+          print(plistlib.load(open('ios/Runner/GoogleService-Info.plist','rb')).get('REVERSED_CLIENT_ID',''))
+          ")
+          sed -i '' "s|\$(REVERSED_CLIENT_ID)|${REV_ID}|g" ios/Runner/Info.plist
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install --repo-update
+
+      - name: Import signing certificate into temporary keychain
+        # We create an ephemeral keychain so the cert + private key don't
+        # leak into the runner's default keychain (and so the runner's
+        # default keychain doesn't somehow override ours). The keychain
+        # is unlocked for the duration of the build only.
+        env:
+          P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 32)
+          P12_PATH="$RUNNER_TEMP/dist.p12"
+
+          printf '%s' "$P12_BASE64" | base64 -d > "$P12_PATH"
+          if [ ! -s "$P12_PATH" ]; then
+            echo "::error::Decoded .p12 is empty — IOS_DIST_CERT_P12_BASE64 may be malformed."
+            exit 1
+          fi
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$P12_PATH" \
+            -P "$P12_PASSWORD" \
+            -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" > /dev/null
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+          echo "KEYCHAIN_PATH=${KEYCHAIN_PATH}" >> "$GITHUB_ENV"
+          echo "KEYCHAIN_PASSWORD=${KEYCHAIN_PASSWORD}" >> "$GITHUB_ENV"
+
+      - name: Install provisioning profile
+        env:
+          PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          set -euo pipefail
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILES_DIR"
+          PROFILE_PATH="$PROFILES_DIR/affinity-dist.mobileprovision"
+          printf '%s' "$PROFILE_BASE64" | base64 -d > "$PROFILE_PATH"
+          if [ ! -s "$PROFILE_PATH" ]; then
+            echo "::error::Decoded .mobileprovision is empty."
+            exit 1
+          fi
+          # Extract the UUID so we can pin ExportOptions.plist to it.
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" \
+            /dev/stdin <<< "$(security cms -D -i "$PROFILE_PATH")")
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" \
+            /dev/stdin <<< "$(security cms -D -i "$PROFILE_PATH")")
+          echo "PROFILE_UUID=${PROFILE_UUID}" >> "$GITHUB_ENV"
+          echo "PROFILE_NAME=${PROFILE_NAME}" >> "$GITHUB_ENV"
+          echo "Installed provisioning profile: ${PROFILE_NAME} (${PROFILE_UUID})"
+
+      - name: Write ExportOptions.plist
+        # Pins the export to app-store distribution with the
+        # provisioning profile we just installed.
+        env:
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>${TEAM_ID}</string>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.affinitysocialclub.app</key>
+              <string>${PROFILE_NAME}</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+          echo "EXPORT_OPTIONS=$RUNNER_TEMP/ExportOptions.plist" >> "$GITHUB_ENV"
+
+      - name: Build signed IPA
+        env:
+          APPLE_SERVICE_ID: ${{ secrets.APPLE_SERVICE_ID }}
+        run: |
+          flutter build ipa --release \
+            --dart-define=APPLE_SERVICE_ID="${APPLE_SERVICE_ID}" \
+            --export-options-plist="$EXPORT_OPTIONS"
+
+      - name: Upload IPA to Firebase Storage (run-scoped private path)
+        run: |
+          set -euo pipefail
+          BUCKET="affinity-dating-app-cf807.firebasestorage.app"
+          OBJECT="release-ipa/${GITHUB_SHA}-${GITHUB_RUN_ID}/app-release.ipa"
+          IPA=$(find build/ios/ipa -name "*.ipa" | head -1)
+          if [ -z "$IPA" ]; then
+            echo "::error::No .ipa found under build/ios/ipa."
+            exit 1
+          fi
+          gcloud storage cp "$IPA" "gs://${BUCKET}/${OBJECT}"
+          SIGNED_URL=$(gcloud storage sign-url \
+            "gs://${BUCKET}/${OBJECT}" \
+            --duration=7d \
+            --format='value(signed_url)' 2>/dev/null || true)
+          {
+            echo "## Release IPA"
+            echo ""
+            echo "Commit: \`${GITHUB_SHA}\`"
+            echo ""
+            echo "Storage path:"
+            echo ""
+            echo "\`\`\`"
+            echo "gs://${BUCKET}/${OBJECT}"
+            echo "\`\`\`"
+            if [ -n "$SIGNED_URL" ]; then
+              echo ""
+              echo "7-day signed URL:"
+              echo ""
+              echo "\`\`\`"
+              echo "${SIGNED_URL}"
+              echo "\`\`\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "IPA_PATH=${IPA}" >> "$GITHUB_ENV"
+
+      - name: Upload to TestFlight via App Store Connect API
+        if: inputs.destination == 'testflight'
+        env:
+          ASC_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "$ASC_KEY_BASE64" ] || [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ]; then
+            echo "::warning::TestFlight upload skipped — App Store Connect API secrets not set."
+            echo "::warning::The IPA is in Firebase Storage; drop into Transporter manually for now."
+            exit 0
+          fi
+          # altool wants the .p8 in a specific directory layout.
+          API_KEYS_DIR="$HOME/.appstoreconnect/private_keys"
+          mkdir -p "$API_KEYS_DIR"
+          printf '%s' "$ASC_KEY_BASE64" | base64 -d > "$API_KEYS_DIR/AuthKey_${ASC_KEY_ID}.p8"
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA_PATH" \
+            --apiKey "$ASC_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID"
+
+      - name: Clean up keychain + provisioning profile
+        if: always()
+        run: |
+          security delete-keychain "$KEYCHAIN_PATH" || true
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/affinity-dist.mobileprovision" || true
