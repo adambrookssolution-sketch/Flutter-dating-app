@@ -241,9 +241,17 @@ jobs:
           flutter build ios --release --no-codesign \
             --dart-define=APPLE_SERVICE_ID="${APPLE_SERVICE_ID}"
 
-      - name: Archive with xcodebuild (manual signing)
-        env:
-          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+      - name: Archive with xcodebuild
+        # Runner's Release config in project.pbxproj already pins
+        # CODE_SIGN_STYLE=Manual, DEVELOPMENT_TEAM=VTP3W3Y6FA, and
+        # PROVISIONING_PROFILE_SPECIFIER="Affinity App Store" — passing
+        # those on the xcodebuild command line instead would apply
+        # globally to every workspace target including pods, which
+        # made the first attempt (commit 9fccf9b) fail with
+        # "GoogleUtilities does not support provisioning profiles".
+        # OTHER_CODE_SIGN_FLAGS still needs to be set globally to
+        # point xcodebuild at our ephemeral build keychain so it
+        # doesn't pick a stale identity from the runner default.
         run: |
           set -euo pipefail
           cd ios
@@ -253,10 +261,6 @@ jobs:
             -configuration Release \
             -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
             -allowProvisioningUpdates \
-            CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
             OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
             archive
 
