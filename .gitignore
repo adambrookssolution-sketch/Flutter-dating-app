@@ -81,6 +81,13 @@ android/key.properties
 AuthKey_*.p8
 *.p8
 
+# iOS distribution signing artifacts. The .p12 is the distribution
+# certificate + private key bundle; the .mobileprovision binds the
+# bundle id + team + cert. Both are equivalent to a signed-package
+# key — anyone with them can publish updates of our app as us.
+*.p12
+*.mobileprovision
+
 # Service-account keys that may end up dropped into the project root
 # during local debugging — same rule, never commit.
 sa-key-*.json
