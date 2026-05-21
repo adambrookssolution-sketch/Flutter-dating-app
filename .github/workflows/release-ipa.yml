@@ -225,13 +225,49 @@ jobs:
           EOF
           echo "EXPORT_OPTIONS=$RUNNER_TEMP/ExportOptions.plist" >> "$GITHUB_ENV"
 
-      - name: Build signed IPA
+      - name: Build unsigned iOS app
+        # `flutter build ipa` has a pre-build check (in flutter_tools
+        # code_signing.dart) that hard-rejects when there's no
+        # *development* certificate in the keychain — even when
+        # --export-options-plist explicitly says method=app-store.
+        # We only have the distribution cert (and getting a dev cert
+        # for CI just to satisfy this check would mean another Apple
+        # Developer round trip). Cleaner: build unsigned with Flutter
+        # then drive xcodebuild ourselves for the signed archive +
+        # export, which has no such check.
         env:
           APPLE_SERVICE_ID: ${{ secrets.APPLE_SERVICE_ID }}
         run: |
-          flutter build ipa --release \
-            --dart-define=APPLE_SERVICE_ID="${APPLE_SERVICE_ID}" \
-            --export-options-plist="$EXPORT_OPTIONS"
+          flutter build ios --release --no-codesign \
+            --dart-define=APPLE_SERVICE_ID="${APPLE_SERVICE_ID}"
+
+      - name: Archive with xcodebuild (manual signing)
+        env:
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          cd ios
+          xcodebuild \
+            -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+            -allowProvisioningUpdates \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN_PATH" \
+            archive
+
+      - name: Export IPA from archive
+        run: |
+          set -euo pipefail
+          mkdir -p build/ios/ipa
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+            -exportPath build/ios/ipa \
+            -exportOptionsPlist "$EXPORT_OPTIONS"
 
       - name: Upload IPA to Firebase Storage (run-scoped private path)
         run: |
