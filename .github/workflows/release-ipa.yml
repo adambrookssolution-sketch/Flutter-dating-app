@@ -273,7 +273,16 @@ jobs:
             -exportPath build/ios/ipa \
             -exportOptionsPlist "$EXPORT_OPTIONS"
 
-      - name: Upload IPA to Firebase Storage (run-scoped private path)
+      - name: Upload IPA to Firebase Storage (public download token)
+        # Mirrors build-apk.yml's pattern: stamp the upload with a
+        # firebaseStorageDownloadTokens custom-metadata value so the
+        # file is accessible via a stable Firebase Storage public URL.
+        # We previously tried `gcloud storage sign-url --duration=7d`
+        # but the command failed silently on macos-latest gcloud
+        # (run 26248256277 produced no URL in the summary), and the
+        # Firebase Console Download button has its own UI quirks that
+        # block downloads in some browsers. The custom-token URL
+        # pattern works everywhere a browser does.
         run: |
           set -euo pipefail
           BUCKET="affinity-dating-app-cf807.firebasestorage.app"
@@ -283,29 +292,29 @@ jobs:
             echo "::error::No .ipa found under build/ios/ipa."
             exit 1
           fi
-          gcloud storage cp "$IPA" "gs://${BUCKET}/${OBJECT}"
-          SIGNED_URL=$(gcloud storage sign-url \
-            "gs://${BUCKET}/${OBJECT}" \
-            --duration=7d \
-            --format='value(signed_url)' 2>/dev/null || true)
+          # Random token per upload so each run produces a different
+          # URL — release IPAs aren't shared via a stable URL the way
+          # the debug APK is, so we'd rather a leaked URL only exposes
+          # one build.
+          TOKEN=$(uuidgen | tr 'A-Z' 'a-z')
+          gcloud storage cp "$IPA" "gs://${BUCKET}/${OBJECT}" \
+            --custom-metadata="firebaseStorageDownloadTokens=${TOKEN}"
+          OBJECT_ENCODED=$(printf '%s' "${OBJECT}" | sed 's|/|%2F|g')
+          URL="https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${OBJECT_ENCODED}?alt=media&token=${TOKEN}"
           {
             echo "## Release IPA"
             echo ""
             echo "Commit: \`${GITHUB_SHA}\`"
             echo ""
-            echo "Storage path:"
+            echo "**Click to download the .ipa:**"
+            echo ""
+            echo "${URL}"
+            echo ""
+            echo "Storage path (for diagnostics):"
             echo ""
             echo "\`\`\`"
             echo "gs://${BUCKET}/${OBJECT}"
             echo "\`\`\`"
-            if [ -n "$SIGNED_URL" ]; then
-              echo ""
-              echo "7-day signed URL:"
-              echo ""
-              echo "\`\`\`"
-              echo "${SIGNED_URL}"
-              echo "\`\`\`"
-            fi
           } >> "$GITHUB_STEP_SUMMARY"
           echo "IPA_PATH=${IPA}" >> "$GITHUB_ENV"
 
