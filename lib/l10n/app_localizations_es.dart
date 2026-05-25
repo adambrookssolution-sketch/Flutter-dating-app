@@ -184,10 +184,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get height => 'Altura';
 
   @override
-  String get herHeight => 'Altura de ella (opcional)';
+  String get herHeight => 'Altura de ella';
 
   @override
-  String get hisHeight => 'Altura de él (opcional)';
+  String get hisHeight => 'Altura de él';
 
   @override
   String get interests => 'Intereses';

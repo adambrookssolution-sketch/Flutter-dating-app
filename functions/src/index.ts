@@ -47,6 +47,7 @@ export { executeDeletion } from "./deletion/executeDeletion";
 // Week 2 — Verification + Reports + Blocks
 export { moderateVerification } from "./verification/moderateVerification";
 export { cleanupExpiredVideos } from "./verification/cleanupExpiredVideos";
+export { onCoupleApproved } from "./verification/onCoupleApproved";
 export { onReportCreated } from "./reports/onReportCreated";
 export { onReportStatusChanged } from "./reports/onReportStatusChanged";
 export { onSuspension } from "./moderation/onSuspension";

@@ -180,10 +180,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get height => 'Height';
 
   @override
-  String get herHeight => 'Her height (optional)';
+  String get herHeight => 'Her height';
 
   @override
-  String get hisHeight => 'His height (optional)';
+  String get hisHeight => 'His height';
 
   @override
   String get interests => 'Interests';

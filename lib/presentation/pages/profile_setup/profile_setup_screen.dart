@@ -12,6 +12,7 @@ import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/auth/auth_screen.dart';
 import 'package:app/presentation/pages/verification/verification_intro_screen.dart';
+import 'package:app/presentation/utils/navigate_after_sign_in.dart';
 import 'package:app/presentation/widgets/custom_button.dart';
 import 'package:app/presentation/widgets/custom_input.dart';
 import 'package:app/presentation/widgets/places_autocomplete_field.dart';
@@ -923,9 +924,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       // Verification Pending gate until a moderator approves the video.
       // When editing an existing profile we never touch status here; the
       // `updateCouple` patch below only carries geo fields.
+      bool newCoupleCreated = false;
       if (!_isEditing) {
         try {
-          await CouplesDatasource.createCouple(
+          newCoupleCreated = await CouplesDatasource.createCouple(
             Couple(
               id: widget.uid,
               partnerA: Partner(
@@ -969,6 +971,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         } catch (e) {
           // ignore: avoid_print
           print('COUPLE_CREATE_SKIPPED: $e');
+        }
+        // Regression guard (client 2026-05-23): if createCouple returned
+        // false the doc already existed — typically because the user is
+        // already approved and somehow landed back on ProfileSetupScreen.
+        // Route them to the right post-auth surface instead of writing a
+        // fresh pending_review profile (which would have overwritten the
+        // approved status in older builds).
+        if (!_isEditing && !newCoupleCreated) {
+          if (!mounted) return;
+          await navigateAfterSignIn(context, widget.uid);
+          return;
         }
       } else {
         // Edit mode: patch interests, openness, dynamics, and any new geo fields.

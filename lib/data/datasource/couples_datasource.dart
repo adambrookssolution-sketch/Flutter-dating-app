@@ -117,8 +117,27 @@ class CouplesDatasource {
   /// Create the initial couple document at the end of profile setup. The
   /// caller is responsible for setting [Couple.status] = `pending_review`
   /// (new accounts) or `approved` (legacy migrated accounts).
-  static Future<void> createCouple(Couple couple) async {
-    await _db.collection('couples').doc(couple.id).set(couple.toMap());
+  /// Creates a couple doc on initial registration. **Refuses to overwrite
+  /// an existing doc** — this is the data-loss guard for the regression
+  /// reported 2026-05-23: if the post-sign-in router accidentally lands
+  /// an already-approved couple back on ProfileSetupScreen and the user
+  /// hits Save, the previous behavior (`.set()`) would clobber their
+  /// `status: approved` back to the default `pending_review`. We now
+  /// silently skip the write when the doc already exists; the caller is
+  /// expected to route the user back to the feed instead.
+  ///
+  /// Returns true if a new doc was actually created. Callers can branch
+  /// on the return to decide where to route after.
+  static Future<bool> createCouple(Couple couple) async {
+    final ref = _db.collection('couples').doc(couple.id);
+    final existing = await ref.get();
+    if (existing.exists) {
+      // Never overwrite — preserves status, moderation flags, photos
+      // already uploaded, etc.
+      return false;
+    }
+    await ref.set(couple.toMap());
+    return true;
   }
 
   /// Partial update — only the keys present in [updates] are touched.

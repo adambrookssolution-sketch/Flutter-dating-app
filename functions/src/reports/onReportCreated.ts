@@ -64,20 +64,27 @@ async function checkReportedThreshold(coupleId: string): Promise<void> {
 
   if (unique.size < REPORTS_THRESHOLD_UNIQUE) return;
 
-  // Flip to under_review but only if currently approved — don't clobber a
-  // manual moderator decision (suspended, pending_review, etc.).
+  // Client request 2026-05-23: previously we auto-flipped status to
+  // under_review at this threshold, but that kicked already-approved
+  // couples out of the feed UI without a moderator looking — and
+  // sometimes a coordinated abuse campaign was the trigger, not real
+  // misconduct. So instead we stamp a non-blocking flag the
+  // moderation panel can pick up to PRIORITISE the queue, and leave
+  // status='approved' alone. A real moderator decision is the only
+  // thing that ever changes status now.
   const ref = db().collection(COLLECTIONS.couples).doc(coupleId);
-  await db().runTransaction(async (tx) => {
-    const doc = await tx.get(ref);
-    if (!doc.exists) return;
-    if (doc.get("status") !== "approved") return;
-    tx.update(ref, {
-      status: "under_review",
-      updated_at: admin.firestore.FieldValue.serverTimestamp(),
-    });
+  await ref.update({
+    moderation_priority: "high",
+    moderation_priority_reason: "reports_threshold",
+    moderation_priority_reports: unique.size,
+    moderation_priority_set_at: admin.firestore.FieldValue.serverTimestamp(),
+    updated_at: admin.firestore.FieldValue.serverTimestamp(),
+  }).catch((e) => {
+    // Couple may have been deleted between report and threshold check.
+    logger.warn(`could not flag couple ${coupleId} for review: ${e}`);
   });
   logger.info(
-    `couple ${coupleId} moved to under_review after ${unique.size} unique reports`
+    `couple ${coupleId} flagged for priority moderation review (${unique.size} unique reports). Status NOT changed.`
   );
 }
 
