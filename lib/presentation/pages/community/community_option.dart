@@ -6,13 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
+import 'package:app/data/datasource/blocks_datasource.dart';
 import 'package:app/data/datasource/community_datasource.dart';
 import 'package:app/data/datasource/profile_datasource.dart';
 import 'package:app/data/models/comment_data.dart';
 import 'package:app/data/models/community_post.dart';
+import 'package:app/data/models/couple.dart' as cm;
+import 'package:app/data/models/partner.dart' as pm;
 import 'package:app/data/models/reply_data.dart';
 import 'package:app/data/models/user_profile.dart';
 import 'package:app/presentation/pages/inbox/partner_profile_screen.dart';
+import 'package:app/presentation/pages/report/report_screen.dart';
 
 // ignore_for_file: use_build_context_synchronously
 
@@ -193,6 +197,8 @@ class _CommunityOptionState extends State<CommunityOption> {
         gradients: _gradients,
         photoCache: _profilePhotoCache,
         onCommentAdded: () => _onCommentAdded(post.id),
+        onReportComment: _reportCommentAuthor,
+        onBlockComment: _blockCommentAuthor,
       ),
     );
   }
@@ -204,6 +210,187 @@ class _CommunityOptionState extends State<CommunityOption> {
         MaterialPageRoute(
           builder: (_) => PartnerProfileScreen(profile: profile),
         ),
+      );
+    }
+  }
+
+  /// Open the report flow with the post's author as the reported couple.
+  /// Mirrors `_reportCouple` in couples_option.dart — same ReportScreen,
+  /// same back-end. Client feedback 2026-05-25 #5: "el sistema de
+  /// denuncias debe estar disponible en el feed."
+  Future<void> _reportPostAuthor(CommunityPost post) async {
+    if (!mounted) return;
+    final reported = cm.Couple(
+      id: post.uid,
+      partnerA: pm.Partner(
+        name: post.hisName,
+        birth: DateTime(2000), // ReportScreen doesn't use these — placeholder
+        height: 170,
+      ),
+      partnerB: pm.Partner(
+        name: post.herName,
+        birth: DateTime(2000),
+        height: 165,
+      ),
+    );
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => ReportScreen(reported: reported)),
+    );
+  }
+
+  /// Report a comment's author. Same flow as reporting a post — the
+  /// comment is reported against the author of the comment, not the
+  /// post owner. Client feedback 2026-05-25 #5: "el sistema de
+  /// denuncias debe estar disponible en los comentarios de el feed."
+  Future<void> _reportCommentAuthor(CommentData comment) async {
+    if (!mounted) return;
+    final reported = cm.Couple(
+      id: comment.uid,
+      partnerA: pm.Partner(
+        name: comment.hisName,
+        birth: DateTime(2000),
+        height: 170,
+      ),
+      partnerB: pm.Partner(
+        name: comment.herName,
+        birth: DateTime(2000),
+        height: 165,
+      ),
+    );
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => ReportScreen(reported: reported)),
+    );
+  }
+
+  /// Block the author of a specific comment. Identical flow to
+  /// [_blockPostAuthor] but invoked from the comments sheet.
+  /// Client feedback 2026-05-25 #6.
+  Future<void> _blockCommentAuthor(CommentData comment) async {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    if (myUid == null) return;
+    if (myUid == comment.uid) return;
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          l10n.blockCoupleConfirmTitle,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          l10n.blockCoupleConfirmBody,
+          style: const TextStyle(fontSize: 14, color: Colors.black54),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel,
+                style: const TextStyle(color: Colors.black54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              l10n.block,
+              style: const TextStyle(
+                color: Color(0xFFB31637),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await BlocksDatasource.block(myUid, comment.uid);
+      if (!mounted) return;
+      // Drop all posts authored by this couple from the local feed
+      // (they may have posts above the comment too).
+      setState(() {
+        _posts = _posts.where((p) => p.uid != comment.uid).toList();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text(l10n.blockedCouple(comment.hisName, comment.herName)),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.couldNotBlock(e.toString()))),
+      );
+    }
+  }
+
+  /// Block the post's author. Mirrors `_blockCouple` in couples_option.dart.
+  /// Client feedback 2026-05-25 #6: "el bloqueo debe estar disponible en
+  /// el feed." After blocking, the post is hidden from the local list.
+  Future<void> _blockPostAuthor(CommunityPost post) async {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    if (myUid == null) return;
+    if (myUid == post.uid) return; // can't block self
+    final l10n = AppLocalizations.of(context)!;
+    // Confirmation dialog — blocking is hard to undo from the feed UI,
+    // so we require an explicit confirm.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          l10n.blockCoupleConfirmTitle,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          l10n.blockCoupleConfirmBody,
+          style: const TextStyle(fontSize: 14, color: Colors.black54),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(color: Colors.black54),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              l10n.block,
+              style: const TextStyle(
+                color: Color(0xFFB31637),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await BlocksDatasource.block(myUid, post.uid);
+      if (!mounted) return;
+      // Drop ALL of this author's posts from the local feed so the user
+      // doesn't see them again until refresh — block is mutual at the
+      // server level (Security Rules), so other users' posts won't be
+      // affected.
+      setState(() {
+        _posts = _posts.where((p) => p.uid != post.uid).toList();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.blockedCouple(post.hisName, post.herName)),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.couldNotBlock(e.toString()))),
       );
     }
   }
@@ -316,6 +503,17 @@ class _CommunityOptionState extends State<CommunityOption> {
                                   ? () => _deletePost(
                                       _posts.indexOf(visiblePosts[i]))
                                   : null,
+                              // Client feedback 2026-05-25 #5 + #6: report
+                              // and block must be available on every post
+                              // that isn't mine.
+                              onReport: visiblePosts[i].uid == uid
+                                  ? null
+                                  : () =>
+                                      _reportPostAuthor(visiblePosts[i]),
+                              onBlock: visiblePosts[i].uid == uid
+                                  ? null
+                                  : () =>
+                                      _blockPostAuthor(visiblePosts[i]),
                             ),
                           ),
           ),
@@ -386,6 +584,13 @@ class _PostCard extends StatelessWidget {
   final VoidCallback onComment;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onDelete;
+  /// Set only when the post is NOT mine. Reports the post's author to
+  /// the moderation queue. Client feedback 2026-05-25 #5.
+  final VoidCallback? onReport;
+  /// Set only when the post is NOT mine. Blocks the post's author so
+  /// none of their content appears on this device until unblocked.
+  /// Client feedback 2026-05-25 #6.
+  final VoidCallback? onBlock;
 
   const _PostCard({
     required this.post,
@@ -398,6 +603,8 @@ class _PostCard extends StatelessWidget {
     required this.onComment,
     this.onAvatarTap,
     this.onDelete,
+    this.onReport,
+    this.onBlock,
   });
 
   static const Color _grey = Color(0xFFB9B9B9);
@@ -475,68 +682,114 @@ class _PostCard extends StatelessWidget {
             ],
           ),
         ),
-        if (onDelete != null)
+        // Kebab menu. Shown on every post; entries depend on whether
+        // the post is mine (Delete) or someone else's (Report/Block).
+        // Client feedback 2026-05-25 #5/#6: report + block must live in
+        // the feed, not only in the profile detail screen.
+        if (onDelete != null || onReport != null || onBlock != null)
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert,
                 color: Color(0xFFB9B9B9), size: 20),
             onSelected: (value) async {
-              if (value != 'delete') return;
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  title: Text(
-                    AppLocalizations.of(ctx)!.deletePostTitle,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+              if (value == 'delete' && onDelete != null) {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                  content: Text(
-                    AppLocalizations.of(ctx)!.cannotBeUndone,
-                    style: const TextStyle(fontSize: 14, color: Colors.black54),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(false),
-                      child: Text(
-                        AppLocalizations.of(ctx)!.cancel,
-                        style: const TextStyle(color: Colors.black54),
+                    title: Text(
+                      AppLocalizations.of(ctx)!.deletePostTitle,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(true),
-                      child: Text(
-                        AppLocalizations.of(ctx)!.delete,
-                        style: const TextStyle(
-                          color: Color(0xFFB31637),
-                          fontWeight: FontWeight.w700,
+                    content: Text(
+                      AppLocalizations.of(ctx)!.cannotBeUndone,
+                      style: const TextStyle(
+                          fontSize: 14, color: Colors.black54),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: Text(
+                          AppLocalizations.of(ctx)!.cancel,
+                          style: const TextStyle(color: Colors.black54),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-              if (confirmed == true) onDelete!();
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        child: Text(
+                          AppLocalizations.of(ctx)!.delete,
+                          style: const TextStyle(
+                            color: Color(0xFFB31637),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true) onDelete!();
+              } else if (value == 'report' && onReport != null) {
+                onReport!();
+              } else if (value == 'block' && onBlock != null) {
+                onBlock!();
+              }
             },
-            itemBuilder: (ctx) => [
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    const Icon(Icons.delete_outline,
-                        color: Color(0xFFB31637), size: 20),
-                    const SizedBox(width: 10),
-                    Text(
-                      AppLocalizations.of(ctx)!.deletePost,
-                      style: const TextStyle(color: Color(0xFFB31637)),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            itemBuilder: (ctx) {
+              final items = <PopupMenuItem<String>>[];
+              if (onDelete != null) {
+                items.add(PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.delete_outline,
+                          color: Color(0xFFB31637), size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        AppLocalizations.of(ctx)!.deletePost,
+                        style: const TextStyle(color: Color(0xFFB31637)),
+                      ),
+                    ],
+                  ),
+                ));
+              }
+              if (onReport != null) {
+                items.add(PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.flag_outlined,
+                          color: Color(0xFFB31637), size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        AppLocalizations.of(ctx)!.reportPost,
+                        style: const TextStyle(color: Color(0xFFB31637)),
+                      ),
+                    ],
+                  ),
+                ));
+              }
+              if (onBlock != null) {
+                items.add(PopupMenuItem(
+                  value: 'block',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.block,
+                          color: Color(0xFFB31637), size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        AppLocalizations.of(ctx)!.blockAuthor,
+                        style: const TextStyle(color: Color(0xFFB31637)),
+                      ),
+                    ],
+                  ),
+                ));
+              }
+              return items;
+            },
           ),
       ],
     );
@@ -619,6 +872,14 @@ class _CommentsSheet extends StatefulWidget {
   final List<List<Color>> gradients;
   final Map<String, String?> photoCache;
   final VoidCallback onCommentAdded;
+  /// Client feedback 2026-05-25 #5: reports must be available on
+  /// comments too, not only on posts. Caller passes a CommentData ->
+  /// Future<void> hook that opens the report screen with the comment
+  /// author as the reported party.
+  final Future<void> Function(CommentData) onReportComment;
+  /// Same as above but for blocking the comment author.
+  /// Client feedback 2026-05-25 #6.
+  final Future<void> Function(CommentData) onBlockComment;
 
   const _CommentsSheet({
     required this.postId,
@@ -628,6 +889,8 @@ class _CommentsSheet extends StatefulWidget {
     required this.gradients,
     required this.photoCache,
     required this.onCommentAdded,
+    required this.onReportComment,
+    required this.onBlockComment,
   });
 
   @override
@@ -837,6 +1100,16 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                         photoCache: widget.photoCache,
                         onDelete:
                             canDelete ? () => _deleteComment(c.id) : null,
+                        // Report / Block — only when the comment is
+                        // NOT the current user's own. Forwards the
+                        // CommentData up to _CommunityOptionState
+                        // which has the real handlers.
+                        onReportAuthor: c.uid == widget.currentUid
+                            ? null
+                            : widget.onReportComment,
+                        onBlockAuthor: c.uid == widget.currentUid
+                            ? null
+                            : widget.onBlockComment,
                         onAvatarTap: _openProfile,
                         onDeleteReply: (replyId) =>
                             _deleteReply(c.id, replyId),
@@ -969,6 +1242,11 @@ class _CommentRow extends StatefulWidget {
   final void Function(String uid) onAvatarTap;
   final void Function(String replyId) onDeleteReply;
   final void Function({String? replyToName, String? replyToUid}) onReply;
+  /// Client feedback 2026-05-25: report + block on comments. The
+  /// callback receives the comment so the parent can extract author
+  /// fields. Null when the comment is the current user's own.
+  final Future<void> Function(CommentData)? onReportAuthor;
+  final Future<void> Function(CommentData)? onBlockAuthor;
 
   const _CommentRow({
     super.key,
@@ -984,6 +1262,8 @@ class _CommentRow extends StatefulWidget {
     required this.onAvatarTap,
     required this.onDeleteReply,
     required this.onReply,
+    this.onReportAuthor,
+    this.onBlockAuthor,
   });
 
   @override
@@ -1007,6 +1287,61 @@ class _CommentRowState extends State<_CommentRow> {
   int _gradientFor(String uid) {
     if (uid.isEmpty) return 0;
     return uid.codeUnits.reduce((a, b) => a + b) % widget.gradients.length;
+  }
+
+  /// Long-press action sheet — shows the entries the current viewer
+  /// can actually perform on this comment. Owners see Delete; everyone
+  /// else sees Report + Block. Post owners moderating someone else's
+  /// comment see Delete + Report + Block. Client feedback 2026-05-25.
+  Future<void> _showCommentActions(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.canDelete)
+              ListTile(
+                leading: const Icon(Icons.delete_outline,
+                    color: Color(0xFFB31637)),
+                title: Text(l10n.delete,
+                    style: const TextStyle(color: Color(0xFFB31637))),
+                onTap: () => Navigator.of(ctx).pop('delete'),
+              ),
+            if (widget.onReportAuthor != null)
+              ListTile(
+                leading: const Icon(Icons.flag_outlined,
+                    color: Color(0xFFB31637)),
+                title: Text(l10n.report,
+                    style: const TextStyle(color: Color(0xFFB31637))),
+                onTap: () => Navigator.of(ctx).pop('report'),
+              ),
+            if (widget.onBlockAuthor != null)
+              ListTile(
+                leading:
+                    const Icon(Icons.block, color: Color(0xFFB31637)),
+                title: Text(l10n.block,
+                    style: const TextStyle(color: Color(0xFFB31637))),
+                onTap: () => Navigator.of(ctx).pop('block'),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (action == 'delete') {
+      // ignore: use_build_context_synchronously
+      await _confirmDelete(context);
+    } else if (action == 'report' && widget.onReportAuthor != null) {
+      await widget.onReportAuthor!(widget.comment);
+    } else if (action == 'block' && widget.onBlockAuthor != null) {
+      await widget.onBlockAuthor!(widget.comment);
+    }
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
@@ -1045,9 +1380,15 @@ class _CommentRowState extends State<_CommentRow> {
     final name =
         c.hisName.isEmpty ? c.herName : '${c.herName} & ${c.hisName}';
 
+    // Long-press shows an action sheet. Entries available depend on
+    // whether the current user owns the comment, owns the post, and
+    // whether report/block hooks were wired by the caller.
     return InkWell(
-      onLongPress:
-          widget.canDelete ? () => _confirmDelete(context) : null,
+      onLongPress: (widget.canDelete ||
+              widget.onReportAuthor != null ||
+              widget.onBlockAuthor != null)
+          ? () => _showCommentActions(context)
+          : null,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 14),

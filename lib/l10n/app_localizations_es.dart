@@ -761,6 +761,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get report => 'Reportar';
 
   @override
+  String get reportPost => 'Reportar publicación';
+
+  @override
+  String get blockAuthor => 'Bloquear pareja';
+
+  @override
+  String get blockCoupleConfirmTitle => '¿Bloquear a esta pareja?';
+
+  @override
+  String get blockCoupleConfirmBody =>
+      'Dejarás de ver sus publicaciones, perfil y mensajes. Puedes deshacerlo desde Configuración.';
+
+  @override
   String get verifyYourEmail => 'Verifica tu correo';
 
   @override

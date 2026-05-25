@@ -747,6 +747,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get report => 'Report';
 
   @override
+  String get reportPost => 'Report post';
+
+  @override
+  String get blockAuthor => 'Block couple';
+
+  @override
+  String get blockCoupleConfirmTitle => 'Block this couple?';
+
+  @override
+  String get blockCoupleConfirmBody =>
+      "You won't see their posts, profile or messages anymore. You can undo this from Settings.";
+
+  @override
   String get verifyYourEmail => 'Verify your email';
 
   @override

@@ -1466,6 +1466,30 @@ abstract class AppLocalizations {
   /// **'Report'**
   String get report;
 
+  /// No description provided for @reportPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Report post'**
+  String get reportPost;
+
+  /// No description provided for @blockAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Block couple'**
+  String get blockAuthor;
+
+  /// No description provided for @blockCoupleConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block this couple?'**
+  String get blockCoupleConfirmTitle;
+
+  /// No description provided for @blockCoupleConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **"You won't see their posts, profile or messages anymore. You can undo this from Settings."**
+  String get blockCoupleConfirmBody;
+
   /// No description provided for @verifyYourEmail.
   ///
   /// In en, this message translates to:

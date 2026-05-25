@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:app/admin/admin_app.dart';
+import 'package:app/admin/pages/moderation_review_screen.dart';
 import 'package:app/data/datasource/reports_datasource.dart';
+import 'package:app/data/models/couple.dart';
 import 'package:app/data/models/report.dart';
 
 /// Reports queue — every report submitted by users, newest first.
@@ -130,16 +132,18 @@ class _ReportCard extends StatelessWidget {
                 reason,
                 style: const TextStyle(color: AdminApp.textPrimary),
               ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 14,
-              runSpacing: 4,
-              children: [
-                _kv('Reportada', reported),
-                _kv('Reportante', reporter),
-              ],
-            ),
             const SizedBox(height: 12),
+
+            // Resolved-name blocks for reporter and reported. Client
+            // feedback 2026-05-25 #5: the moderator must see WHO
+            // reported WHO, not just UID strings. Each block also
+            // hosts an "Open profile" button so the moderator can
+            // inspect either party in detail.
+            _PartySection(label: 'Reportada', uid: reported, isReported: true),
+            const SizedBox(height: 8),
+            _PartySection(label: 'Reportante', uid: reporter, isReported: false),
+
+            const SizedBox(height: 14),
             // Action row — moderator picks how to resolve the report.
             // The Cloud Function `onReportStatusChanged` watches the
             // `estado` field and pushes a notification to the
@@ -244,6 +248,133 @@ class _ReportCard extends StatelessWidget {
     if (d.inDays < 1) return '${d.inHours} h';
     return '${d.inDays} d';
   }
+}
+
+/// One block per side (reporter / reported) inside a report card.
+/// Fetches the couple doc on build and shows resolved names + photo +
+/// status. The reported side also gets an "Investigar" button that
+/// opens [ModerationReviewScreen] so the moderator can suspend / take
+/// further action without leaving the queue.
+///
+/// Client feedback 2026-05-25 #5: panel must show "quién reporta a
+/// quién" and let the moderator act on the involved couple.
+class _PartySection extends StatelessWidget {
+  final String label;
+  final String uid;
+  final bool isReported;
+  const _PartySection({
+    required this.label,
+    required this.uid,
+    required this.isReported,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (uid.isEmpty) {
+      return _kv(label, '—');
+    }
+    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      future: FirebaseFirestore.instance.collection('couples').doc(uid).get(),
+      builder: (context, snap) {
+        if (!snap.hasData) {
+          return _kv(label, uid);
+        }
+        if (!snap.data!.exists) {
+          return _kv(label, '$uid (eliminada)');
+        }
+        final couple = Couple.fromDoc(snap.data!);
+        final name = _displayName(couple);
+        final status = couple.status.value;
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AdminApp.bgRaised,
+            borderRadius: BorderRadius.circular(8),
+            border:
+                Border.all(color: AdminApp.textMuted.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor:
+                    AdminApp.burgundy.withValues(alpha: 0.15),
+                backgroundImage:
+                    couple.photos.isNotEmpty && couple.photos.first.isNotEmpty
+                        ? NetworkImage(couple.photos.first)
+                        : null,
+                child: couple.photos.isEmpty
+                    ? const Icon(Icons.person,
+                        color: AdminApp.textMuted, size: 18)
+                    : null,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$label · $name',
+                      style: const TextStyle(
+                        color: AdminApp.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$uid · status: $status',
+                      style: const TextStyle(
+                        color: AdminApp.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isReported)
+                TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          ModerationReviewScreen(couple: couple),
+                    ),
+                  ),
+                  icon: const Icon(Icons.open_in_new, size: 14),
+                  label: const Text('Investigar',
+                      style: TextStyle(fontSize: 12)),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  static String _displayName(Couple c) {
+    final a = c.partnerA.name;
+    final b = c.partnerB.name;
+    if (a.isEmpty && b.isEmpty) return '—';
+    if (a.isEmpty) return b;
+    if (b.isEmpty) return a;
+    return '$a & $b';
+  }
+
+  Widget _kv(String label, String value) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('$label: ',
+              style: const TextStyle(
+                  color: AdminApp.textMuted, fontSize: 12)),
+          Text(value.isEmpty ? '—' : value,
+              style: const TextStyle(
+                  color: AdminApp.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600)),
+        ],
+      );
 }
 
 class _AdminMessage extends StatelessWidget {
