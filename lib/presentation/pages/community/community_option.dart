@@ -220,18 +220,14 @@ class _CommunityOptionState extends State<CommunityOption> {
   /// denuncias debe estar disponible en el feed."
   Future<void> _reportPostAuthor(CommunityPost post) async {
     if (!mounted) return;
+    // ReportScreen only renders the names — birth/height are required
+    // by the Partner constructor but unused on that screen. Pass empty
+    // strings so we don't fabricate dates/heights that could leak into
+    // the report doc if the screen ever starts using them.
     final reported = cm.Couple(
       id: post.uid,
-      partnerA: pm.Partner(
-        name: post.hisName,
-        birth: DateTime(2000), // ReportScreen doesn't use these — placeholder
-        height: 170,
-      ),
-      partnerB: pm.Partner(
-        name: post.herName,
-        birth: DateTime(2000),
-        height: 165,
-      ),
+      partnerA: pm.Partner(name: post.hisName, birth: '', height: ''),
+      partnerB: pm.Partner(name: post.herName, birth: '', height: ''),
     );
     await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => ReportScreen(reported: reported)),
@@ -244,18 +240,11 @@ class _CommunityOptionState extends State<CommunityOption> {
   /// denuncias debe estar disponible en los comentarios de el feed."
   Future<void> _reportCommentAuthor(CommentData comment) async {
     if (!mounted) return;
+    // Same shape as _reportPostAuthor — see note there.
     final reported = cm.Couple(
       id: comment.uid,
-      partnerA: pm.Partner(
-        name: comment.hisName,
-        birth: DateTime(2000),
-        height: 170,
-      ),
-      partnerB: pm.Partner(
-        name: comment.herName,
-        birth: DateTime(2000),
-        height: 165,
-      ),
+      partnerA: pm.Partner(name: comment.hisName, birth: '', height: ''),
+      partnerB: pm.Partner(name: comment.herName, birth: '', height: ''),
     );
     await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => ReportScreen(reported: reported)),
