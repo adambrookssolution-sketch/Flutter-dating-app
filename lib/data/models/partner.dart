@@ -95,4 +95,11 @@ class CoupleDynamicInterests {
   static const bdsm = 'BDSM';
   static const roleplay = 'Roleplay';
   static const all = <String>[mmf, ffm, groupPlay, bdsm, roleplay];
+
+  /// Subset shown on the REGISTRATION / profile-edit screen. Client
+  /// feedback 2026-05-25: "eliminar del registro la sección de
+  /// intereses tipo MMF, MFM, etc — eso debe quedarse únicamente
+  /// dentro de la piña/filtros." MMF and FFM stay available in the
+  /// filter sheet (`all`) so couples can still search for them.
+  static const forRegistration = <String>[groupPlay, bdsm, roleplay];
 }

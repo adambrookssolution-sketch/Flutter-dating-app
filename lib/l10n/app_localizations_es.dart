@@ -349,6 +349,112 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dynamicsInterestsLabel => 'Intereses';
 
   @override
+  String get infoIdentityTitle => 'Identidad individual';
+
+  @override
+  String get infoIdentityBody =>
+      '• Hétero → Conexión únicamente con el sexo opuesto.\n'
+      '• Bicurioso/a → Abierto/a a explorar o experimentar con el mismo sexo.\n'
+      '• Bi → Cómodo/a conectando con ambos sexos.';
+
+  @override
+  String get infoRoleTitle => 'Rol';
+
+  @override
+  String get infoRoleBody =>
+      '• Dominante → Disfruta tomar la iniciativa y llevar el control durante la interacción.\n'
+      '• Sumiso/a → Disfruta dejarse llevar o seguir la energía de la otra persona.\n'
+      '• Versátil → Disfruta tanto el rol dominante como el sumiso dependiendo de la conexión o el momento.';
+
+  @override
+  String get infoInteractionTitle => 'Tipo de interacción';
+
+  @override
+  String get infoInteractionBody =>
+      '• Juego Paralelo → Interacción en el mismo espacio sin contacto o intercambio entre parejas.\n'
+      '• Intercambio Suave → Puede incluir besos, caricias o juegos sin llegar al intercambio completo.\n'
+      '• Intercambio Completo → Apertura al intercambio completo entre parejas.';
+
+  @override
+  String get infoExperienceTitle => 'Experiencias e intereses';
+
+  @override
+  String get infoExperienceBody =>
+      '• Misma Habitación → Disfruta compartir la experiencia en el mismo espacio junto a otras personas o parejas.\n'
+      '• Habitaciones Separadas → Se siente cómodo/a viviendo la experiencia en espacios separados.\n'
+      '• Voyeur → Disfruta observar a otras personas o parejas durante la interacción.\n'
+      '• Exhibicionismo → Disfruta ser observado/a durante la interacción.\n'
+      '• Trío MMF → Dinámica entre dos hombres y una mujer.\n'
+      '• Trío FFM → Dinámica entre dos mujeres y un hombre.\n'
+      '• Juego en Grupo → Interés en dinámicas sociales o experiencias con varias personas o parejas.\n'
+      '• BDSM → Interés en dinámicas consensuadas de dominación, sumisión o control.\n'
+      '• Roleplay → Interés en juegos de roles o interpretación de fantasías.';
+
+  @override
+  String get infoOpenessTitle => 'Apertura individual';
+
+  @override
+  String get infoOpenessBody =>
+      'Indica si alguno de los miembros de la pareja se siente cómodo interactuando individualmente '
+      'dentro de dinámicas consensuadas con otras parejas del lifestyle.';
+
+  @override
+  String get infoMultipleHint =>
+      'Puedes seleccionar múltiples opciones — no te limites.';
+
+  @override
+  String get infoSchoolWelcome => 'Bienvenidos a la escuela swinger';
+
+  @override
+  String get infoStartIdentity => 'Comenzamos con identidad individual';
+
+  @override
+  String get descriptionGuidedHint =>
+      'Cuéntenos un poco sobre ustedes ✨\n'
+      '• Cuánto tiempo llevan en el lifestyle\n'
+      '• Qué tipo de conexiones disfrutan\n'
+      '• Fantasías o dinámicas que les interesan\n'
+      '• Lugares o ambientes que suelen frecuentar (resorts, clubs, fiestas, cruceros, etc.)\n'
+      '• Cómo describirían su personalidad como pareja';
+
+  @override
+  String get dynValHetero => 'Hétero';
+  @override
+  String get dynValBiCurious => 'Bicurioso/a';
+  @override
+  String get dynValBi => 'Bi';
+  @override
+  String get dynValDom => 'Dominante';
+  @override
+  String get dynValSub => 'Sumiso/a';
+  @override
+  String get dynValSwitch => 'Versátil';
+  @override
+  String get dynValParallelPlay => 'Juego Paralelo';
+  @override
+  String get dynValSoftSwap => 'Intercambio Suave';
+  @override
+  String get dynValFullSwap => 'Intercambio Completo';
+  @override
+  String get dynValSameRoom => 'Misma Habitación';
+  @override
+  String get dynValSeparateRoom => 'Habitaciones Separadas';
+  @override
+  String get dynValVoyeur => 'Voyeur';
+  @override
+  String get dynValExhibition => 'Exhibicionismo';
+  @override
+  String get dynValMmf => 'Trío MMF';
+  @override
+  String get dynValFfm => 'Trío FFM';
+  @override
+  String get dynValGroupPlay => 'Juego en Grupo';
+  @override
+  String get dynValBdsm => 'BDSM';
+  @override
+  String get dynValRoleplay => 'Roleplay';
+
+  @override
   String get dynamicsHerLabel => 'Ella:';
 
   @override

@@ -12,6 +12,7 @@ import 'package:app/data/models/user_profile.dart';
 import 'package:app/l10n/app_localizations.dart';
 import 'package:app/presentation/pages/auth/auth_screen.dart';
 import 'package:app/presentation/pages/verification/verification_intro_screen.dart';
+import 'package:app/presentation/utils/dynamics_labels.dart';
 import 'package:app/presentation/utils/navigate_after_sign_in.dart';
 import 'package:app/presentation/widgets/custom_button.dart';
 import 'package:app/presentation/widgets/custom_input.dart';
@@ -155,10 +156,59 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 12),
+        // Educational welcome strip (client 2026-05-25: "agregar
+        // leyenda 'Bienvenidos a la escuela swinger' y luego
+        // 'Comenzamos con identidad individual'"). Sits right above
+        // the first section so the user sees the framing before
+        // making any selections.
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF6F8),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+                color: const Color(0xFFB01030).withValues(alpha: 0.25)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.infoSchoolWelcome,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFB01030),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                l10n.infoStartIdentity,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  color: Color(0xFF6B5B60),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                l10n.infoMultipleHint,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Color(0xFF888888),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
 
         // Individual Identity (Her + Him single-select)
-        _dynamicsBullet(l10n.dynamicsIndividualIdentity),
+        _dynamicsBullet(
+          l10n.dynamicsIndividualIdentity,
+          infoTitle: l10n.infoIdentityTitle,
+          infoBody: l10n.infoIdentityBody,
+        ),
         const SizedBox(height: 8),
         _herHimSingleSelectRow(
           l10n: l10n,
@@ -172,7 +222,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         const SizedBox(height: 16),
 
         // Role (Her + Him single-select)
-        _dynamicsBullet(l10n.dynamicsRole),
+        _dynamicsBullet(
+          l10n.dynamicsRole,
+          infoTitle: l10n.infoRoleTitle,
+          infoBody: l10n.infoRoleBody,
+        ),
         const SizedBox(height: 8),
         _herHimSingleSelectRow(
           l10n: l10n,
@@ -186,7 +240,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         const SizedBox(height: 16),
 
         // Type of Interaction (multi-select since 2026-05-15 #6)
-        _dynamicsBullet(l10n.dynamicsTypeOfInteraction),
+        _dynamicsBullet(
+          l10n.dynamicsTypeOfInteraction,
+          infoTitle: l10n.infoInteractionTitle,
+          infoBody: l10n.infoInteractionBody,
+        ),
         const SizedBox(height: 8),
         _multiSelectChips(
           options: CoupleInteractionTypes.all,
@@ -203,7 +261,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         const SizedBox(height: 16),
 
         // Experience (multi-select)
-        _dynamicsBullet(l10n.dynamicsExperience),
+        _dynamicsBullet(
+          l10n.dynamicsExperience,
+          infoTitle: l10n.infoExperienceTitle,
+          infoBody: l10n.infoExperienceBody,
+        ),
         const SizedBox(height: 8),
         _multiSelectChips(
           options: CoupleExperiences.all,
@@ -219,11 +281,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
         const SizedBox(height: 16),
 
-        // Interests (multi-select)
-        _dynamicsBullet(l10n.dynamicsInterestsLabel),
+        // Interests (multi-select). Uses the registration subset that
+        // excludes MMF / FFM — those live only inside the filter sheet.
+        // Client 2026-05-25.
+        _dynamicsBullet(
+          l10n.dynamicsInterestsLabel,
+          infoTitle: l10n.infoExperienceTitle,
+          infoBody: l10n.infoExperienceBody,
+        ),
         const SizedBox(height: 8),
         _multiSelectChips(
-          options: CoupleDynamicInterests.all,
+          options: CoupleDynamicInterests.forRegistration,
           selected: _selectedDynamicInterests,
           onToggle: (v) => setState(() {
             if (_selectedDynamicInterests.contains(v)) {
@@ -239,7 +307,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Widget _dynamicsBullet(String label) {
+  /// Bullet-styled section header. When [infoTitle] and [infoBody] are
+  /// supplied an info ⓘ icon is appended that opens an explanation
+  /// dialog. Client feedback 2026-05-25: "cada interés debe tener un
+  /// botón de información para explicar qué significa cada término."
+  Widget _dynamicsBullet(String label, {String? infoTitle, String? infoBody}) {
     return Row(
       children: [
         const Text('• ',
@@ -252,7 +324,65 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             color: Color(0xFF222222),
           ),
         ),
+        if (infoTitle != null && infoBody != null) ...[
+          const SizedBox(width: 6),
+          InkWell(
+            onTap: () => _showInfoDialog(infoTitle, infoBody),
+            customBorder: const CircleBorder(),
+            child: const Padding(
+              padding: EdgeInsets.all(2),
+              child: Icon(
+                Icons.info_outline,
+                size: 16,
+                color: Color(0xFFB31637),
+              ),
+            ),
+          ),
+        ],
       ],
+    );
+  }
+
+  /// Modal explanation sheet — used by [_dynamicsBullet]'s info icon.
+  Future<void> _showInfoDialog(String title, String body) async {
+    final l10n = AppLocalizations.of(context)!;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFFB31637),
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Text(
+            body,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF222222),
+              height: 1.5,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              l10n.continueAction,
+              style: const TextStyle(
+                color: Color(0xFFB31637),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -313,12 +443,18 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     required String value,
     required ValueChanged<String> onSelect,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 6,
       runSpacing: 6,
       children: options
           .map((opt) => _TagChip(
-                label: opt,
+                // Display the locale-specific label, but compare and
+                // emit the canonical (English) value so Firestore
+                // queries and indexes don't break across languages.
+                // Client 2026-05-25: "los intereses deben traducirse
+                // completamente entre español e inglés."
+                label: DynamicsLabels.localize(opt, l10n),
                 selected: value == opt,
                 onTap: () => onSelect(value == opt ? '' : opt),
               ))
@@ -331,12 +467,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     required Set<String> selected,
     required ValueChanged<String> onToggle,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 6,
       runSpacing: 6,
       children: options
           .map((opt) => _TagChip(
-                label: opt,
+                label: DynamicsLabels.localize(opt, l10n),
                 selected: selected.contains(opt),
                 onTap: () => onToggle(opt),
               ))
@@ -345,16 +482,39 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Widget _buildOpennessSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Apertura de la pareja',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF222222),
-          ),
+        Row(
+          children: [
+            const Text(
+              'Apertura de la pareja',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF222222),
+              ),
+            ),
+            const SizedBox(width: 6),
+            // Info button — client 2026-05-25: "agregar botón info
+            // que explique qué significa apertura individual."
+            InkWell(
+              onTap: () => _showInfoDialog(
+                l10n.infoOpenessTitle,
+                l10n.infoOpenessBody,
+              ),
+              customBorder: const CircleBorder(),
+              child: const Padding(
+                padding: EdgeInsets.all(2),
+                child: Icon(
+                  Icons.info_outline,
+                  size: 18,
+                  color: Color(0xFFB31637),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 6),
         const Text(
@@ -363,14 +523,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         ),
         const SizedBox(height: 14),
         _opennessRow(
-          label: 'Open to Unicorn',
+          // Client 2026-05-25 correction: "quitar Open To Unicorn y
+          // Open To Bull, solo dejar Open (her) / Open (him)".
+          label: 'Open (her)',
           sublabel: 'ella',
           value: _openToUnicorn,
           onChanged: (v) => setState(() => _openToUnicorn = v),
         ),
         const SizedBox(height: 8),
         _opennessRow(
-          label: 'Open to Bull',
+          label: 'Open (him)',
           sublabel: 'él',
           value: _openToBull,
           onChanged: (v) => setState(() => _openToBull = v),
@@ -1152,7 +1314,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             ),
             CustomInput(
               label: l10n.description,
-              hintText: l10n.tellUsAboutYourself,
+              // Guided template (client 2026-05-25: "en la descripción
+              // debe existir una guía estructurada para ayudar a las
+              // parejas a presentarse correctamente"). The hint shows
+              // the bullet prompts so empty fields suggest the structure
+              // without forcing the user to follow it literally.
+              hintText: l10n.descriptionGuidedHint,
               type: InputType.textarea,
               controller: _descriptionController,
               errorText: _errorFor('description'),

@@ -728,6 +728,49 @@ abstract class AppLocalizations {
   /// **'Interests'**
   String get dynamicsInterestsLabel;
 
+  /// Info dialog content — Identity.
+  String get infoIdentityTitle;
+  String get infoIdentityBody;
+  /// Info dialog content — Role.
+  String get infoRoleTitle;
+  String get infoRoleBody;
+  /// Info dialog content — Interaction.
+  String get infoInteractionTitle;
+  String get infoInteractionBody;
+  /// Info dialog content — Experiences & Interests.
+  String get infoExperienceTitle;
+  String get infoExperienceBody;
+  /// Info dialog content — Individual Openness.
+  String get infoOpenessTitle;
+  String get infoOpenessBody;
+  /// Educational hints in the dynamics block.
+  String get infoMultipleHint;
+  String get infoSchoolWelcome;
+  String get infoStartIdentity;
+  /// Guided template hint for the couple description field.
+  String get descriptionGuidedHint;
+
+  // ── Taxonomy values (dynamics) — localized labels, English stays
+  // as the canonical Firestore value.
+  String get dynValHetero;
+  String get dynValBiCurious;
+  String get dynValBi;
+  String get dynValDom;
+  String get dynValSub;
+  String get dynValSwitch;
+  String get dynValParallelPlay;
+  String get dynValSoftSwap;
+  String get dynValFullSwap;
+  String get dynValSameRoom;
+  String get dynValSeparateRoom;
+  String get dynValVoyeur;
+  String get dynValExhibition;
+  String get dynValMmf;
+  String get dynValFfm;
+  String get dynValGroupPlay;
+  String get dynValBdsm;
+  String get dynValRoleplay;
+
   /// No description provided for @dynamicsHerLabel.
   ///
   /// In en, this message translates to:

@@ -339,6 +339,112 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dynamicsInterestsLabel => 'Interests';
 
   @override
+  String get infoIdentityTitle => 'Individual Identity';
+
+  @override
+  String get infoIdentityBody =>
+      '• Hetero → Connection only with the opposite sex.\n'
+      '• Bi-curious → Open to exploring or experimenting with the same sex.\n'
+      '• Bi → Comfortable connecting with both sexes.';
+
+  @override
+  String get infoRoleTitle => 'Role';
+
+  @override
+  String get infoRoleBody =>
+      '• Dominant → Enjoys taking the initiative and being in control during the interaction.\n'
+      "• Submissive → Enjoys being led or following the other person's energy.\n"
+      '• Switch → Enjoys both dominant and submissive roles depending on the connection or moment.';
+
+  @override
+  String get infoInteractionTitle => 'Type of Interaction';
+
+  @override
+  String get infoInteractionBody =>
+      '• Parallel Play → Interaction in the same space without contact or exchange between couples.\n'
+      '• Soft Swap → May include kissing, caressing or play without full exchange.\n'
+      '• Full Swap → Open to a full exchange between couples.';
+
+  @override
+  String get infoExperienceTitle => 'Experiences & Interests';
+
+  @override
+  String get infoExperienceBody =>
+      '• Same Room → Enjoys sharing the experience in the same space with other people or couples.\n'
+      '• Separate Rooms → Comfortable living the experience in separate spaces.\n'
+      '• Voyeur → Enjoys watching other people or couples during the interaction.\n'
+      '• Exhibitionism → Enjoys being watched during the interaction.\n'
+      '• MMF Threesome → Dynamic between two men and one woman.\n'
+      '• FFM Threesome → Dynamic between two women and one man.\n'
+      '• Group Play → Interest in social dynamics or experiences with several people or couples.\n'
+      '• BDSM → Interest in consensual dynamics of domination, submission or control.\n'
+      '• Roleplay → Interest in role play or fantasy interpretation.';
+
+  @override
+  String get infoOpenessTitle => 'Individual Openness';
+
+  @override
+  String get infoOpenessBody =>
+      'Indicates whether either member of the couple feels comfortable interacting individually '
+      'within consensual dynamics with other lifestyle couples.';
+
+  @override
+  String get infoMultipleHint =>
+      "You can select multiple options — don't limit yourselves.";
+
+  @override
+  String get infoSchoolWelcome => 'Welcome to swinger school';
+
+  @override
+  String get infoStartIdentity => 'We start with individual identity';
+
+  @override
+  String get descriptionGuidedHint =>
+      'Tell us a bit about yourselves ✨\n'
+      "• How long you've been in the lifestyle\n"
+      '• What kind of connections you enjoy\n'
+      '• Fantasies or dynamics that interest you\n'
+      '• Places or venues you usually go to (resorts, clubs, parties, cruises, etc.)\n'
+      "• How you'd describe your personality as a couple";
+
+  @override
+  String get dynValHetero => 'Hetero';
+  @override
+  String get dynValBiCurious => 'Bi-Curious';
+  @override
+  String get dynValBi => 'Bi';
+  @override
+  String get dynValDom => 'Dominant';
+  @override
+  String get dynValSub => 'Submissive';
+  @override
+  String get dynValSwitch => 'Switch';
+  @override
+  String get dynValParallelPlay => 'Parallel Play';
+  @override
+  String get dynValSoftSwap => 'Soft Swap';
+  @override
+  String get dynValFullSwap => 'Full Swap';
+  @override
+  String get dynValSameRoom => 'Same Room';
+  @override
+  String get dynValSeparateRoom => 'Separate Rooms';
+  @override
+  String get dynValVoyeur => 'Voyeur';
+  @override
+  String get dynValExhibition => 'Exhibitionism';
+  @override
+  String get dynValMmf => 'MMF Threesome';
+  @override
+  String get dynValFfm => 'FFM Threesome';
+  @override
+  String get dynValGroupPlay => 'Group Play';
+  @override
+  String get dynValBdsm => 'BDSM';
+  @override
+  String get dynValRoleplay => 'Roleplay';
+
+  @override
   String get dynamicsHerLabel => 'Her:';
 
   @override
