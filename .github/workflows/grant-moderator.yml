@@ -1,0 +1,94 @@
+name: Grant Moderator Access
+
+# One-off operator tool: create (or update) a moderator account on the
+# production project and grant the `moderator: true` custom claim that
+# the admin web panel + moderateVerification CF require.
+#
+# Runs on GitHub's runners specifically because direct Firebase Admin
+# API calls from the operator's local network are blocked by a firewall
+# (ERR_SOCKET_CONNECTION_TIMEOUT). CI has unrestricted Google API access.
+#
+# The password is generated here and printed ONLY in the run summary
+# (visible to repo collaborators), never taken as a dispatch input that
+# would otherwise show up in the run's input history. The moderator
+# should change it on first login.
+#
+# Required secret: FIREBASE_SA_KEY_PROD (already configured).
+
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: 'Moderator account email'
+        required: true
+        default: 'affinitysocialclub@gmail.com'
+
+jobs:
+  grant:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install firebase-admin
+        run: npm install firebase-admin@^12
+
+      - name: Write SA key
+        env:
+          SA_KEY: ${{ secrets.FIREBASE_SA_KEY_PROD }}
+        run: |
+          if [ -z "$SA_KEY" ]; then
+            echo "::error::FIREBASE_SA_KEY_PROD secret is not set."
+            exit 1
+          fi
+          printf '%s' "$SA_KEY" > "$RUNNER_TEMP/sa.json"
+
+      - name: Create/update moderator + grant claim
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+          MOD_EMAIL: ${{ github.event.inputs.email }}
+        run: |
+          # Generate a strong password: 18 url-safe chars + a fixed
+          # symbol/number suffix so it always satisfies any policy.
+          PASSWORD="$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-16)Aff1!"
+          export MOD_PASSWORD="$PASSWORD"
+          node -e '
+            const admin = require("firebase-admin");
+            admin.initializeApp({ projectId: "affinity-dating-app-cf807" });
+            (async () => {
+              const auth = admin.auth();
+              const email = process.env.MOD_EMAIL;
+              const password = process.env.MOD_PASSWORD;
+              let uid;
+              try {
+                const u = await auth.getUserByEmail(email);
+                uid = u.uid;
+                await auth.updateUser(uid, { password, emailVerified: true });
+                console.log("updated existing user " + uid);
+              } catch (e) {
+                if (e.code === "auth/user-not-found") {
+                  const c = await auth.createUser({ email, password, emailVerified: true });
+                  uid = c.uid;
+                  console.log("created user " + uid);
+                } else { throw e; }
+              }
+              await auth.setCustomUserClaims(uid, { moderator: true });
+              console.log("moderator claim granted, uid=" + uid);
+            })().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1); });
+          '
+          {
+            echo "## Moderator account ready"
+            echo ""
+            echo "Panel: https://affinity-dating-app-cf807.web.app"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| Email | \`${MOD_EMAIL}\` |"
+            echo "| Password | \`${PASSWORD}\` |"
+            echo ""
+            echo "The moderator must sign out + back in if previously signed in."
+            echo "Recommend changing the password on first login."
+          } >> "$GITHUB_STEP_SUMMARY"
